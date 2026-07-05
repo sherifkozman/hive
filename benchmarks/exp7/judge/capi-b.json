@@ -1,0 +1,28 @@
+{
+  "task": "capi-b",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 9,
+      "notes": "Current model IDs (opus-4-8/sonnet-5/haiku-4-5) with accurate 1M/200K contexts and pricing; streaming (stream()/on('text')/finalMessage()), parallel tool_use returned in one user message, and the typed-error chain (APIConnectionError before APIError, 529 overload) all match the docs. Extra credit for fetching per-model limits via client.models.retrieve and passing system+tools to countTokens; abort via stream.abort() caught as APIUserAbortError."
+    },
+    "output-2": {
+      "correctness": 6,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 8,
+      "notes": "Defaults to and recommends stale IDs (claude-sonnet-4-5-20250929, claude-opus-4-5) instead of the current sonnet-5/opus-4-8, and hardcodes 200K context for every model — wrong for the 1M current family. Uses a rough char/4 token estimate rather than countTokens; error taxonomy is solid (adds timeout) but the overloaded body-access is convoluted vs the documented err.type."
+    },
+    "output-3": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 8,
+      "notes": "Correct current model IDs and a good hardcoded 1M/200K context map, clean err.type === 'overloaded_error' handling, countTokens-based trim, and AbortController state preservation. Minor dings: countTokens omits tools (underestimates), and the speculative --effort/output_config.effort flag (self-flagged) risks an unverified request shape."
+    }
+  },
+  "ranking": ["output-1", "output-3", "output-2"],
+  "observations": "All three implement the streaming manual loop, parallel tool round-trip, and whole-turn trim correctly. output-1 leads on accuracy and depth: current model IDs, live client.models.retrieve limits, countTokens with system+tools, app-level backoff atop SDK retries, and APIUserAbortError handling. output-3 is close behind with correct current IDs and clean err.type error classification, losing a bit to a tools-less countTokens and a speculative effort flag. output-2 ranks last because it defaults to and recommends legacy 4-5-generation models and hardcodes 200K context (wrong for the current 1M family), plus a coarse char/4 token estimate instead of countTokens."
+}

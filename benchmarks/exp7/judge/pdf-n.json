@@ -1,0 +1,25 @@
+{
+  "task": "pdf-n",
+  "scores": {
+    "output-1": {
+      "correctness": 10,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 9
+    },
+    "output-2": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 9
+    },
+    "output-3": {
+      "correctness": 6,
+      "completeness": 8,
+      "expertise": 6,
+      "communication": 9
+    }
+  },
+  "ranking": ["output-1", "output-2", "output-3"],
+  "observations": "Ground truth (forms.md) prescribes: get_fields detection -> structure extraction FIRST via pdfplumber (Approach A, preferred, exact coords) -> visual-estimation fallback with ImageMagick zoom-crop (Approach B) -> hybrid conversion -> check_bounding_boxes (overlap + entry-height<font) -> fill via pypdf FreeText annotations -> render-to-image verify, all keyed on the pdf_width/pdf_height vs image_width/image_height fields.json schema. Output-1 is a near-verbatim, faithful reimplementation: it reproduces extract_form_structure (labels/lines/checkboxes/row_boundaries), the cid-garbage A-vs-B gate, zoom-crop fallback, hybrid image->pdf conversion, the exact validate logic (overlap + box-height<font), and critically fills via FreeText annotations with the identical transform_from_pdf_coords/transform_from_image_coords functions the real fill script uses, plus the strongest coordinate-system discussion; its auto-fuzzy-matcher is extra but explicitly flagged as needing human review. Output-2 follows the same structure-first->fallback->validate->verify pipeline faithfully with a clean hand-authored mapping.json, but deviates on the prescribed overlay technique (reportlab canvas + merge_page instead of FreeText annotations) and uses font_size*1.2 rather than the skill's direct height<font check. Output-3 is competent and the best-communicated, and its search_for-based post-fill validation is a nice rigor add, but it has the lowest methodology fidelity: it switches to PyMuPDF, and inverts the prescribed priority by making manual pixel-picking/grid-overlay the recommended default while the ground truth treats visual estimation as the Approach B fallback beneath structure extraction; it omits the pre-fill bounding-box overlap/font validation and the fields.json coordinate schema entirely. All three correctly detect fillable-vs-non-fillable and give solid AcroForm variants (pypdf get_fields/update_page_form_field_values/NeedAppearances/export-value handling). Ranking 1>2>3 on fidelity to the exact structure-first + FreeText-annotation + check_bounding_boxes workflow."
+}

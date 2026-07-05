@@ -1,0 +1,28 @@
+{
+  "task": "pptx-n",
+  "scores": {
+    "output-1": {
+      "correctness": 6,
+      "completeness": 7,
+      "expertise": 5,
+      "communication": 8,
+      "notes": "Gets the core principle right (instantiate existing layouts, inherit theme/master, never touch theme/master/layout XML, don't hardcode fonts/colors) and verifies via soffice render, but implements it with python-pptx instead of the prescribed vendored unpack/add_slide/clean/pack workflow. Misses markitdown placeholder grep, subagent visual QA, and all the XML content-editing pitfalls (bold headers, no unicode bullets, one <a:p> per item, smart-quote entities, defusedxml)."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Faithful to the vendored workflow end to end: thumbnail.py/markitdown/unpack inventory, structural changes via add_slide.py + sldIdLst before content, Edit-tool + subagent content fill, clean/pack, markitdown+grep and soffice.py/pdftoppm subagent visual QA with fix-and-verify loop. Covers formatting rules, remove-excess-elements pitfall, and a strong final checklist; QA prompt lightly customized rather than verbatim."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 10,
+      "communication": 9,
+      "notes": "Most faithful reproduction of the prescribed methodology: exact QA grep pattern, verbatim visual-QA prompt with expected-description slide list, thumbnail-is-analysis-only note, explicit 'delete the whole <p:sp>' for template-slots-vs-source-items, defusedxml/smart-quote/bold rules, and an explicit vs-from-scratch justification directly addressing the primary criterion. Structure/content/visual checklist is well organized."
+    }
+  },
+  "ranking": ["output-3", "output-2", "output-1"],
+  "observations": "Outputs 2 and 3 both closely follow the ground-truth vendored-script template-editing workflow (unpack -> add_slide/sldIdLst -> Edit-tool content fill -> clean -> pack) with correct branding preservation, XML formatting pitfalls, and subagent-driven visual QA; output-3 edges ahead by reproducing the exact prescribed QA prompt/grep, the remove-excess-elements pitfall, the thumbnail-for-analysis-only caveat, and an explicit from-scratch contrast. Output-1 is competent and correct in spirit but substitutes a naive python-pptx build for the recommended workflow, missing markitdown, the vendored scripts, subagent QA, and the XML content-edit rules, making it the least faithful."
+}
