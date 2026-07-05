@@ -1,0 +1,6 @@
+feat: incremental sync mode, 10x faster on large DBs
+breaking: config renamed dbsync.yaml to dbsync.toml
+breaking: flag renamed --workers to --parallel, default 8
+fix: deadlock when incremental and full sync overlap
+perf: COPY-based restore, 3x faster on postgres
+chore: min python 3.12

@@ -1,0 +1,35 @@
+{
+  "task": "8a",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 8,
+      "communication": 8,
+      "notes": "Runs; all paths verified (env-gated default-off failure, version conflict, summary/full truncation, catch-all no-leak error). Nested `params` schema (shared with 2/3). Deliberately allows duplicate-title pages (documented, but weaker wiki safety than peers) and has a stray-text typo in the design section. Deepest, most nuanced design-justification and eval plan of the four."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Runs; strongest error craft — typed JSON error envelope with error_type + retryable, conflict returns current_version metadata, richest business validation (dup-title, parent-space). Deterministic magic-string failure trigger. Prefixed naming, dup-guard. Weaknesses: nested `params` schema; `author` made a required param (friction + forgeable, and even acknowledges real deployments derive it from auth)."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 8,
+      "notes": "Runs; fully verified (create, excellent conflict message, no-field reject, dup-title, dual env+magic-string failure trigger). Clean hardcoded actor, human-readable timestamps, DRY helpers, dup-guard. Nested `params` schema. Solid but least differentiated; heavy preset-skill citation reads as conformance more than independent craft."
+    },
+    "output-4": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Runs; only submission with idiomatic flat schema. Richest token-consciousness (metadata/summary/full + content_offset intra-page chunking + opaque cursors) and nice fuzzy 'did you mean' hints; clean actionable ToolError messages with codes. Docked: always-on 5% random backend failure with no disable toggle (fired on a normal call; makes its own eval flaky, poor for production/testing) and unprefixed, collision-prone tool names against the convention the other three follow. No markdown/response_format option; no catch-all for unexpected exceptions (argued intentional)."
+    }
+  },
+  "ranking": ["output-2", "output-4", "output-1", "output-3"],
+  "observations": "All four are complete, runnable, and cover the six requirements well; differences are fine-grained. Verified end-to-end in a venv (mcp+pydantic): compile, tool registration, search/get/create/update, not-found, version-conflict, dup-title, truncation/detail levels, pagination, and simulated-failure paths. A shared craft weakness in 1/2/3 is wrapping all args in a single Pydantic model, so the MCP-exposed inputSchema is a nested `{params:{...}}` object rather than flat fields; only output-4 exposes idiomatic flat parameters. Output-2 leads on overall robustness and best-in-class agent error handling (typed envelope with error_type/retryable + richest business validation), with a deterministic, disableable failure trigger and safe prefixed naming. Output-4 has the strongest MCP token-consciousness (three detail tiers + content_offset + cursors) and the only clean flat schema, but is dropped to second by an always-on 5% random failure with no off switch (a real production/testability defect, verified firing on legitimate calls) and generic unprefixed tool names. Output-1 has the deepest design-justification and eval plan and default-off env-gated failure, but deliberately permits duplicate-title pages and carries a minor typo. Output-3 is clean, deterministic, and fully functional but the least distinctive."
+}

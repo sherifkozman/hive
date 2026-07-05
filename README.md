@@ -138,6 +138,7 @@ cells only, the ones selective loading is built for; see
 | 5 | Skill-graph edges (requires:/pairs-with:) | Flat index hit all 5 pre-registered target minis in both conditions | No selection or application benefit; mild precision cost. Edges not justified at domain scale |
 | 6 | Two official Anthropic Agent Skills, converted losslessly | Large skill, narrow task: Hive best quality **and** −11% tokens | Broad task: the bundle over-loaded (24k tok incl. irrelevant Node ref) vs pruned manual disclosure (16k) and lost 36→32.5; small (~2.8k tok) skill got no benefit at all |
 | 7 | Three of Hive's own converted skills (claude-api, pdf, pptx) head-to-head with their original Anthropic packaging | Skills beat no-skill by the suite's widest margins (+5 to +7 mean points); Hive took the hardest cell (claude-api broad, a 195k-token skill) **38 vs 34** at −4% tokens, and cut pdf-narrow **−72%** tokens | Original hand-tuned packaging won overall **4–1** (mean 36.17 vs 34.50, within noise); Hive reaches quality *parity*, not a quality gain, on skills already built for progressive disclosure |
+| 8 | Cherry-picked measured results (presets, stack-scale routing) | Preset loads −53% tokens vs bundle at parity quality; flat index routes 6/6 correctly across a 13-skill catalog | Preset does not beat a hand-tuned original on quality (37 vs 34); routing a premium model to a hard shard still showed no quality gain |
 
 In summary: **Hive wins where there is a large body of trap-dense
 knowledge and a task needs only part of it.** It is neutral-to-negative on small
@@ -170,10 +171,13 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
 - **Presets (variant tracks).** Named compiled subsets for recurring
   configurations, including *mutually-exclusive tracks* (e.g. a Python vs a Node
   server preset) so the broad path can load one track instead of the whole
-  bundle. *Evidence: motivated, not re-benchmarked.* Experiment 6 exposed the
-  bundle over-loading a Python task with Node reference material; a language
-  preset would have cut that ~28% (a deterministic token projection, quality
-  untested).
+  bundle. *Evidence: measured: −53% tokens vs bundle at parity quality (Exp 8).*
+  Experiment 6 exposed the bundle over-loading a Python task with Node reference
+  material and projected a language preset would cut that ~28%, quality untested
+  at the time. Experiment 8 measured a language-specific preset directly: it
+  loaded 11,326 tokens, −53% vs the full bundle (24,067) and −28% vs the
+  original hand-tuned packaging (15,797), at quality parity with the bundle (34
+  vs 35 of 40, within noise). The hand-tuned original still won on quality (37).
 - **Subagent fan-out (routed path).** For a very broad task that decomposes along
   module boundaries, an orchestrator fans out parallel workers, each loading 1–2
   minis, then synthesizes. *Evidence: quality-neutral, cost-positive.* Matched
@@ -184,8 +188,11 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
   warrants, so fan-out can run a premium model only on the hardest shard.
   *Evidence: cost-shaping shown, quality gain unproven.* The routed run shaped
   cost and parallelized wall-clock, but a ceiling effect on the tested task meant
-  the premium-model shard's quality advantage could not express itself. See
-  [`docs/MODEL-ROUTING.md`](docs/MODEL-ROUTING.md) for the full guide.
+  the premium-model shard's quality advantage could not express itself. A second,
+  harder test (Exp 8, a deliberately engineered-hard valuation shard) again found
+  the mid-tier model matching the premium model exactly, so the quality-gain case
+  remains unproven. See [`docs/MODEL-ROUTING.md`](docs/MODEL-ROUTING.md) for the
+  full guide.
 - **Per-mini and per-skill versioning (new).** A mini MAY carry a `version:`
   frontmatter key and a skill MAY carry a `composable/VERSION` file, both bare
   semver (`X.Y.Z`); `hive.py bump` is the supported mutator for the skill-level

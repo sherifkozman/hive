@@ -278,7 +278,11 @@ security), produced by the same concatenation rules as the bundle (§7.1–§7.3
 
 *Evidence:* presets are the "load one file, zero selection risk" affordance the
 broad path relies on; condition D (whole compiled file in one read) beat
-per-mini loading on every broad task (FRAMEWORK.md §Results).
+per-mini loading on every broad task (FRAMEWORK.md §Results). Experiment 8
+measured a language-specific preset directly: it loaded 11,326 tokens, −53% vs
+the full bundle (24,067) and −28% vs the original hand-tuned packaging
+(15,797), at quality parity with the bundle (34 vs 35 of 40, within noise); the
+hand-tuned original still won on quality (37).
 
 **7.7** Presets **SHOULD** be few and named for real recurring tasks. A
 combinatorial family of presets **SHOULD NOT** be generated speculatively.
@@ -391,7 +395,11 @@ per-context loads (~2,900 tokens), and wall-clock parallelism, at the cost of
 
 *Evidence:* FRAMEWORK.md §Probe: routing. Routing matched single-context quality
 within noise (35 vs 36); its demonstrated value was cost shaping and clean small
-loads, not a measured quality gain.
+loads, not a measured quality gain. A second, harder test (Experiment 8, a
+deliberately engineered-hard valuation shard with a circular WACC solve and
+endogenous capital structure) again produced identical results between the
+mid-tier and premium models, reinforcing rather than resolving the unproven
+status; cost shaping remains the only validated use.
 
 **11.3** Cross-mini dependency edges (`requires:`, `pairs-with:`) are **NOT
 RECOMMENDED** at the scale CCS targets (≤5 domains, ≤~12 minis per domain). They
@@ -406,7 +414,11 @@ equivalent (both caught the planted duplicate quarter / 10× outlier, both fixes
 lock-protected, both included SSRF protection). Edges showed a mild *precision
 cost*: edge workers loaded 12–37% more files on 3 of 5 tasks (pull-in effect).
 Selection was already 12/13 expert-grade with a flat index + always-core
-(FRAMEWORK.md §Probe: edges).
+(FRAMEWORK.md §Probe: edges). Experiment 8 tested the "future library-scale
+use" carve-out directly: across the full 13-skill, 165-mini shipped catalog, a
+flat index alone still hit 6/6 right-skill and 6/6 target-mini with 0
+off-target loads, reinforcing rather than overturning the no-skill-graph
+position.
 
 **11.4** If edges are used, they **MUST** be authored as index hints / preset
 closures only, not as a runtime graph-traversal engine.
