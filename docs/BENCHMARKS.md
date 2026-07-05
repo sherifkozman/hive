@@ -1,7 +1,7 @@
 # CCS Benchmarks
 
 This document consolidates every benchmark in this repository that bears on the
-Compiled Composable Skills (CCS) framework. It covers seven experiments run under
+Compiled Composable Skills (CCS) framework. It covers eight experiments run under
 one shared protocol, a summary of which framework claims each supports, a
 reproduction guide, and honest limitations. Every number below was cross-checked
 against the raw judge and token-accounting JSON; two small prose/raw
@@ -520,7 +520,89 @@ packagings.
 
 ---
 
-## 9. Summary: framework claims and their evidence
+## 9. Experiment 8: Preset remedy measured, and flat-index routing at stack scale
+
+**Design.** Two follow-ups to open questions left by Experiments 5 and 6, run
+under the same frozen-task, blind-judging protocol. This release folds in the
+two results that came back clear; two further Experiment 8 questions did not
+and are not shipped here (see the honesty note below).
+
+**8a. Preset remedy for the mcp-broad preset gap (measured).** Experiment 6
+found that the coverage rule's bundle path lost the mcp-broad task on both
+cost and quality to the original Anthropic packaging's hand-pruned
+disclosure, and proposed a `python-server` preset as a fix whose −28% token
+projection was not re-benchmarked (section 7). Experiment 8 re-ran the frozen
+mcp-broad task under the preset as a fourth condition and rejudged all four
+candidates blind, with fresh randomization.
+
+Raw: `benchmarks/exp8/outputs/8a-mcp-b-P.md`,
+`benchmarks/exp8/blinding_8a.json`, `benchmarks/exp8/judge/8a.json`.
+
+| Condition | Score/40 (rank) | Skill tokens |
+|-----------|-----------------|--------------|
+| B original packaging | **37 (1)** | 15,797 |
+| A no skill | 35 (2) | 0 |
+| C bundle (Exp 6) | 35 (3) | 24,067 |
+| P python-server preset | 34 (4) | 11,326 |
+
+**Finding.** The preset reached quality parity with the bundle (34 vs 35,
+inside the ±3-point noise band) at −53% tokens vs the bundle and −28% vs the
+original. This confirms the preset fixes the broad-task token inversion that
+Exp 6 left open. Honest caveat: the hand-tuned original still won on quality
+(37), consistent with Exp 6, so presets recover the loading economics, they
+do not overturn a well-built original's quality edge.
+
+**8c. Flat-index routing at stack scale (proven).** Experiment 5 found no
+selection or application benefit from skill-graph edges at domain scale (5
+domains, 59 minis), but left open whether a flat index degrades once many
+skills are installed. Experiment 8 tested this directly against the full
+shipped catalog (13 skills, 165 minis per `skills/README.md`): 6 single-skill
+tasks, each requiring the worker to find the right skill and the right
+mini(s) from the catalog with only `skills/README.md` and each skill's own
+`INDEX.md` to go on. Scoring is objective, read directly from each worker's
+`LOADED` line.
+
+Raw: `benchmarks/exp8/tasks/8c-stack-tasks.md`,
+`benchmarks/exp8/outputs/8c-T{1..6}.md`, `benchmarks/exp8/score_8c.py`.
+
+| Task (skill) | Right skill | Target mini | Off-target loads | Skill tokens |
+|---|---|---|---|---|
+| T1 (code-review) | HIT | HIT | 0 | 3,486 |
+| T2 (tech-writing) | HIT | HIT | 0 | 3,583 |
+| T3 (mcp-builder) | HIT | HIT | 0 | 4,805 |
+| T4 (pdf) | HIT | HIT | 0 | 4,631 |
+| T5 (financial-analysis) | HIT | HIT | 0 | 3,634 |
+| T6 (internal-comms) | HIT | HIT | 0 | 2,968 |
+
+**Finding.** Objective scoring from `LOADED` lines gives **6/6 right-skill,
+6/6 target-mini, 0 off-target loads**, at a navigation cost of 2,968 to 4,805
+tokens per task. The concern that flat-index routing degrades once many
+skills are installed did not materialize at 13 skills; reinforces and
+extends the Experiment 5 result (no skill-graph needed) from a few skills to
+a full catalog.
+
+> **Honesty note.** Experiment 8 also evaluated two other questions whose
+> outcomes are not reflected as new claims in this release: (1) whether
+> routing a premium model to a hard shard improves quality, which found no
+> gain even on a deliberately engineered-hard valuation shard (mid-tier and
+> premium produced identical correct results), consistent with the existing
+> "quality gain unproven" status in the model-routing docs; and (2) a
+> cross-skill "kit" mechanism, which produced a mixed result (net-positive
+> only when a kit's fixed composition matched the task) and is not shipped
+> in this release. Full analysis of those two is retained in internal
+> experiments.
+
+**Net.** Experiment 8 closes the Experiment 6 preset-remedy caveat with a
+measured result: bundle-parity quality at meaningfully lower cost, with the
+hand-tuned original still the quality leader. It also extends Experiment 5's
+flat-index finding from domain scale to the full 13-skill catalog. Two other
+questions Experiment 8 evaluated (premium-model routing on a hard shard, a
+cross-skill kit mechanism) did not produce shippable results and are not
+part of this release.
+
+---
+
+## 10. Summary: framework claims and their evidence
 
 | Claim | Evidence | Effect size |
 |-------|----------|-------------|
@@ -538,15 +620,16 @@ packagings.
 | Routing matches single-context quality, shapes cost | Exp 4 | 35 vs 36 (within noise); max context ~2,900 vs 9,317 |
 | Edges not justified at domain scale | Exp 5 | no selection/application gain; mild precision cost |
 | CCS narrow win transfers to a large official skill | Exp 6 | mcp-narrow: C best quality (36) *and* −11% tokens vs original |
-| Bundle is all-or-nothing on broad tasks (preset gap) | Exp 6 | mcp-broad: bundle 24,067 tok / 32.5 lost to pruned disclosure 15,797 tok / 36; remedy = language presets (11,302 tok, −28% projected, not re-benchmarked) |
+| Bundle is all-or-nothing on broad tasks (preset gap) | Exp 6, Exp 8 | mcp-broad: bundle 24,067 tok / 32.5 lost to pruned disclosure 15,797 tok / 36 (Exp 6); remedy = language presets, measured: −53% vs bundle at bundle-parity quality (Exp 8) |
 | CCS pays only above ~5k tok of knowledge | Exp 6 | small skill (~2.8k): index+core overhead > selection savings; original won both comms cells |
 | Skill knowledge dominates outside model competence | Exp 7 | both packagings beat baseline (B +6.5, C +4.83 mean points); largest skill-vs-baseline gaps in the suite |
 | CCS makes an un-loadable 195k skill navigable and wins its hardest cell | Exp 7 | claude-api broad: C 38 vs B 34 vs A 29 at −4% tokens; pdf-narrow −72% tokens at quality rank 2 |
 | Hand-tuned disclosure holds parity-or-better on its home turf | Exp 7 | original won 4–1, mean 36.17 vs 34.50 (1.67, within noise); CCS's edge is economics, scale navigation, and uniform tooling, not quality |
+| Flat-index routing holds at stack scale (no skill-graph needed) | Exp 8 | 6/6 right-skill, 6/6 target-mini hits, 0 off-target loads at a 13-skill catalog |
 
 ---
 
-## 10. Reproduction guide
+## 11. Reproduction guide
 
 **Experiment 1 (round-1 A/B/C).**
 - Design, criteria & shared protocol: `benchmarks/exp1-2/protocol.md`.
@@ -593,8 +676,9 @@ packagings.
 - Scores: `benchmarks/exp6/judge/{mcp,comms}-{n,b}.json`; blinding map:
   `benchmarks/exp6/blinding.json`; tokens: `benchmarks/exp6/token_accounting.json`;
   consolidated cells: `benchmarks/exp6/unblinded_results.json`.
-- Post-benchmark preset remedy (not re-judged):
-  `skills/converted/mcp-builder/composable/presets/{python-server,node-server}.md`.
+- Post-benchmark preset remedy: `skills/converted/mcp-builder/composable/presets/{python-server,node-server}.md`.
+  The `python-server` preset was rejudged in Experiment 8 (section 9); `node-server`
+  remains an untested token projection.
 
 **Experiment 7 (own-skill head-to-head vs original packaging).**
 - Provenance: `claude-api`, `pdf`, `pptx` from `anthropics/skills` (vendored
@@ -606,6 +690,15 @@ packagings.
   `benchmarks/exp7/blinding.json`; tokens: `benchmarks/exp7/token_accounting.json`;
   consolidated cells: `benchmarks/exp7/unblinded_results.json`.
 
+**Experiment 8 (preset remedy rejudge; stack-scale flat-index routing).**
+- 8a (preset rejudge): worker output `benchmarks/exp8/outputs/8a-mcp-b-P.md`;
+  blinding map: `benchmarks/exp8/blinding_8a.json`; scores:
+  `benchmarks/exp8/judge/8a.json`.
+- 8c (stack-scale routing): tasks `benchmarks/exp8/tasks/8c-stack-tasks.md`;
+  worker outputs `benchmarks/exp8/outputs/8c-T{1..6}.md`; fixtures
+  `benchmarks/exp8/fixtures/`; objective scorer `benchmarks/exp8/score_8c.py`.
+  Full catalog referenced by 8c: `skills/README.md`.
+
 The agentic meta-skill was separately exercised against this repository; that
 adoption test and its report live under `benchmarks/adoption-test/`. Framework
 rationale and amendments spanning all experiments are folded into each rule's
@@ -613,20 +706,22 @@ rationale and amendments spanning all experiments are folded into each rule's
 
 ---
 
-## 11. Limitations
+## 12. Limitations
 
 - **Single-run cells.** No repeated sampling; score gaps ≤ 3 are within judge
   noise. Mitigated (not eliminated) by many cells, blind judging, and
   orchestrator verification. Experiment 2's re-judge is direct evidence of the
-  ±1-rank band. Experiment 6's twelve cells and Experiment 7's eighteen cells are
-  likewise n=1.
+  ±1-rank band. Experiment 6's twelve cells, Experiment 7's eighteen cells, and
+  Experiment 8's ten cells (the four-way preset rejudge plus six stack-scale
+  tasks) are likewise n=1.
 - **One model family.** Mid-tier LLM workers, frontier-tier LLM judges/authors
   throughout (frontier-tier workers in Experiment 6). Results may not transfer to
   other model families or much weaker selectors.
-- **Untested remedies.** The Experiment 6 preset fix (`python-server`/
-  `node-server`) is a deterministic recompilation reported as a token projection
-  (−28%); its quality effect was not re-benchmarked. It is a design correction,
-  not a measured result.
+- **Untested remedies.** The Experiment 6 `node-server` preset is still a
+  deterministic recompilation with an untested quality effect. Its sibling,
+  `python-server`, was rejudged in Experiment 8 (section 9): quality parity
+  with the bundle (34 vs 35, inside the noise band) at −53% tokens vs the
+  bundle and −28% vs the original, though still a single-run cell.
 - **chars/4 token approximation.** Applied identically to all conditions, so
   ratios are robust, but absolute token counts are estimates, not tokenizer-exact.
 - **Self-reported LOADED.** Worker loading is self-reported; cross-checked
@@ -647,4 +742,8 @@ rationale and amendments spanning all experiments are folded into each rule's
 - **Edges and routing under-tested.** The edge probe (n=5, one worker model,
   traps partly discoverable from index lines) *bounds* rather than settles the
   library-scale edge question; routing's quality gains could not express
-  themselves under the observed ceiling effect.
+  themselves under the observed ceiling effect. Experiment 8 extended the
+  flat-index side of this question to a full 13-skill, 165-mini catalog and
+  found no degradation (section 9), but did not re-test edge-annotated
+  indexes at that scale, so whether edges help specifically at stack scale
+  remains open.

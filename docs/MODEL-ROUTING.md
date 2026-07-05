@@ -136,6 +136,15 @@ across shards can produce sections that disagree. The experiment's judge
 explicitly checked cross-section consistency and found the synthesizer's output
 coherent. Treat this as a risk you must verify per skill, not a solved problem.
 
+A second experiment (Experiment 8) went looking for the ceiling effect's edge:
+it ran a deliberately engineered-hard valuation shard, a DCF with a circular
+WACC solve and an endogenously solved capital structure, on both the mid-tier
+and premium model. The two tiers again produced identical results (same WACC,
+same per-share value, same enterprise value). So the quality-gain case remains
+unproven even under a harder task; cost shaping (routing to the cheaper model
+where it suffices) is the validated use, not a quality argument for the
+premium tier.
+
 **Evidence status:** Experiment 4 showed routing matches single-context quality
 within noise and shapes cost by spending premium tokens only on the hard shard;
 the quality gain from the premium shard is unproven (ceiling effect).

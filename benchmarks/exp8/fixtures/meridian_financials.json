@@ -1,0 +1,35 @@
+{
+  "company": "Meridian Software Inc. (B2B SaaS, vertical ERP)",
+  "currency": "USD thousands",
+  "income_statement": {
+    "2023": {"revenue": 42000, "cogs": 14700, "sales_marketing": 16800, "rnd": 8400, "gna": 5000, "d_and_a_included_in_opex": 1200, "interest_expense": 600, "tax": 0, "net_income": -3500},
+    "2024": {"revenue": 54600, "cogs": 17472, "sales_marketing": 19110, "rnd": 9828, "gna": 5460, "d_and_a_included_in_opex": 1600, "interest_expense": 550, "tax": 650, "net_income": 1530},
+    "2025": {"revenue": 68250, "cogs": 20475, "sales_marketing": 22522, "rnd": 11602, "gna": 6142, "d_and_a_included_in_opex": 2000, "interest_expense": 500, "tax": 1750, "net_income": 5259}
+  },
+  "balance_sheet": {
+    "2024": {"cash": 12000, "accounts_receivable": 9100, "other_current_assets": 1700, "ppe_net": 5800, "intangibles": 3400, "total_assets": 32000,
+             "accounts_payable": 3600, "deferred_revenue_current": 10920, "accrued_liabilities": 2600, "lt_debt": 9000, "total_liabilities": 26120, "shareholders_equity": 5880},
+    "2025": {"cash": 18500, "accounts_receivable": 11375, "other_current_assets": 2000, "ppe_net": 6500, "intangibles": 3000, "total_assets": 41375,
+             "accounts_payable": 4200, "deferred_revenue_current": 13650, "accrued_liabilities": 3100, "lt_debt": 8000, "total_liabilities": 28950, "shareholders_equity": 12425}
+  },
+  "cash_flow_2025": {"cfo": 9800, "capex": 2700},
+  "dcf_assumptions": {
+    "valuation_date": "2026-01-01",
+    "risk_free_rate": 0.042, "equity_risk_premium": 0.055, "beta": 1.3,
+    "pre_tax_cost_of_debt": 0.065, "tax_rate": 0.25, "target_debt_to_capital": 0.20,
+    "revenue_growth_fade": "25% in 2026 fading linearly to 10% by 2030",
+    "ebit_margin_path": "11% in 2026 expanding linearly to 18% by 2030",
+    "d_and_a_pct_revenue": 0.03, "capex_pct_revenue": 0.04,
+    "nwc_change_pct_incremental_revenue": 0.05,
+    "terminal_growth": 0.025,
+    "net_debt_2025": -10500,
+    "shares_outstanding_thousands": 9200
+  },
+  "forecast_inputs_2026": {
+    "beginning_arr": 71500, "q1_bookings_pipeline": 6800,
+    "quarterly_bookings_growth": 0.06, "gross_churn_annual": 0.08,
+    "net_revenue_retention": 1.12, "sales_cycle_days": 90,
+    "headcount_plan": {"q1": 312, "q2": 328, "q3": 341, "q4": 355},
+    "avg_fully_loaded_cost_per_head_annual": 168
+  }
+}
