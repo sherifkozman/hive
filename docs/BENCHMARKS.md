@@ -53,26 +53,17 @@ Experiment 1's four authored domains, Experiment 3's financial-analyst
 conversion, and Experiment 7's pdf skill), skill tokens loaded, original
 packaging vs Hive selective loading:
 
-```mermaid
-xychart-beta
-    title "Skill tokens Hive avoids loading on narrow tasks (% saved vs original packaging)"
-    x-axis ["code-review", "tech-writing", "data-analysis", "python-api", "financial-analyst", "pdf"]
-    y-axis "Tokens saved (%)" 0 --> 100
-    bar [64, 51, 41, 47, 52, 72]
-```
+Skill tokens loaded per narrow-task benchmark cell, original packaging vs
+Hive selective loading. Each bar is the share of tokens Hive avoided:
 
-Each bar is one skill's narrow-task benchmark cell: the percentage of skill
-tokens Hive's selective loading avoided compared to loading the skill's
-original packaging. The absolute numbers behind the bars:
-
-| Skill | Original packaging (tokens) | Hive selective load (tokens) | Saved |
+| Skill | Original packaging (tokens) | Hive selective load (tokens) | Tokens saved |
 |---|---|---|---|
-| code-review | 4,197 | 1,516 | 64% |
-| tech-writing | 4,298 | 2,090 | 51% |
-| data-analysis | 4,176 | 2,444 | 41% |
-| python-api | 4,702 | 2,483 | 47% |
-| financial-analyst | 4,833 | 2,299 | 52% |
-| pdf | 14,309 | 3,995 | 72% |
+| code-review | 4,197 | 1,516 | `█████████████░░░░░░░` 64% |
+| tech-writing | 4,298 | 2,090 | `██████████░░░░░░░░░░` 51% |
+| data-analysis | 4,176 | 2,444 | `████████░░░░░░░░░░░░` 41% |
+| python-api | 4,702 | 2,483 | `█████████░░░░░░░░░░░` 47% |
+| financial-analyst | 4,833 | 2,299 | `██████████░░░░░░░░░░` 52% |
+| pdf | 14,309 | 3,995 | `██████████████░░░░░░` 72% |
 
 Bars left to right in each pair: original/monolithic packaging, then Hive
 selective loading. Source rows: code-review, tech-writing, data-analysis, and
