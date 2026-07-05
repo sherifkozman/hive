@@ -1,16 +1,34 @@
-# Hive: composable, benchmarked skills for AI agents
+# Hive: a framework for building composable skills for AI agents
 
-Hive packages an agent skill as many small, self-contained
-**minis** behind one knowledge-free **INDEX**, plus a deterministic build step
-that compiles the minis into a single **BUNDLE** or into task-shaped subsets
-(**presets**). At load time a **coverage rule** decides whether a worker loads a
-few minis, the whole bundle, or fans the work out across parallel worker agents
-that each carry only what their slice needs. The aim is to load only the
-knowledge a task needs, keep quality at least as high as a single monolithic
-skill, and make every packaging decision auditable rather than implicit. Hive
-implements the **CCS (Compiled Composable Skills) v1.0 specification**
+Hive is a framework for building composable skills for AI agents: a spec, a
+CLI, a runtime loading policy, and a library of skills built on it. It packages
+an agent skill as many small, self-contained **minis** behind one
+knowledge-free **INDEX**, plus a deterministic build step that compiles the
+minis into a single **BUNDLE** or into task-shaped subsets (**presets**). At
+load time a **coverage rule** decides whether a worker loads a few minis, the
+whole bundle, or fans the work out across parallel worker agents that each
+carry only what their slice needs. The aim is to load only the knowledge a
+task needs, keep quality at least as high as a single monolithic skill, and
+make every packaging decision auditable rather than implicit. Hive implements
+the **CCS (Compiled Composable Skills) v1.0 specification**
 ([`docs/SPEC.md`](docs/SPEC.md)); the CLI is [`tools/hive.py`](tools/hive.py).
 The name is a nod to collective-intelligence ideas, not a literal architecture.
+Every claim the framework makes is checked against a benchmark suite rather
+than asserted; that evidence lives in the Evidence section below and in full
+in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
+
+## Contents
+
+- [The hypothesis](#the-hypothesis)
+- [Why Hive exists](#why-hive-exists)
+- [Evidence](#evidence)
+- [The options](#the-options)
+- [When to use it, and when not](#when-to-use-it-and-when-not)
+- [Quick start](#quick-start)
+- [Repo map](#repo-map)
+- [Relationship to prior art](#relationship-to-prior-art)
+- [Limitations & invitation to replicate](#limitations--invitation-to-replicate)
+- [Provenance](#provenance)
 
 ```mermaid
 flowchart TD
@@ -88,6 +106,25 @@ competence (current SDK internals, PDF and PPTX tooling), packaging it beat the
 no-skill baseline by the **widest margins in the whole suite** (+5 to +7 mean
 points), the counter-case to the ceiling effect that flattens skill gains on
 knowledge the model already has.
+
+**Token savings on narrow tasks, at a glance.** Skill tokens loaded per narrow
+task, original/monolithic packaging vs Hive selective loading, across every
+domain measured:
+
+```mermaid
+xychart-beta
+    title "Skill tokens loaded per narrow task: original packaging vs Hive"
+    x-axis ["code-review", "tech-writing", "data-analysis", "python-api", "financial-analyst", "pdf"]
+    y-axis "Skill tokens" 0 --> 15000
+    bar [4197, 4298, 4176, 4702, 4833, 14309]
+    bar [1516, 2090, 2444, 2483, 2299, 3995]
+```
+
+Bars left to right in each pair: original/monolithic packaging, then Hive
+selective loading. The y-axis starts at zero. These are the **narrow-task**
+cells only, the ones selective loading is built for; see
+[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) for the full tables, including the
+**broad-task** cells where the token advantage shrinks or inverts.
 
 | # | What it tested | Result | Where Hive lost / its limit |
 |---|----------------|--------|-----------------------------|
@@ -226,7 +263,7 @@ way to change a skill's `composable/VERSION`.
   validation), `exp7/` (three of Hive's own converted skills head-to-head with
   their original Anthropic packaging), and `adoption-test/` (the agentic
   meta-skill exercised against this repo).
-- **`external/`**: vendored third-party source material (see provenance below).
+- **`skills/sources/`**: vendored third-party source material (see provenance below).
 - **`research/`**: landscape and positioning research
   ([`POSITIONING-RESEARCH.md`](research/POSITIONING-RESEARCH.md)) and the failure-
   mode survey ([`RESEARCH.md`](research/RESEARCH.md)).
@@ -266,7 +303,7 @@ the experiments can be re-run and the claims checked or overturned.
 
 ## Provenance
 
-Content under `external/` is third-party material vendored **unmodified** for
+Content under `skills/sources/` is third-party material vendored **unmodified** for
 research and benchmarking, with original licenses and `PROVENANCE.md` retained.
 This includes the official Anthropic Agent Skills used in Experiment 6
 (`mcp-builder`, `internal-comms`) and Experiment 7 (`claude-api`, `pdf`, `pptx`),

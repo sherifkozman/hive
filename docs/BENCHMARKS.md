@@ -46,6 +46,31 @@ the conditions being contrasted.
   rankings within this band (Experiment 2), which is why score *gaps ≤ 3* are
   treated as ties throughout.
 
+### Token savings on narrow tasks, at a glance
+
+The six narrow-task cells referenced most often in this document (from
+Experiment 1's four authored domains, Experiment 3's financial-analyst
+conversion, and Experiment 7's pdf skill), skill tokens loaded, original
+packaging vs Hive selective loading:
+
+```mermaid
+xychart-beta
+    title "Skill tokens loaded per narrow task: original packaging vs Hive"
+    x-axis ["code-review", "tech-writing", "data-analysis", "python-api", "financial-analyst", "pdf"]
+    y-axis "Skill tokens" 0 --> 15000
+    bar [4197, 4298, 4176, 4702, 4833, 14309]
+    bar [1516, 2090, 2444, 2483, 2299, 3995]
+```
+
+Bars left to right in each pair: original/monolithic packaging, then Hive
+selective loading. Source rows: code-review, tech-writing, data-analysis, and
+python-api narrow are in the Experiment 1 table (section 2); financial-analyst
+narrow is in the Experiment 3 table (section 4); pdf narrow is in the
+Experiment 7 table (section 8). These are narrow-task cells only; the
+broad-task rows in those same tables show the advantage shrinking or
+inverting, for example Experiment 1's broad tasks run +2% to +27% over the
+monolith, and Experiment 7's pdf-broad runs +55%.
+
 ---
 
 ## 2. Experiment 1: Monolithic vs Composable vs Baseline
@@ -281,7 +306,7 @@ selector, flat indexes suffice well past single-domain scale.
 ## 7. Experiment 6: Supplemental validation on official Anthropic skills
 
 **Design.** Two skills published by Anthropic in `anthropics/skills` were
-vendored unmodified (`external/anthropic/`, provenance and license retained) and
+vendored unmodified (`skills/sources/anthropic/`, provenance and license retained) and
 converted to CCS by the §8 lossless discipline, parity-verified against source
 (the union of minis is content-equivalent; no compression). The two skills sit
 at opposite ends of the size axis this framework cares about:
@@ -537,7 +562,7 @@ packagings.
 
 **Experiment 3 (market-skill conversion).**
 - Provenance: `financial-analyst`, `alirezarezvani/claude-skills` (vendored under
-  `external/`); converted skill: `skills/authored/financial-analysis/`.
+  `skills/sources/`); converted skill: `skills/authored/financial-analysis/`.
 - Tasks/fixtures: `benchmarks/exp3-4/tasks/`, `benchmarks/exp3-4/fixtures/`
   (e.g. `meridian_financials.json`).
 - Scores: `benchmarks/exp3-4/judge/fn.json` (narrow),
@@ -558,7 +583,7 @@ packagings.
 
 **Experiment 6 (official-skill supplemental validation).**
 - Provenance: `mcp-builder`, `internal-comms` from `anthropics/skills` (vendored
-  unmodified under `external/anthropic/`, license + `PROVENANCE.md` retained);
+  unmodified under `skills/sources/anthropic/`, license + `PROVENANCE.md` retained);
   converted skills: `skills/converted/mcp-builder/`, `skills/converted/internal-comms/`.
 - Frozen tasks: `benchmarks/exp6/tasks/{mcp,comms}-{narrow,broad}.md`; worker
   outputs: `benchmarks/exp6/outputs/`; blind inputs: `benchmarks/exp6/blind/`.
@@ -570,7 +595,7 @@ packagings.
 
 **Experiment 7 (own-skill head-to-head vs original packaging).**
 - Provenance: `claude-api`, `pdf`, `pptx` from `anthropics/skills` (vendored
-  unmodified under `external/anthropic/`, license + `PROVENANCE.md` retained);
+  unmodified under `skills/sources/anthropic/`, license + `PROVENANCE.md` retained);
   CCS conversions: `skills/converted/{claude-api,pdf,pptx}/`.
 - Frozen tasks: `benchmarks/exp7/tasks/{capi,pdf,pptx}-{narrow,broad}.md`; worker
   outputs: `benchmarks/exp7/outputs/`; blind inputs: `benchmarks/exp7/blind/`.
