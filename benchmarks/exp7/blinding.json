@@ -1,0 +1,32 @@
+{
+ "capi-n": {
+  "output-1": "A",
+  "output-2": "C",
+  "output-3": "B"
+ },
+ "capi-b": {
+  "output-1": "C",
+  "output-2": "A",
+  "output-3": "B"
+ },
+ "pdf-n": {
+  "output-1": "B",
+  "output-2": "C",
+  "output-3": "A"
+ },
+ "pdf-b": {
+  "output-1": "B",
+  "output-2": "C",
+  "output-3": "A"
+ },
+ "pptx-n": {
+  "output-1": "A",
+  "output-2": "C",
+  "output-3": "B"
+ },
+ "pptx-b": {
+  "output-1": "A",
+  "output-2": "C",
+  "output-3": "B"
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "capi-b-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "capi-b-B": {
+  "loaded_line": "SKILL.md, typescript/claude-api/README.md, typescript/claude-api/streaming.md, typescript/claude-api/tool-use.md, shared/tool-use-concepts.md, shared/error-codes.md, shared/token-counting.md",
+  "skill_tokens": 37291,
+  "n_files": 7
+ },
+ "capi-b-C": {
+  "loaded_line": "skills/converted/claude-api/composable/INDEX.md, skills/converted/claude-api/composable/presets/typescript.md, skills/converted/claude-api/composable/mini/14-error-codes.md",
+  "skill_tokens": 35848,
+  "n_files": 3
+ },
+ "capi-n-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "capi-n-B": {
+  "loaded_line": "SKILL.md, python/claude-api/README.md, shared/prompt-caching.md, shared/token-counting.md, shared/error-codes.md",
+  "skill_tokens": 30189,
+  "n_files": 5
+ },
+ "capi-n-C": {
+  "loaded_line": "/home/user/hive/skills/converted/claude-api/composable/INDEX.md, /home/user/hive/skills/converted/claude-api/composable/mini/00-core.md, /home/user/hive/skills/converted/claude-api/composable/mini/01-model-api-quick-reference.md, /home/user/hive/skills/converted/claude-api/composable/mini/02-common-pitfalls.md, /home/user/hive/skills/converted/claude-api/composable/mini/14-error-codes.md, /home/us",
+  "skill_tokens": 31655,
+  "n_files": 8
+ },
+ "pdf-b-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "pdf-b-B": {
+  "loaded_line": "SKILL.md, reference.md, LICENSE.txt",
+  "skill_tokens": 6558,
+  "n_files": 3
+ },
+ "pdf-b-C": {
+  "loaded_line": "/home/user/hive/skills/converted/pdf/composable/INDEX.md, /home/user/hive/skills/converted/pdf/composable/BUNDLE.md",
+  "skill_tokens": 10149,
+  "n_files": 2
+ },
+ "pdf-n-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "pdf-n-B": {
+  "loaded_line": "SKILL.md, forms.md, reference.md, scripts/check_fillable_fields.py, scripts/fill_pdf_form_with_annotations.py, scripts/extract_form_structure.py, scripts/check_bounding_boxes.py, scripts/fill_fillable_fields.py, scripts/extract_form_field_info.py, scripts/convert_pdf_to_images.py, scripts/create_validation_image.py",
+  "skill_tokens": 14309,
+  "n_files": 11
+ },
+ "pdf-n-C": {
+  "loaded_line": "/home/user/hive/skills/converted/pdf/composable/INDEX.md, /home/user/hive/skills/converted/pdf/composable/mini/00-core.md, /home/user/hive/skills/converted/pdf/composable/mini/06-forms.md",
+  "skill_tokens": 3995,
+  "n_files": 3
+ },
+ "pptx-b-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "pptx-b-B": {
+  "loaded_line": "SKILL.md, pptxgenjs.md",
+  "skill_tokens": 5501,
+  "n_files": 2
+ },
+ "pptx-b-C": {
+  "loaded_line": "/home/user/hive/skills/converted/pptx/composable/INDEX.md, /home/user/hive/skills/converted/pptx/composable/presets/creating.md",
+  "skill_tokens": 6270,
+  "n_files": 2
+ },
+ "pptx-n-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "pptx-n-B": {
+  "loaded_line": "SKILL.md, editing.md",
+  "skill_tokens": 4018,
+  "n_files": 2
+ },
+ "pptx-n-C": {
+  "loaded_line": "skills/converted/pptx/composable/INDEX.md, skills/converted/pptx/composable/presets/editing.md",
+  "skill_tokens": 5177,
+  "n_files": 2
+ }
+}
