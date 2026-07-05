@@ -1,0 +1,25 @@
+{
+  "task": "pptx-b",
+  "scores": {
+    "output-1": {
+      "correctness": 5,
+      "completeness": 9,
+      "expertise": 7,
+      "communication": 9
+    },
+    "output-2": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 9
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9
+    }
+  },
+  "ranking": ["output-3", "output-2", "output-1"],
+  "observations": "The reference SKILL.md's from-scratch decision rule points squarely at PptxGenJS (pptxgenjs.md), so approach fidelity is the main separator. Output-3 picks PptxGenJS, uses a native addChart, and correctly handles the documented pitfalls: fresh shadow object per call (mutation pitfall), no '#'/8-char hex, bullet:true/breakLine:true, paraSpaceAfter instead of lineSpacing, and proper for...of await discipline for async icon rasterization; its QA is the highest fidelity to the reference (verbatim subagent inspect prompt, exact placeholder grep, vendored soffice.py, the 'zero issues means you weren't looking hard enough' loop) and it even reuses the reference's Midnight Executive palette plus a slide-by-slide rationale. Small unflagged risk: slide-6 connector lines can compute negative w/h. Output-2 is also solidly correct PptxGenJS with a nice per-bar highlight (amber current quarter), fresh cardShadow(), RECTANGLE accent bar (avoiding the ROUNDED_RECTANGLE+accent pitfall), and a strong QA section; it loses a hair for the forEach(async) smell (acknowledged and safe here because addIconBadge takes pre-rendered icons) and slightly less methodology fidelity than output-3. Output-1 is the outlier: it deliberately chose python-pptx against the reference's from-scratch path, so it never demonstrates PptxGenJS or its pitfalls, ships a deliberate debug-cruft line ('if False else') and an admittedly incomplete combo-chart XML hack, and its otherwise-excellent QA omits the reference's central subagent fresh-eyes requirement and specific commands (markitdown, vendored soffice.py). Its native CategoryChartData chart is genuinely real/editable and its writeup and design discipline are excellent, keeping completeness and communication high, but approach deviation caps correctness."
+}

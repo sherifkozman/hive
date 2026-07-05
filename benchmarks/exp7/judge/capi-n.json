@@ -1,0 +1,28 @@
+{
+  "task": "capi-n",
+  "scores": {
+    "output-1": {
+      "correctness": 6,
+      "completeness": 9,
+      "expertise": 6,
+      "communication": 8,
+      "notes": "Correct breakpoint placement, first-file priming, and count_tokens usage, but states factually wrong cache minimums (claims 1024 for Opus and 2048 for Haiku; doc says 4096 for Opus 4.8 and Haiku 4.5). Critically, it never disables the SDK's built-in max_retries, so its custom loop stacks on top of the SDK's own 429/5xx retries — a real double-retry/compounding-backoff bug both other outputs avoid. Sonnet 4.5 is a valid (legacy-active) pick whose 1024 minimum it gets right, and hardcoding the context window is acceptable if less robust."
+    },
+    "output-2": {
+      "correctness": 7,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 9,
+      "notes": "Correct retry architecture (per-call max_retries=0, honors retry-after, most-specific-first taxonomy), live context lookup via models.retrieve.max_input_tokens, and correct first-request cache warming. Its one real hole is the heavily-weighted caching mechanic: it never mentions the model-dependent minimum, so on its chosen Opus 4.8 the small system+few-shot prefix silently won't cache (<4096 tokens) and it shows no awareness of this. TTL 1h reasoning and break-even math are sound."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Most accurate against the docs: correctly states the 4096-token Opus 4.8 minimum (and 1024 for Sonnet 4.5) and designs the prefix toward it, disables SDK retry, handles retry-after as both seconds and HTTP-date, live context lookup with fallback, full error table matching the code (413/other-4xx non-retryable), and a doc-exact max_tokens:0 pre-warm for the concurrency/cache-ordering race. Minor: three short examples likely still fall short of 4096 in practice, but it flags 'always verify with cache_read_input_tokens.'"
+    }
+  },
+  "ranking": ["output-3", "output-2", "output-1"],
+  "observations": "All three nail the five requirements structurally (async client, semaphore=4, count_tokens pre-flight, breakpoint after the shared prefix, retry-after). The discriminators are the two doc facts this task stresses: the model-dependent cacheable minimum and correct retry architecture. Output-3 gets both exactly right (4096 for Opus, no stacked SDK retry) and matches the pre-warm guidance verbatim. Output-2 gets retry right and looks context up live but silently ignores the Opus 4096 minimum so its caching wouldn't actually fire. Output-1 both prints wrong minimums (Opus 1024, Haiku 2048) and fails to disable the SDK's own retry, producing a genuine double-retry defect, placing it last despite otherwise clean structure."
+}

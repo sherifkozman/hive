@@ -1,0 +1,92 @@
+{
+ "capi-n-A": {
+  "total": 29,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "capi-n-C": {
+  "total": 33,
+  "rank": 2,
+  "skill_tokens": 31655
+ },
+ "capi-n-B": {
+  "total": 37,
+  "rank": 1,
+  "skill_tokens": 30189
+ },
+ "capi-b-C": {
+  "total": 38,
+  "rank": 1,
+  "skill_tokens": 35848
+ },
+ "capi-b-A": {
+  "total": 29,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "capi-b-B": {
+  "total": 34,
+  "rank": 2,
+  "skill_tokens": 37291
+ },
+ "pdf-n-B": {
+  "total": 39,
+  "rank": 1,
+  "skill_tokens": 14309
+ },
+ "pdf-n-C": {
+  "total": 34,
+  "rank": 2,
+  "skill_tokens": 3995
+ },
+ "pdf-n-A": {
+  "total": 29,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "pdf-b-B": {
+  "total": 34,
+  "rank": 2,
+  "skill_tokens": 6558
+ },
+ "pdf-b-C": {
+  "total": 32,
+  "rank": 3,
+  "skill_tokens": 10149
+ },
+ "pdf-b-A": {
+  "total": 35,
+  "rank": 1,
+  "skill_tokens": 0
+ },
+ "pptx-n-A": {
+  "total": 26,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "pptx-n-C": {
+  "total": 36,
+  "rank": 2,
+  "skill_tokens": 5177
+ },
+ "pptx-n-B": {
+  "total": 37,
+  "rank": 1,
+  "skill_tokens": 4018
+ },
+ "pptx-b-A": {
+  "total": 30,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "pptx-b-C": {
+  "total": 34,
+  "rank": 2,
+  "skill_tokens": 6270
+ },
+ "pptx-b-B": {
+  "total": 36,
+  "rank": 1,
+  "skill_tokens": 5501
+ }
+}
