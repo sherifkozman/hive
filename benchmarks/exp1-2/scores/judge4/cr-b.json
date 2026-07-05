@@ -1,0 +1,39 @@
+{
+  "task": "cr-b",
+  "scores": {
+    "output-1": {
+      "correctness": 10,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 10,
+      "overall": 9.2,
+      "note": "Impeccably accurate line numbers and 20 real findings; catches coupon-discount bounds and N+1 hidden network in total(). Misses the refund-recompute-vs-charged divergence, items-stored-by-reference-in-init, IDOR, and naive datetime; polished, correct fixes, encapsulated-store/gateway/state-machine refactors."
+    },
+    "output-2": {
+      "correctness": 8,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 8,
+      "overall": 8.0,
+      "note": "Broad security coverage (coupon bounds->negative total, injection+cleartext, audit-trail deletion, naive datetime, empty-items) but elevates IDOR to Critical (module has no auth context, arguably overstated) and misses double-charge idempotency and items-by-reference. Solid scenarios and fixes."
+    },
+    "output-3": {
+      "correctness": 8,
+      "completeness": 7,
+      "expertise": 8,
+      "communication": 8,
+      "overall": 7.7,
+      "note": "Strong on the subtle refund-recompute divergence and pinning discount, plus strptime and live-reference return; but narrowest of the four - misses coupon-discount bounds check, idempotency, naive datetime, and items-by-ref-in-init. Accurate and well-written."
+    },
+    "output-4": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 9,
+      "overall": 9.5,
+      "note": "Widest true coverage (20 findings): uniquely nails items-stored-by-reference, refund-recompute divergence, idempotency, N+1, IDOR, and persistence/audit, on top of every core critical. Excellent failure scenarios, idempotency-key/reconciliation-state fixes, and structural refactors; only real gap is coupon-discount bounds and naive datetime."
+    }
+  },
+  "ranking": ["output-4", "output-1", "output-2", "output-3"],
+  "observations": "All four correctly found the headline criticals: _charge_card returning True on exception, plaintext card logging, the declared-but-unused lock / unsynchronized counter race, apply_payment None-deref vs cancel_order KeyError inconsistency, coupon URL concatenation (injection/SSRF), float money math, missing timeouts, unvalidated negative price, and the daily_report ZeroDivisionError. Differentiation is in the subtler correctness bugs and breadth. output-4 leads: it is the only one to catch items-stored-by-reference, the refund-recompute-vs-actually-charged divergence, payment idempotency, IDOR, and persistence/audit loss all together, with the strongest fixes (idempotency keys, 'unknown outcome -> reconciliation' state). output-1 is a near-tie second - the most polished and line-accurate, and the only one flagging the out-of-range coupon discount, but it misses the refund divergence, items-init aliasing, and IDOR. output-2 is broad on security (coupon bounds, audit deletion, naive datetime) but overstates IDOR as Critical and misses idempotency and items aliasing. output-3 is accurate and lands the refund-recompute insight but is the narrowest, missing coupon bounds, idempotency, and naive datetime. None caught everything; naive datetime was missed by both leaders."
+}

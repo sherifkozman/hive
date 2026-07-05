@@ -1,0 +1,35 @@
+{
+  "task": "pa-b",
+  "scores": {
+    "output-1": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 9,
+      "notes": "30/30 tests pass; broadest coverage (boundaries, deterministic ordering, case-insensitive q) and a proper APIKeyHeader security scheme. But whitespace-only titles are accepted (only min_length=1, no blank check) despite the explicit 'validate rigorously' requirement, and it uses a module-global store rather than DI."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 9,
+      "notes": "29/29 pass; field_validator rejects blank titles and it caught/fixed a genuine ctx JSON-serialization bug (shows rigor). Weaker senior judgment: auth dependency repeated on every route instead of a shared router, and no catch-all 500 handler."
+    },
+    "output-3": {
+      "correctness": 8,
+      "completeness": 7,
+      "expertise": 7,
+      "communication": 8,
+      "notes": "24/24 pass but thinnest coverage; PUT is a partial update (deviates from PUT-as-replace semantics) and it defines a get_store DI dependency yet tests clear the global instead of overriding it, so the DI seam is unused. No validation-error handler."
+    },
+    "output-4": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "25/25 pass; cleanest engineering: DI with dependency_overrides for true per-test isolation, blank-title validation, both a 422 and a 500 catch-all handler, and coverage of bad-id-type/boundaries. Full-replace PUT with correct timestamp handling."
+    }
+  },
+  "ranking": ["output-4", "output-1", "output-2", "output-3"],
+  "observations": "All four run and pass their own suites and meet the core spec (CRUD, X-API-Key auth/401, 404/422, pagination, q filter, detail error bodies). Differentiators: validation rigor (o1 alone accepts whitespace-only titles), test isolation approach (o4's dependency_overrides is the most senior; o3 defines DI but doesn't use it), and error-handler completeness. o4 is the strongest all-around; o1 has the broadest tests but a real validation gap; o2 is solid but more repetitive; o3 is the thinnest."
+}

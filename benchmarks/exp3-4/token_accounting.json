@@ -1,0 +1,54 @@
+{
+ "fb-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "fb-B": {
+  "loaded_line": "SKILL.md, references/financial-ratios-guide.md, references/valuation-methodology.md, references/forecasting-best-practices.md, references/industry-adaptations.md",
+  "skill_tokens": 9317,
+  "n_files": 5
+ },
+ "fb-D": {
+  "loaded_line": "composable/BUNDLE.md",
+  "skill_tokens": 7169,
+  "n_files": 1
+ },
+ "fn-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "fn-B": {
+  "loaded_line": "SKILL.md, references/financial-ratios-guide.md, references/industry-adaptations.md",
+  "skill_tokens": 4833,
+  "n_files": 3
+ },
+ "fn-C": {
+  "loaded_line": "INDEX.md, 00-core.md, 02-liquidity-leverage-ratios.md, 11-industry-adaptations.md",
+  "skill_tokens": 2299,
+  "n_files": 4
+ },
+ "fb-E": {
+  "loaded_line": "routed fan-out",
+  "skill_tokens": 9770,
+  "shards": {
+   "E1-ratios": {
+    "loaded": "/home/user/hive/eval2/tasks/fin-broad.md, /home/user/hive/eval2/fixtures/meridian_financials.json, /home/user/hive/skills/financial-analysis/composable/INDEX.md, /home/user/hive/skills/financial-analysis/composable/mini/00-core.md, /home/user/hive/skills/financial-analysis/composable/mini/01-profitability-efficiency-ratios.md, /home/user/hive/skills/financial-analysis/composable/mini/02-liquidity-leverage-ratios.md, /home/user/hive/skills/financial-analysis/composable/mini/11-industry-adaptations.md",
+    "tokens": 2892
+   },
+   "E2-dcf": {
+    "loaded": "/home/user/hive/eval2/tasks/fin-broad.md, /home/user/hive/eval2/fixtures/meridian_financials.json, /home/user/hive/skills/financial-analysis/composable/INDEX.md, /home/user/hive/skills/financial-analysis/composable/mini/00-core.md, /home/user/hive/skills/financial-analysis/composable/mini/04-dcf-projection-wacc.md, /home/user/hive/skills/financial-analysis/composable/mini/05-dcf-terminal-value-sensitivity.md, /home/user/hive/skills/financial-analysis/composable/mini/06-comparables-precedents.md",
+    "tokens": 2775
+   },
+   "E3-forecast": {
+    "loaded": "/home/user/hive/eval2/tasks/fin-broad.md, /home/user/hive/skills/financial-analysis/composable/INDEX.md, /home/user/hive/eval2/fixtures/meridian_financials.json, /home/user/hive/skills/financial-analysis/composable/mini/00-core.md, /home/user/hive/skills/financial-analysis/composable/mini/08-driver-based-forecasting-scenarios.md, /home/user/hive/skills/financial-analysis/composable/mini/11-industry-adaptations.md",
+    "tokens": 2456
+   },
+   "synthesis": {
+    "loaded": "INDEX, 00-core, 10-reporting",
+    "tokens": 1647
+   }
+  }
+ }
+}

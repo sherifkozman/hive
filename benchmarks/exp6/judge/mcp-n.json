@@ -1,0 +1,28 @@
+{
+  "task": "mcp-n",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 9,
+      "notes": "Clean flat schema, runs correctly, most token-lean responses (omits null fields), retryable flag, and the deepest rationale of the three. But it keeps assignee faithful to spec while leaving the filter permanently dead, and the tool description itself never warns the agent it will always match nothing (only the rationale does) - a real agent-first trap; no MCP annotations."
+    },
+    "output-2": {
+      "correctness": 8,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 8,
+      "notes": "Works, but wraps every tool in a nested params object, so the schema deviates from the requested flat create_task(title,priority,due_date?) shape and is the least agent-ergonomic; calendar-invalid dates raise a ToolError rather than returning structured data, inconsistent with its own return-as-data stance. Strong elsewhere: extra=forbid, annotations, thorough inline response docs, warns about the assignee filter."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Clean flat schema, runs correctly, and resolves the spec's own inconsistency by adding an assignee param so the list_tasks assignee filter actually works (well-justified, not an extra tool). Best agent-first package: MCP annotations, NL-to-call examples, regex plus semantic date validation, structured non-throwing errors with a suggestion field; responses slightly less token-lean (includes created_at and nulls)."
+    }
+  },
+  "ranking": ["output-3", "output-1", "output-2"],
+  "observations": "All three run under mcp 1.28.1 / pydantic 2.13.4 and behave as claimed. The discriminators: (1) call shape - outputs 1 and 3 expose clean flat args as requested; output-2 requires a nested params wrapper object, deviating from the signature and hurting agent ergonomics. (2) the spec's internal inconsistency (list_tasks has an assignee filter but nothing sets an assignee) - output-3 fixes it by adding an assignee param (functional filter), output-2 warns about it in the schema, output-1 documents it only in the rationale so its tool description would mislead an agent at runtime. Output-3 also uniquely combines MCP annotations plus concrete NL-to-call examples. All handle already-completed as idempotent success and use non-throwing structured errors for business-logic failures."
+}

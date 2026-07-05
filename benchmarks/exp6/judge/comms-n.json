@@ -1,0 +1,28 @@
+{
+  "task": "comms-n",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 7,
+      "communication": 8,
+      "notes": "All facts faithful (times, 18%/4%, 47 tickets, no-double-charge verification, 11:00 next update, Dana K., Friday postmortem). Clean bulleted Support/Sales block. Weakness: uses markdown **double asterisks** which render literally in Slack, so not Slack-native formatting."
+    },
+    "output-2": {
+      "correctness": 10,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Faithful on every fact, proper Slack single-asterisk bold, leads with a scannable one-line summary, and uniquely adds escalation guidance for checkouts that still haven't gone through. No blame, precise on impact without spin. Strongest overall."
+    },
+    "output-3": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 7,
+      "communication": 7,
+      "notes": "Facts present with good escalation and 'no action needed' framing, but 'Current status: Fixed' slightly overstates a system still at 4% errors with ~30 min recovery remaining, and uses markdown **double asterisks** that don't render in Slack."
+    }
+  },
+  "ranking": ["output-2", "output-1", "output-3"],
+  "observations": "All three are faithful to the raw facts with no invented details and no blame. The decisive axis is Slack-native craft: output-2 uses correct single-asterisk Slack bold, opens with a scannable summary, and is the only one giving reps a path for still-failed checkouts, making it clearly best. Output-1 and output-3 both use markdown double-asterisk bold that renders literally in Slack; output-1 edges out output-3 because output-3's 'Fixed' header reads as mild spin given the system is still recovering at 4% error rate."
+}

@@ -1,0 +1,26 @@
+{
+ "pa-b": {
+  "output-1": "D",
+  "output-2": "A",
+  "output-3": "C",
+  "output-4": "B"
+ },
+ "cr-b": {
+  "output-1": "B",
+  "output-2": "D",
+  "output-3": "C",
+  "output-4": "A"
+ },
+ "tw-b": {
+  "output-1": "D",
+  "output-2": "A",
+  "output-3": "B",
+  "output-4": "C"
+ },
+ "da-b": {
+  "output-1": "C",
+  "output-2": "B",
+  "output-3": "D",
+  "output-4": "A"
+ }
+}

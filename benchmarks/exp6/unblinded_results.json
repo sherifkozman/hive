@@ -1,0 +1,62 @@
+{
+ "mcp-n-A": {
+  "total": 34,
+  "rank": 2,
+  "skill_tokens": 0
+ },
+ "mcp-n-B": {
+  "total": 31,
+  "rank": 3,
+  "skill_tokens": 10381
+ },
+ "mcp-n-C": {
+  "total": 36,
+  "rank": 1,
+  "skill_tokens": 9200
+ },
+ "mcp-b-A": {
+  "total": 34.5,
+  "rank": 2,
+  "skill_tokens": 0
+ },
+ "mcp-b-C": {
+  "total": 32.5,
+  "rank": 3,
+  "skill_tokens": 24067
+ },
+ "mcp-b-B": {
+  "total": 36.0,
+  "rank": 1,
+  "skill_tokens": 15797
+ },
+ "comms-n-C": {
+  "total": 33,
+  "rank": 2,
+  "skill_tokens": 687
+ },
+ "comms-n-B": {
+  "total": 37,
+  "rank": 1,
+  "skill_tokens": 529
+ },
+ "comms-n-A": {
+  "total": 31,
+  "rank": 3,
+  "skill_tokens": 0
+ },
+ "comms-b-A": {
+  "total": 36,
+  "rank": 1,
+  "skill_tokens": 0
+ },
+ "comms-b-B": {
+  "total": 31,
+  "rank": 2,
+  "skill_tokens": 1121
+ },
+ "comms-b-C": {
+  "total": 29,
+  "rank": 3,
+  "skill_tokens": 1283
+ }
+}

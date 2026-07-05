@@ -1,0 +1,31 @@
+{
+  "task": "pa-b",
+  "scores": {
+    "output-1": {
+      "correctness": 10,
+      "completeness": 10,
+      "expertise": 8,
+      "communication": 10,
+      "total": 38,
+      "notes": "Verified: 29 tests pass; fully meets spec with the most thorough test suite (exact-max boundary tests for title 120 / body 10k, invalid-id-type 422). Slightly less clean architecture (auth repeated as route-level Depends rather than a router, no app factory, no catch-all 500 handler) and a self-inflicted ctx-serialization issue from writing a custom 422 handler, but the debugging narrative and verification write-up are excellent."
+    },
+    "output-2": {
+      "correctness": 10,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "total": 37,
+      "notes": "Verified: 25 tests pass; meets spec fully with the cleanest senior architecture (app factory, router-level auth so no route can skip it, get_store dependency override for true per-test isolation, catch-all 500 envelope). Coverage is solid but lacks the exact-max-length boundary tests output-1 includes."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 8,
+      "total": 33,
+      "notes": "Verified: 24 tests pass; runs and covers happy+error per endpoint, with app factory, router-level auth and a 500 handler. Deviates from typical PUT semantics by implementing partial update (optional fields, exclude_unset) which loosens validation, uses global-store clear() rather than dependency override for isolation, and has the lightest edge-case coverage (no boundary-at-max tests)."
+    }
+  },
+  "ranking": ["output-1", "output-2", "output-3"],
+  "observations": "All three run and pass their own suites with honest test counts (29/25/24). output-1 and output-2 are very close: output-1 leads on test rigor (boundary + invalid-type cases) and communication (documents a real bug found and fixed), while output-2 has the cleanest, most textbook architecture (app factory, router-level auth, dependency-override test isolation, catch-all 500). output-1 edges ahead on completeness/communication; output-2's expertise is marginally higher. output-3 is a competent solution but ranks last due to its non-standard partial-update PUT (spec implies full replace / rigorous validation), weaker test isolation, and thinner edge-case coverage."
+}

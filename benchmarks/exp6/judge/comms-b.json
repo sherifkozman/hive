@@ -1,0 +1,10 @@
+{
+  "task": "comms-b",
+  "scores": {
+    "output-1": {"correctness": 9, "completeness": 9, "expertise": 9, "communication": 9},
+    "output-2": {"correctness": 6, "completeness": 9, "expertise": 8, "communication": 8},
+    "output-3": {"correctness": 6, "completeness": 8, "expertise": 7, "communication": 8}
+  },
+  "ranking": ["output-1", "output-2", "output-3"],
+  "observations": "Output-1 is the clear winner: it is the only candidate that correctly flags the unused-per-diem/surplus question as an undecided policy-team call, and it uniquely refuses to attach the 40%/92% pilot data to the alcohol exclusion (explicitly stating the pilot didn't test it) — exactly the credible-not-spin discipline the task demands. Its gap-flagging is thorough and honest, FAQ (11 Qs) anticipates real friction, and all four artifacts hit appropriate lengths with a human tone. Output-2 is complete (13 FAQ, strong 'what to do' sections) and faithful to the 92% satisfaction figure, but it invents a fact — the email asserts 'you don't get to pocket the difference' while its own FAQ correctly says this isn't stated, an internal contradiction. Output-3 invents the opposite surplus rule ('if you spend less, you keep the difference') and asserts it confidently as fact throughout, and repeatedly softens '92% satisfaction' into '92% preferred it' — the subtle spin the task warns against — placing it third. All three otherwise get per-diem amounts, alcohol, mandatory booking + pre-approval exception, effective date, and pilot stats right."
+}

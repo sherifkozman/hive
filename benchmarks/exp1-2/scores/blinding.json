@@ -1,0 +1,42 @@
+{
+ "pa-n": {
+  "output-1": "A",
+  "output-2": "B",
+  "output-3": "C"
+ },
+ "pa-b": {
+  "output-1": "A",
+  "output-2": "B",
+  "output-3": "C"
+ },
+ "cr-n": {
+  "output-1": "C",
+  "output-2": "B",
+  "output-3": "A"
+ },
+ "cr-b": {
+  "output-1": "C",
+  "output-2": "A",
+  "output-3": "B"
+ },
+ "tw-n": {
+  "output-1": "B",
+  "output-2": "C",
+  "output-3": "A"
+ },
+ "tw-b": {
+  "output-1": "C",
+  "output-2": "B",
+  "output-3": "A"
+ },
+ "da-n": {
+  "output-1": "B",
+  "output-2": "A",
+  "output-3": "C"
+ },
+ "da-b": {
+  "output-1": "B",
+  "output-2": "A",
+  "output-3": "C"
+ }
+}

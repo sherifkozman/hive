@@ -1,0 +1,22 @@
+{
+ "mcp-n": {
+  "output-1": "A",
+  "output-2": "B",
+  "output-3": "C"
+ },
+ "mcp-b": {
+  "output-1": "A",
+  "output-2": "C",
+  "output-3": "B"
+ },
+ "comms-n": {
+  "output-1": "C",
+  "output-2": "B",
+  "output-3": "A"
+ },
+ "comms-b": {
+  "output-1": "A",
+  "output-2": "B",
+  "output-3": "C"
+ }
+}

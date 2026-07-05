@@ -1,0 +1,28 @@
+{
+  "task": "tw-n",
+  "scores": {
+    "output-1": {
+      "correctness": 8,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 10,
+      "notes": "Faithful to commits and grouped well, but invents a 'run dbsync sync --dry-run; it fails fast if destination is missing' verify behavior not in the commit list, and demotes the Python floor to Changed rather than flagging it as an upgrade risk (still present, so defensible)."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 8,
+      "notes": "Safest on facts and smartly elevates the Python 3.10 floor into the breaking/action-required block for the upgrade audience, but the migration is shown inline rather than as a code block/diff, making it the least visually prominent of the three."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Faithful, elevates Python floor to breaking, uses a clean ```diff migration block and a dedicated Performance section for the ~6x number; only mild inference ('fail to start') and no date."
+    }
+  },
+  "ranking": ["output-1", "output-3", "output-2"],
+  "observations": "All three correctly extract the same nine commits, omit the README typo as noise, keep the Python 3.10 bump (user-relevant), preserve the ~6x COPY perf number, and cite issue numbers. The differentiator is the breaking-change/migration treatment. Output-1 has the most expert, unmissable breaking block (Action required + Affected/Migrate/Verify + before/after YAML) and best scannability, at the cost of a slightly invented dry-run verify behavior and demoting Python to Changed. Output-3 is nearly as strong: it elevates the Python floor to breaking (better upgrade-audience judgment than 1), uses a diff block and a dedicated Performance section, with only a mild 'fail to start' inference and a missing date. Output-2 is the most conservative and factually safe and also elevates Python, but its inline (non-code-block) migration is the least prominent and its layout the plainest, which matters most against the 'impossible to miss migration steps' requirement."
+}

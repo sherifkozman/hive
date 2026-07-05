@@ -1,0 +1,10 @@
+{
+  "task": "fb",
+  "scores": {
+    "output-1": {"correctness": 7, "completeness": 9, "expertise": 7, "communication": 9},
+    "output-2": {"correctness": 9, "completeness": 8, "expertise": 8, "communication": 9},
+    "output-3": {"correctness": 9, "completeness": 10, "expertise": 9, "communication": 9}
+  },
+  "ranking": ["output-3", "output-2", "output-1"],
+  "observations": "All three reproduce the core DCF exactly (WACC 10.06%, EV ~$194,990, equity ~$205,490, $22.34/share, correct net-cash addition, correct ±1pt WACC / ±0.5pt g sensitivity grid). Output-3 is the strongest: error-free arithmetic across a fuller ratio set (cash ratio, receivables turnover, DuPont), both EV and per-share sensitivity tables, and a genuinely honest three-way sanity check where the EV/EBITDA cross-check (16.3x, in-band) resolves the EV/Revenue-vs-SaaS-ARR-multiple tension while the driver-based bear case (25.2%) lands almost exactly on the DCF's 25% top-down growth. Output-2 is nearly as strong and arithmetically clean (good DuPont, FCF-conversion, size-premium nuance) but slightly less complete (EV sensitivity only in text, no EV/EBITDA check) and leans on a loose/dated '8-15x EV/Revenue' band; its base forecast ($90.4M, +32.5%) is consistent within its stated NRR-compounding assumptions. Output-1 is polished, well-organized, and its one-quarter-lag driver forecast is arguably the most rigorous, but it carries a visible Rule-of-40 arithmetic slip (FY2024 shown as 25.9%, i.e. 30% growth + FY2023's -4.1% EBITDA margin, rather than 37.9%) and its sanity check under-engages the DCF-vs-comps tension the task rewards. Forecast interpretations differ defensibly (lag/no-lag, ~23% vs ~32% base growth); each is internally consistent within its stated assumptions, so scoring turns on the Rule-of-40 error and completeness/honesty of the sanity check."
+}

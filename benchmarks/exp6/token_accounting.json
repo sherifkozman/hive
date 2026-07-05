@@ -1,0 +1,62 @@
+{
+ "comms-b-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "comms-b-B": {
+  "loaded_line": "SKILL.md, examples/general-comms.md, examples/faq-answers.md",
+  "skill_tokens": 1121,
+  "n_files": 3
+ },
+ "comms-b-C": {
+  "loaded_line": "/home/user/hive/skills/internal-comms/composable/INDEX.md, /home/user/hive/skills/internal-comms/composable/mini/00-core.md, /home/user/hive/skills/internal-comms/composable/mini/03-faq-answers.md, /home/user/hive/skills/internal-comms/composable/mini/04-general-comms.md",
+  "skill_tokens": 1283,
+  "n_files": 4
+ },
+ "comms-n-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "comms-n-B": {
+  "loaded_line": "SKILL.md, examples/general-comms.md",
+  "skill_tokens": 529,
+  "n_files": 2
+ },
+ "comms-n-C": {
+  "loaded_line": "skills/internal-comms/composable/INDEX.md, skills/internal-comms/composable/mini/00-core.md, skills/internal-comms/composable/mini/04-general-comms.md",
+  "skill_tokens": 687,
+  "n_files": 3
+ },
+ "mcp-b-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "mcp-b-B": {
+  "loaded_line": "SKILL.md, mcp_best_practices.md, python_mcp_server.md, evaluation.md",
+  "skill_tokens": 15797,
+  "n_files": 4
+ },
+ "mcp-b-C": {
+  "loaded_line": "/home/user/hive/skills/mcp-builder/composable/INDEX.md, /home/user/hive/skills/mcp-builder/composable/BUNDLE.md",
+  "skill_tokens": 24067,
+  "n_files": 2
+ },
+ "mcp-n-A": {
+  "loaded_line": "none",
+  "skill_tokens": 0,
+  "n_files": 0
+ },
+ "mcp-n-B": {
+  "loaded_line": "SKILL.md, reference/mcp_best_practices.md, reference/python_mcp_server.md",
+  "skill_tokens": 10381,
+  "n_files": 3
+ },
+ "mcp-n-C": {
+  "loaded_line": "/home/user/hive/skills/mcp-builder/composable/INDEX.md, /home/user/hive/skills/mcp-builder/composable/mini/00-core.md, /home/user/hive/skills/mcp-builder/composable/mini/03-naming-conventions.md, /home/user/hive/skills/mcp-builder/composable/mini/04-response-formats.md, /home/user/hive/skills/mcp-bu",
+  "skill_tokens": 9200,
+  "n_files": 9
+ }
+}

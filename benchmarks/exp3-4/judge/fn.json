@@ -1,0 +1,28 @@
+{
+  "task": "fn",
+  "scores": {
+    "output-1": {
+      "correctness": 10,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 9,
+      "notes": "All arithmetic correct and traceable; cash-settled coverage given only approximately (~3.7-4.4x) rather than computed, no net-income tie-out, and no treatment of the total-liabilities/equity (2.33x) trap that the other two flag as the key SaaS misread."
+    },
+    "output-2": {
+      "correctness": 10,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 10,
+      "notes": "Cleanest presentation: defines quick directly as (cash+AR)/CL, adds EBIT-interest-tax=net income sanity check, and explicitly surfaces and debunks the total-liab/equity 4.44x->2.33x leverage trap; slightly weaker in that it asserts deferred-rev-adjusted liquidity is 'meaningfully better' without showing the cash-settled coverage number."
+    },
+    "output-3": {
+      "correctness": 10,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 9,
+      "notes": "Most rigorous: explicitly computes the cash-obligation-only current ratio (3.68x->4.37x), verifies balance-sheet tie-outs to total_assets/total_liabilities plus the net-income cross-check, cites complete benchmark bands, and gives the most nuanced verdict; verdict is slightly long but every claim is grounded."
+    }
+  },
+  "ranking": ["output-3", "output-2", "output-1"],
+  "observations": "All three are excellent, correct, and stay in scope (no DCF/profitability/recommendations). Differentiation is on rigor of the SaaS deferred-revenue adjustment: output-3 shows the cash-settled coverage computation explicitly and adds tie-out verification; output-2 is cleanest and best flags the total-liab/equity trap but leaves the adjusted coverage unquantified; output-1 is solid but omits the sanity check, the total-liab D/E discussion, and quantifies the adjusted coverage only approximately."
+}

@@ -1,0 +1,35 @@
+{
+  "task": "tw-b",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 9,
+      "notes": "Faithful to every stated fact (six commands, age/X25519, ~/.envlock/, .envlock.toml recipients, brew/curl, exit 3, run never writes disk) with sensible gap-fills; one garbled sentence in the delete-keys FAQ ('must run envlock init won't help recreate') is the sole blemish. The most substantive across all six sections, with unusually honest threat boundaries (process memory, ptrace, core dumps) and a vuln-reporting note."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Accurate and richly detailed with a files-touched table, no-recipients guard, multi-environment FAQ, and source-credential offboarding guidance; rotate described as 'fresh set of keys/values as needed' is slightly vague but not contradictory. Strong IA with a subsection-anchored TOC and clean newcomer framing."
+    },
+    "output-4": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 9,
+      "notes": "Cleanest handling of rotate ('re-encrypts... without changing anyone's keys') and error-free, with concrete threat detail (/proc/<pid>/environ) and per-project recipient scoping. Slightly thinner than 1 and 2 (shorter command reference, no reporting note) but all six sections are substantive and well navigated with an onboarding checklist."
+    },
+    "output-3": {
+      "correctness": 7,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 8,
+      "notes": "Faithful on the core facts but repeatedly frames rotate as 'generates a new keypair for you' (lines 130, 189), a weaker gap-fill that would in practice force re-sharing and is mildly self-inconsistent. Solid symptom/cause/fix/confirm troubleshooting and readable, but the least exhaustive security model and command reference of the four."
+    }
+  },
+  "ranking": ["output-1", "output-2", "output-4", "output-3"],
+  "observations": "All four cover the six commands, age/X25519, ~/.envlock/ keys, .envlock.toml recipients, brew/curl install, exit-3 guard, and run's no-disk guarantee, differing mainly in depth and in how they gap-fill rotate. Output-1 leads on completeness and expert threat honesty (docked only for one garbled FAQ sentence); Output-2 is a close, error-free second with the richest extras; Output-4 is the cleanest and handles rotate most consistently but is thinner; Output-3 trails because its 'rotate generates a new keypair' framing is a shakier invention and its coverage is the lightest."
+}

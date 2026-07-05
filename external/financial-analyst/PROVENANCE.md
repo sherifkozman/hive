@@ -1,0 +1,1 @@
+Source: https://github.com/alirezarezvani/claude-skills (finance/skills/financial-analyst), vendored unmodified for packaging research. Markdown knowledge files only; scripts/assets excluded from the experiment.

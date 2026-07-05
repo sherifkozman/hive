@@ -1,0 +1,11 @@
+{
+  "task": "fb4",
+  "scores": {
+    "output-1": {"correctness": 9, "completeness": 9, "expertise": 8, "communication": 7},
+    "output-2": {"correctness": 9, "completeness": 9, "expertise": 9, "communication": 9},
+    "output-3": {"correctness": 9, "completeness": 8, "expertise": 9, "communication": 9},
+    "output-4": {"correctness": 8, "completeness": 8, "expertise": 7, "communication": 8}
+  },
+  "ranking": ["output-2", "output-3", "output-1", "output-4"],
+  "observations": "All four reproduce the ground-truth DCF exactly (WACC 10.06%, EV 194,990, equity 205,490, $22.34/share, correct sensitivity grid $18.75-$27.70) and correctly ADD the $10.5M net cash rather than subtracting it; the ratio snapshots (margins 65/68/70% GM, EBIT 11%, coverage 15.0x, D/E 0.64x, DSO 60.8) are correct across the board. The real differentiators are (a) the comps sanity check and (b) whether the driver-based FY2026 forecast is coherent with the DCF's 25% top-down growth. output-2 is best: it is the most complete (DuPont, cash ratio, receivables turnover) and adds the standout EV/EBITDA cross-check (16.3x, lands in-band) alongside the ARR-multiple ceiling vs DCF-floor framing, and its bear case (25.2%) ties the DCF growth for a clean bracket. output-3 is a very close second: fully coherent (bottom-up 22.7% base brackets the DCF's $85.3M), uses a realistic 4-7x vertical-SaaS comps band (rather than an inflated 8-15x), meaningfully uses the 90-day sales-cycle input via a ramp-lag, and lands the sharpest single insight (NRR, not new bookings, is the dominant 2026 lever). output-1 is the deepest ratio work (best DuPont narrative, fullest assumption log) but its forecast has the weakest cross-section coherence: ALL its scenarios (bear 27.3% to bull 37.6%) exceed the DCF's 25%, and it leans on an overstated 8-15x comps band that manufactures more tension than warranted; it flags the disconnect well, which limits the penalty. output-4 is coherent and solid (income-statement build table, ARR/head) but the shallowest on comps (hand-waved 3-10x, internal-check only) and carries a minor error: Rule of 40 FY2024 stated as 25.9% when it should be ~37.9% (30% growth + 7.9% EBITDA margin). Ranking is tight between 2/3 and between 1/4; coherence and comps craft drive the order."
+}

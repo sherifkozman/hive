@@ -1,0 +1,66 @@
+{
+ "cr-b-B": {
+  "total": 38,
+  "rank": 2
+ },
+ "cr-b-D": {
+  "total": 32,
+  "rank": 3
+ },
+ "cr-b-C": {
+  "total": 31,
+  "rank": 4
+ },
+ "cr-b-A": {
+  "total": 38,
+  "rank": 1
+ },
+ "da-b-C": {
+  "total": 32,
+  "rank": 2
+ },
+ "da-b-B": {
+  "total": 28,
+  "rank": 3
+ },
+ "da-b-D": {
+  "total": 36,
+  "rank": 1
+ },
+ "da-b-A": {
+  "total": 26,
+  "rank": 4
+ },
+ "pa-b-D": {
+  "total": 34,
+  "rank": 2
+ },
+ "pa-b-A": {
+  "total": 33,
+  "rank": 3
+ },
+ "pa-b-C": {
+  "total": 30,
+  "rank": 4
+ },
+ "pa-b-B": {
+  "total": 35,
+  "rank": 1
+ },
+ "tw-b-D": {
+  "total": 38,
+  "rank": 1
+ },
+ "tw-b-A": {
+  "total": 36,
+  "rank": 2
+ },
+ "tw-b-B": {
+  "total": 30,
+  "rank": 4
+ },
+ "tw-b-C": {
+  "total": 34,
+  "rank": 3
+ }
+}

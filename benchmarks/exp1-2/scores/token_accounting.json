@@ -1,0 +1,246 @@
+{
+ "cr-b-A": {
+  "condition": "A",
+  "domain": "code-review",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "cr-b-B": {
+  "condition": "B",
+  "domain": "code-review",
+  "loaded_files": [
+   "skills/code-review/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4197,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "cr-b-C": {
+  "condition": "C",
+  "domain": "code-review",
+  "loaded_files": [
+   "skills/code-review/composable/INDEX.md",
+   "skills/code-review/composable/mini/01-review-method.md",
+   "skills/code-review/composable/mini/02-security-review.md",
+   "skills/code-review/composable/mini/03-correctness-bugs.md",
+   "skills/code-review/composable/mini/04-concurrency.md",
+   "skills/code-review/composable/mini/05-error-handling.md",
+   "skills/code-review/composable/mini/06-performance.md",
+   "skills/code-review/composable/mini/07-api-design.md",
+   "skills/code-review/composable/mini/08-missing-tests.md",
+   "skills/code-review/composable/mini/09-refactoring-and-communication.md"
+  ],
+  "skill_tokens": 4672,
+  "loaded_line": "INDEX.md, 01-review-method.md, 02-security-review.md, 03-correctness-bugs.md, 04-concurrency.md, 05-error-handling.md, 06-performance.md, 07-api-design.md, 08-missing-tests.md, 09-refactoring-and-communication.md"
+ },
+ "cr-n-A": {
+  "condition": "A",
+  "domain": "code-review",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "cr-n-B": {
+  "condition": "B",
+  "domain": "code-review",
+  "loaded_files": [
+   "skills/code-review/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4197,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "cr-n-C": {
+  "condition": "C",
+  "domain": "code-review",
+  "loaded_files": [
+   "skills/code-review/composable/INDEX.md",
+   "skills/code-review/composable/mini/01-review-method.md",
+   "skills/code-review/composable/mini/02-security-review.md"
+  ],
+  "skill_tokens": 1516,
+  "loaded_line": "INDEX.md, 01-review-method.md, 02-security-review.md"
+ },
+ "da-b-A": {
+  "condition": "A",
+  "domain": "data-analysis",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "da-b-B": {
+  "condition": "B",
+  "domain": "data-analysis",
+  "loaded_files": [
+   "skills/data-analysis/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4176,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "da-b-C": {
+  "condition": "C",
+  "domain": "data-analysis",
+  "loaded_files": [
+   "skills/data-analysis/composable/INDEX.md",
+   "skills/data-analysis/composable/mini/01-data-quality-profiling.md",
+   "skills/data-analysis/composable/mini/02-aggregation-pitfalls.md",
+   "skills/data-analysis/composable/mini/03-time-series.md",
+   "skills/data-analysis/composable/mini/04-segmentation.md",
+   "skills/data-analysis/composable/mini/05-discount-pricing.md",
+   "skills/data-analysis/composable/mini/06-insight-generation.md",
+   "skills/data-analysis/composable/mini/07-executive-writing.md",
+   "skills/data-analysis/composable/mini/08-recommendations.md",
+   "skills/data-analysis/composable/mini/09-reproducibility-assumptions.md"
+  ],
+  "skill_tokens": 5284,
+  "loaded_line": "INDEX.md, 01-data-quality-profiling.md, 02-aggregation-pitfalls.md, 03-time-series.md, 04-segmentation.md, 05-discount-pricing.md, 06-insight-generation.md, 07-executive-writing.md, 08-recommendations.md, 09-reproducibility-assumptions.md"
+ },
+ "da-n-A": {
+  "condition": "A",
+  "domain": "data-analysis",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "da-n-B": {
+  "condition": "B",
+  "domain": "data-analysis",
+  "loaded_files": [
+   "skills/data-analysis/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4176,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "da-n-C": {
+  "condition": "C",
+  "domain": "data-analysis",
+  "loaded_files": [
+   "skills/data-analysis/composable/INDEX.md",
+   "skills/data-analysis/composable/mini/02-aggregation-pitfalls.md",
+   "skills/data-analysis/composable/mini/03-time-series.md",
+   "skills/data-analysis/composable/mini/04-segmentation.md",
+   "skills/data-analysis/composable/mini/05-discount-pricing.md"
+  ],
+  "skill_tokens": 2444,
+  "loaded_line": "INDEX.md, 02-aggregation-pitfalls.md, 03-time-series.md, 04-segmentation.md, 05-discount-pricing.md"
+ },
+ "pa-b-A": {
+  "condition": "A",
+  "domain": "python-api",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "pa-b-B": {
+  "condition": "B",
+  "domain": "python-api",
+  "loaded_files": [
+   "skills/python-api/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4702,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "pa-b-C": {
+  "condition": "C",
+  "domain": "python-api",
+  "loaded_files": [
+   "skills/python-api/composable/INDEX.md",
+   "skills/python-api/composable/mini/02-routing-and-app.md",
+   "skills/python-api/composable/mini/03-pydantic-models.md",
+   "skills/python-api/composable/mini/04-validation-and-errors.md",
+   "skills/python-api/composable/mini/05-dependencies-and-auth.md",
+   "skills/python-api/composable/mini/06-pagination-filtering.md",
+   "skills/python-api/composable/mini/08-testing.md"
+  ],
+  "skill_tokens": 3702,
+  "loaded_line": "INDEX.md, 02-routing-and-app.md, 03-pydantic-models.md, 04-validation-and-errors.md, 05-dependencies-and-auth.md, 06-pagination-filtering.md, 08-testing.md"
+ },
+ "pa-n-A": {
+  "condition": "A",
+  "domain": "python-api",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "pa-n-B": {
+  "condition": "B",
+  "domain": "python-api",
+  "loaded_files": [
+   "skills/python-api/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4702,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "pa-n-C": {
+  "condition": "C",
+  "domain": "python-api",
+  "loaded_files": [
+   "skills/python-api/composable/INDEX.md",
+   "skills/python-api/composable/mini/02-routing-and-app.md",
+   "skills/python-api/composable/mini/03-pydantic-models.md",
+   "skills/python-api/composable/mini/04-validation-and-errors.md",
+   "skills/python-api/composable/mini/06-pagination-filtering.md"
+  ],
+  "skill_tokens": 2483,
+  "loaded_line": "INDEX.md, 02-routing-and-app.md, 03-pydantic-models.md, 04-validation-and-errors.md, 06-pagination-filtering.md"
+ },
+ "tw-b-A": {
+  "condition": "A",
+  "domain": "tech-writing",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "tw-b-B": {
+  "condition": "B",
+  "domain": "tech-writing",
+  "loaded_files": [
+   "skills/tech-writing/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4298,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "tw-b-C": {
+  "condition": "C",
+  "domain": "tech-writing",
+  "loaded_files": [
+   "skills/tech-writing/composable/INDEX.md",
+   "skills/tech-writing/composable/mini/01-audience-analysis.md",
+   "skills/tech-writing/composable/mini/02-document-types.md",
+   "skills/tech-writing/composable/mini/03-readme-quickstart-changelog.md",
+   "skills/tech-writing/composable/mini/04-information-architecture.md",
+   "skills/tech-writing/composable/mini/05-style-clarity.md",
+   "skills/tech-writing/composable/mini/07-troubleshooting-security.md",
+   "skills/tech-writing/composable/mini/08-faq-voice-tone.md"
+  ],
+  "skill_tokens": 4371,
+  "loaded_line": "INDEX.md, 01-audience-analysis.md, 02-document-types.md, 03-readme-quickstart-changelog.md, 04-information-architecture.md, 05-style-clarity.md, 07-troubleshooting-security.md, 08-faq-voice-tone.md"
+ },
+ "tw-n-A": {
+  "condition": "A",
+  "domain": "tech-writing",
+  "loaded_files": [],
+  "skill_tokens": 0,
+  "loaded_line": "none"
+ },
+ "tw-n-B": {
+  "condition": "B",
+  "domain": "tech-writing",
+  "loaded_files": [
+   "skills/tech-writing/monolithic/SKILL.md"
+  ],
+  "skill_tokens": 4298,
+  "loaded_line": "monolithic/SKILL.md"
+ },
+ "tw-n-C": {
+  "condition": "C",
+  "domain": "tech-writing",
+  "loaded_files": [
+   "skills/tech-writing/composable/INDEX.md",
+   "skills/tech-writing/composable/mini/03-readme-quickstart-changelog.md",
+   "skills/tech-writing/composable/mini/06-breaking-changes-migrations.md",
+   "skills/tech-writing/composable/mini/05-style-clarity.md"
+  ],
+  "skill_tokens": 2090,
+  "loaded_line": "INDEX.md, 03-readme-quickstart-changelog.md, 06-breaking-changes-migrations.md, 05-style-clarity.md"
+ }
+}

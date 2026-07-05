@@ -1,0 +1,28 @@
+{
+  "task": "tw-b",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "Every stated fact is honored: age/X25519, keys in ~/.envlock/, .envlock.toml recipients, both install methods, exit 3 'file is not encrypted', run never writes plaintext. Gap-fills (.env.enc output, rotate re-encrypts without changing keys) are coherent and non-contradicting."
+    },
+    "output-2": {
+      "correctness": 8,
+      "completeness": 8,
+      "expertise": 8,
+      "communication": 8,
+      "notes": "Faithful to all facts, but slightly looser: '.env.age (or similar)' hedging and rotate 'generates a new keypair for you' every run is a heavier, less-defended claim than peers. All six sections present and clear but the thinnest of the three; no TOC."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 10,
+      "communication": 10,
+      "notes": "Most thorough and precise: TOC with anchors, file-path table, exit-3 shown with echo $? and scripting guidance, edge cases (no recipients, multi-env). Rotate 'keys/values as needed' is slightly vague, but security model is the most honest about threat boundaries (git-history ciphertext, rotate-at-source, compromised host)."
+    }
+  },
+  "ranking": ["output-3", "output-1", "output-2"],
+  "observations": "All three are accurate to the mandated facts and cover all six required sections with no contradictions; they diverge mainly on craft depth. Output-3 leads on documentation craft: table of contents, anchor navigation, a file-path table, a runnable exit-code demonstration with scripting advice, edge-case coverage, and the most candid threat-boundary discussion (git history, rotating credentials at source). Output-1 is a very close second with the cleanest troubleshooting format (Symptom/Cause/Fix/Confirm) and a strong protected/not-protected security model including /proc/<pid>/environ and per-project scope. Output-2 is solid and correct but the least detailed, with minor hedging ('.env.age or similar') and no TOC, placing it third."
+}

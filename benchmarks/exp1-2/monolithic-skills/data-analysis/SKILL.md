@@ -1,0 +1,120 @@
+# Tabular Data Analysis & Reporting
+
+Expert guidance for analyzing tabular business data (sales, usage, transactions) and turning it into correct, decision-useful reporting. Covers data quality, aggregation pitfalls, time-series, segmentation, pricing/discount analysis, insight generation, executive writing, recommendations, and reproducibility.
+
+## 1. Before analyzing: profile and assess quality
+
+Never compute a headline number before profiling the data. Rushing to a total on dirty data produces confident, wrong answers.
+
+Profiling checklist for every dataset:
+- **Shape and grain.** How many rows, and what does one row represent? "One row = one order line" vs "one row = one order" changes every aggregation. State the grain explicitly.
+- **Row count vs. expected.** Does the count match what the business expects for the period? A month with 3x normal rows signals duplication or a double-loaded file.
+- **Nulls per column.** Count and locate missing values. A revenue column that is 8% null is not the same as one that is 0.1% null — the handling decision differs.
+- **Ranges and distributions.** Min/max/quartiles for numerics. Negative prices, quantities of zero, dates in the future, or a max 1000x the median all flag problems.
+- **Uniqueness.** Are IDs that should be unique actually unique? Duplicate order IDs are the classic silent inflator.
+- **Categoricals.** How many distinct values? Look for the same thing spelled differently ("US", "USA", "United States"), stray whitespace, and case differences.
+
+**Cleaning decisions must be explicit and defensible.** For each issue, decide and record: drop, impute, cap, or keep-and-flag — and why. Examples:
+- Missing revenue on 0.1% of rows: dropping is usually fine; note it.
+- Missing region on 15% of rows: dropping biases the geography analysis — keep as "Unknown" and report its size.
+- One transaction of $2,000,000 when the median is $200: investigate before deciding; it may be real (an enterprise deal) or a data error (cents entered as dollars). Never silently delete it.
+
+Rule: **every cleaning choice changes the answer, so every cleaning choice must be stated.** An analysis whose data decisions are hidden cannot be trusted or reproduced.
+
+Worked example: you receive 50,000 sales rows. Profiling shows 51,200 order IDs but only 50,000 distinct — 1,200 duplicates that would inflate any revenue sum. Region is null on 12% of rows. Two orders are dated in 2027. Actions: dedupe on order ID (document the key), keep null region as "Unknown (12%)", quarantine the future-dated rows pending a source check. Record all three decisions before computing a single total.
+
+## 2. Aggregation correctness pitfalls
+
+Most analytical errors are not math errors — they are aggregation errors on messy data.
+
+- **Duplicates inflate sums and counts.** Before `SUM(revenue)`, confirm the grain and deduplicate on the true key. A joined table that fans out (one order joined to many line items) will multiply the order's revenue by its line count. Check: does `SUM` at this grain match `SUM` at the source grain?
+- **Averages hide distributions and are wrecked by outliers.** The mean is the wrong summary for skewed data (revenue, session length, deal size are almost always right-skewed). Report the **median** alongside the mean; if mean ≫ median, say so and lead with median. "Average order value $850" can be one whale plus a hundred $40 orders.
+- **Beware averaging averages.** The average of per-customer average order values is *not* the overall average order value. Aggregate from the base rows, or use a properly weighted average.
+- **Missing values distort denominators.** `AVG` skips nulls; `COUNT(*)` includes them; `COUNT(col)` does not. Decide whether a null means zero (impute 0) or unknown (exclude) — these give different results. A conversion rate of "signups/visits" is wrong if some visits are null.
+- **Simpson's paradox.** A trend in the aggregate can reverse within every segment. If overall conversion rose but fell in each channel, a mix shift is responsible — always sanity-check aggregate movements against segment movements.
+- **Count distinct vs. count.** "1,000 orders" and "1,000 customers" differ when customers repeat. Use `COUNT(DISTINCT customer_id)` for customers.
+
+Worked example: A table joins `orders` to `payments`; some orders have 2 payment rows. `SUM(order_total)` now double-counts those orders. Fix: aggregate order_total at the order grain first, then join. Note that `SUM(DISTINCT order_total)` is *not* a fix — two genuinely equal order totals would be wrongly collapsed. Deduplicate rows on the real key, don't dedupe values. The habit that prevents most of these: before every aggregate, state the grain out loud, confirm the key is unique at that grain, and check whether the metric is skewed enough that the mean will mislead.
+
+## 3. Time-series analysis
+
+- **Growth rates.** Period-over-period growth = (current − prior) / prior. State the base. A "200% increase" from 1 to 3 is trivially small in absolute terms — always pair a percentage with the absolute numbers.
+- **Partial periods are the number-one time-series trap.** If the current month is only 40% elapsed, its total is not comparable to full prior months and will look like a crash. Either exclude the partial period, annualize/run-rate it with a clear caveat, or compare like-for-like (month-to-date vs. same-day-of-month prior). Always label partial periods.
+- **Seasonality.** Compare year-over-year, not just month-over-month, when the business is seasonal. December vs. November tells you little if December is always a spike; December vs. last December does.
+- **Choose the right growth summary.** For multi-period growth use CAGR (compound annual growth rate), not the average of per-period growth rates, which overstates. CAGR = (end/start)^(1/periods) − 1.
+- **Smoothing.** Use trailing moving averages (e.g., 7-day) to reveal trend through noise, but note that smoothing lags turning points.
+- **Watch the denominator over time.** A rising total can come from more customers, not more per customer — decompose growth into volume × rate whenever possible.
+
+Worked example: Revenue "dropped 60% this month." The month is 12 days in. Run-rate: $400k in 12 days → ~$1.0M projected vs. $950k last month — actually up. Report the run-rate with the caveat that it's a projection, never the raw partial total as if final; reporting the −60% would trigger a false alarm. A second trap: a dashboard shows revenue down every December-to-January. That is seasonality, not decline — the correct comparison is January vs. prior January. For any time comparison, verify the two periods are truly comparable (same length, same completeness, same season) before computing or reporting a change.
+
+## 4. Segmentation
+
+Segmentation turns a flat number into an insight by asking "for whom / where / which?"
+
+- Segment by the dimensions that drive decisions: customer type, region, product, channel, cohort, plan tier.
+- **Always show segment size alongside segment metric.** A segment with 300% growth on 4 customers is noise; the same growth on 4,000 customers is a strategy. Report both the rate and the base count/volume.
+- **Beware small segments.** Percentages on small n are volatile — set a minimum sample threshold and flag or suppress segments below it.
+- Look for **concentration**: often a small fraction of customers/products drives most revenue (Pareto). Compute the share of the top decile; concentration risk is itself a finding.
+- **Cohorts** (grouping by join/acquisition period) separate "are new users better?" from "is the whole base aging?" — critical for retention and LTV questions.
+- Contribution to change: when a total moves, decompose *which segments* caused it. "Revenue up $200k" is far more useful as "Enterprise +$260k, SMB −$60k."
+
+Worked example: overall revenue is flat month-over-month — seemingly a non-event. Segmenting reveals Enterprise +$260k and SMB −$260k. The flat aggregate hid a major mix shift and an SMB problem worth acting on; the segmentation *is* the insight. Conversely, a "region with 300% growth" that turns out to have 3 customers (up from 1) should be flagged as too small to act on, while a mature region growing 8% on 5,000 customers is the real story. Size context flips which finding matters. And if the top 10% of customers drive 70% of revenue, report that concentration ratio explicitly — it signals both an upsell base and churn risk.
+
+## 5. Discount, pricing, and margin analysis
+
+- **Discount depth vs. discount penetration** are different: average discount % (depth) vs. share of orders discounted (penetration). Report both; a low average discount can hide that 80% of orders get *some* discount.
+- **Discounts must be evaluated on margin, not revenue.** A 20% discount on a 30% margin product does not cut profit by 20% — it can erase most of the margin. Concretely: a $100 item at 30% margin earns $30; a 20% discount drops price to $80, and if cost stays $70, margin falls to $10 — a 67% margin cut from a 20% discount. Always tie discounting back to unit economics.
+- **Watch for discount stacking and effective price.** Compute realized/net price (after all discounts, credits, refunds), not list price, as the basis for any pricing conclusion.
+- **Confounding with volume.** "Discounted orders are bigger" may mean discounts drive volume — or that big orders negotiate discounts. Correlation is not causation; state which direction you can and cannot support.
+- **Price elasticity claims need controlled comparison**, not a raw before/after that ignores seasonality and mix. Be explicit about what a discount analysis can and cannot prove.
+
+Worked example: SMB orders show a 20% average discount and revenue looks healthy, so discounting seems fine. But margin analysis shows SMB products average 30% margin, so the 20% discount cuts unit profit roughly in half, and penetration is 80% — nearly every SMB order is discounted. The finding is not "discounts are moderate" but "discounting is quietly destroying SMB margin," which points to a specific action. Never conclude a discount is "small" or "fine" from the revenue view alone — always translate it to margin impact and check both depth and penetration first.
+
+## 6. Generating insight beyond aggregates
+
+A table of totals is not analysis. Insight answers "so what?" Push every number one level further:
+- **Compare** — vs. prior period, vs. target, vs. benchmark, vs. other segments. A number alone ("revenue was $2M") means nothing without a reference point.
+- **Decompose** — break a change into its drivers (price × volume, new × existing, which segments).
+- **Explain** — offer the most likely cause, and note what would confirm or refute it.
+- **Quantify impact** — translate to money/users and to the decision at stake.
+- **Surface the surprising** — the outlier, the reversal, the concentration, the thing that contradicts the assumption. That is where value lives.
+
+Test: for every finding, ask "so what should we do differently?" If a number implies no decision, it may be context, not a finding — demote it.
+
+Worked example: a draft says "Q3 revenue was $2.0M. North America was $1.2M. Enterprise was $1.4M" — three facts, no insight. Pushed further: "Q3 revenue grew 12% ($1.8M → $2.0M), but *all* net growth came from Enterprise (+$260k); SMB declined $60k for the second straight quarter — the first sign the SMB motion is stalling and worth investigating before Q4 planning." Same numbers, now with a comparison, a decomposition, a likely story, and a decision implication. Never ship a bare number; attach a comparison and a "so what" to every figure that reaches the reader.
+
+## 7. Writing for executives
+
+Executives read for decisions, not for your method.
+- **Lead with the answer** (BLUF — bottom line up front). The headline finding and its implication come first; supporting detail follows. Never make a reader wade through methodology to reach the conclusion.
+- **Quantify and contextualize.** "Revenue grew 12% ($1.8M → $2.0M), driven mostly by Enterprise," not "revenue grew."
+- **Three-to-five findings, ranked by impact.** A report with 20 equal bullets has no priorities. Cut or appendix the rest.
+- **Round appropriately.** Executives don't need $2,013,847.22 — say "$2.0M." Spurious precision signals poor judgment.
+- **Translate to the business.** Tie every metric to revenue, cost, risk, or growth. Jargon and raw metric names get replaced with plain business language.
+- **Visual discipline.** One chart, one message; label it with the takeaway ("Enterprise now 70% of revenue"), not just "Figure 3." If a chart needs a paragraph to interpret, it's the wrong chart.
+
+Before/after opening: *"We queried the transactions table for Q3, deduplicated on order ID, excluded refunds, and after grouping by segment we observed..."* → *"**Q3 revenue hit $2.0M (+12%), but growth is now entirely Enterprise — SMB shrank for the second quarter.** Details below."* The method belongs in an appendix, not the lead. Similarly, replace raw metric names with business language: "Net revenue retention was 1.1372" → "Enterprise customers grew ~14% in spend without any new logos — existing accounts are expanding, which de-risks the Q4 number."
+
+## 8. Recommendations and framing
+
+- **Recommendations must follow from the data shown**, not appear from nowhere. Each should trace to a specific finding.
+- **Be specific and actionable.** "Cap SMB discounts at 15%, projected to recover ~$120k margin," not "improve discounting."
+- **Acknowledge uncertainty and tradeoffs.** State confidence and what could change the conclusion. Overclaiming from correlation destroys credibility.
+- **Prioritize by impact and effort.** Rank recommendations; don't hand over a flat list.
+- **Separate what the data says from what you infer.** "Discounted orders are 2x larger (observed)" vs. "so discounts likely drive larger orders (hypothesis, needs a test)."
+
+Worked example: finding — SMB discount penetration is 80% at 20% average depth, and SMB margin is ~30%, so discounting roughly halves SMB unit profit. Recommendation — "Pilot a 15% discount cap on SMB for one quarter in two regions; projected to recover ~$120k annualized margin if volume holds. Risk: if SMB volume is discount-elastic, we may lose orders — the pilot's control regions will measure this. Confidence: medium; we have the margin math but not the elasticity." It traces to a finding, quantifies impact, names the risk, states confidence, and proposes a test rather than a blanket rollout. The counter-example to avoid: "Discounts are hurting us, so stop discounting" — no target, no quantified impact, ignores that discounts may drive volume, and overclaims causation.
+
+## 9. Reproducibility and stating assumptions
+
+An analysis nobody can reproduce or trust is worthless, however clever.
+- **State every assumption**: date range, filters applied, how nulls/outliers/duplicates were handled, currency and timezone, definition of each metric ("active" = ?).
+- **Define metrics precisely.** "Revenue" — gross or net of refunds? Booked or recognized? Ambiguity here silently makes numbers non-comparable across reports.
+- **Make it re-runnable.** Deterministic steps, seeds for any sampling, source and snapshot date recorded. Someone else running your steps on the same data must get the same numbers.
+- **Show your denominators and sample sizes** so a reader can judge reliability.
+- **Sanity-check before publishing**: do totals reconcile to a known source? Do the parts sum to the whole? Does the number pass a smell test against prior periods? A reconciled, assumption-stated, reproducible analysis is what separates trustworthy reporting from a plausible-looking guess.
+
+Worked example: a report states "Q3 revenue: $2.0M." The reproducible version reads "Q3 revenue (net of refunds, recognized, USD): $2.03M. Source: `transactions` snapshot 2026-10-02, deduplicated on order_id (1,200 dupes removed), refunds excluded (−$140k), 12% of rows had null region and are grouped as 'Unknown'. Reconciles to finance's GL within 0.5%." A reader can now trust it, reproduce it, and compare it to next quarter on the same basis. When two reports disagree, the one that documented its basis wins the argument.
+
+## Pre-publish checklist
+Grain stated; duplicates checked; nulls and outliers handled and disclosed; mean vs. median chosen deliberately; partial periods labeled; segment sizes shown; discounts evaluated on margin; findings ranked and tied to recommendations; assumptions and metric definitions written down; totals reconciled.

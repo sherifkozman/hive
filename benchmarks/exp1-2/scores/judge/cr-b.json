@@ -1,0 +1,28 @@
+{
+  "task": "cr-b",
+  "scores": {
+    "output-1": {
+      "correctness": 9,
+      "completeness": 8,
+      "expertise": 9,
+      "communication": 9,
+      "justification": "17 accurate findings with correct line numbers and nine fully detailed critical/high sections (concrete failure scenarios + correct fixes); refund-drift F2 and race F4 are especially sharp. Slightly less complete than the field: no distinct idempotency/double-charge finding, no items-by-reference, authz(IDOR), discount_pct bounds, or dict-iteration race."
+    },
+    "output-2": {
+      "correctness": 9,
+      "completeness": 10,
+      "expertise": 9,
+      "communication": 9,
+      "justification": "20 well-grounded findings (adds idempotency F4, items-by-reference F11, IDOR F17, no-persistence F19 that others miss) with nine detailed critical/high write-ups including idempotency-key and reconciliation-state fixes. Line numbers accurate and refactorings are structural (OrderStore, state machine, uniform error/money type); the most complete of the three."
+    },
+    "output-3": {
+      "correctness": 8,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 7,
+      "justification": "20 findings with good coverage including the unique discount_pct bounds check (F7), but detail sections cover only the five Critical items, leaving High/'Major' findings (float, coupon injection, timeouts, N+1) without the required failure-scenario+snippet the task demanded. Also inflates severity (five Criticals, e.g. None-deref/idempotency), weakening the ranking."
+    }
+  },
+  "ranking": ["output-2", "output-1", "output-3"],
+  "observations": "All three nail the headline bugs (charge-True-on-exception, PAN logging, unused-lock race, None-deref, zero-division, coupon injection, float money, missing timeouts). Output-2 wins on completeness, uniquely and correctly surfacing idempotency, items-by-reference, IDOR, and persistence while matching the others on detail quality and structural refactors. Output-1 is nearly as strong and equally precise but has a narrower finding set. Output-3 has comparable table breadth (and the only discount_pct-bounds catch) but under-delivers on the task's explicit 'detail every critical/high' requirement by writing up only its five Criticals, and inflates severity."
+}

@@ -1,0 +1,29 @@
+{
+  "task": "da-b",
+  "scores": {
+    "output-1": {
+      "correctness": 7,
+      "completeness": 9,
+      "expertise": 8,
+      "communication": 7,
+      "notes": "All headline numbers verified exact ($938,258 / 834 rows; region, category, discount stats all correct) and segment tables reconcile to the grand total. Handled all five planted issues with the strongest rationale of the three. But it makes the revenue-formula gap its central thesis and explicitly states the Nov spike 'should not be assumed to be a holiday effect' and that the growth is 'unexplained... verify before presenting' — the ground truth is that the Nov-Dec bump and upward trend are GENUINE, so its lead insight and #1 recommendation over-index on a non-issue and mildly misdirect a VP, though the hedging ('directionally indicative, not confirmed') keeps it defensible."
+    },
+    "output-2": {
+      "correctness": 6,
+      "completeness": 8,
+      "expertise": 7,
+      "communication": 7,
+      "notes": "Numbers are correct and internally consistent given its choice to exclude the negative-revenue row (East 229 orders / $268,113 and $938,575 total both check out arithmetically; missing-qty imputation to 1 unit is defensible). But its headline insight flatly asserts 'November's reported revenue surge is very likely a data artifact, not real demand growth' and tells the VP not to use Nov-Dec as a baseline — this is the clearest factual error against ground truth (the bump is genuine seasonality) and it commits hardest to the wrong interpretation."
+    },
+    "output-3": {
+      "correctness": 9,
+      "completeness": 9,
+      "expertise": 9,
+      "communication": 9,
+      "notes": "All numbers verified correct; handles the reconciliation gap with the right restraint (notes it, keeps revenue as source of truth, treats the Nov spike as a plausible genuine holiday/seasonal pattern — matching ground truth). Strongest single insight of the set (Furniture = >half of the $107K discount giveaway despite ~37% of list value, penetration-vs-depth distinguished precisely), a methodologically expert controlled-pilot recommendation, and a VP-appropriate BLUF that leads with real findings rather than a false 'fake revenue' alarm. Minor: calling the non-spike base 'flat' slightly understates the genuine upward trend."
+    }
+  },
+  "ranking": ["output-3", "output-1", "output-2"],
+  "observations": "The decisive differentiator was interpretation of a revenue-formula reconciliation gap that all three independently detected (revenue does not equal qty*unit_price*(1-discount); the residual grows ~2% in Jul to ~56-60% in Nov-Dec then settles ~30%). That gap is exactly the genuine upward trend + Nov-Dec seasonal bump baked into the revenue column, not a defect. Output-3 handled it correctly (flag, keep revenue as truth, recognize seasonality). Output-1 did the most rigorous detective work but over-weighted the gap as its thesis and denied seasonality. Output-2 committed the clearest error, declaring genuine growth a 'data artifact' and advising the VP to discard it. All three found all five planted issues, avoided naive causal discount claims, and quantified recommendations; the ranking hinges on correctness-of-interpretation and audience fit, not arithmetic (which was near-uniformly accurate).",
+  "ground_truth_summary": "835 raw rows -> 834 after dropping one exact duplicate (order 1201, $4,450.78). Raw revenue $942,708.83; cleaned $938,258.05 (keeping the negative row) or $938,575.03 (excluding it). Planted issues all present and confirmed: exact dup (1201), missing quantity (1038), negative revenue (1082, -$316.98), unit_price outlier (1251, 99,999 with plausible $313.53 revenue), region casing ('north' x1 -> North gives North 262/261 depending on dedup). Region cleaned: North $310,682.55 > East $267,796.15 > South $187,989.82 > West $171,789.53. Category: Electronics $467,810.86 (49.9%) > Furniture $329,629.69 (35.1%) > Apparel $93,638.56 > Office Supplies $47,178.94; Elec+Furn = 85% of revenue from 49% of orders. Monthly peak Nov 2025 $124,319.88 (genuine seasonal bump); genuine upward trend Jul $46.6K -> May $100.8K (+116%). Discount vs revenue r=-0.034, vs quantity r=+0.068 (both ~zero); discount giveaway ~$106,623 (12.6% of ~$845K list value); Furniture penetration 81.6%, all-order depth 17.0%, discounted-only depth 20.9% vs Electronics 68.4%/9.5%/13.9%. No cost/margin column, so no margin conclusions possible."
+}

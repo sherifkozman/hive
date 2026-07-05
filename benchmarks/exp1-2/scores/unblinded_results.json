@@ -1,0 +1,218 @@
+{
+ "cr-b-C": {
+  "total": 35,
+  "rank": 2,
+  "c": 9,
+  "comp": 8,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 4672
+ },
+ "cr-b-A": {
+  "total": 37,
+  "rank": 1,
+  "c": 9,
+  "comp": 10,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 0
+ },
+ "cr-b-B": {
+  "total": 30,
+  "rank": 3,
+  "c": 8,
+  "comp": 8,
+  "exp": 7,
+  "comm": 7,
+  "skill_tokens": 4197
+ },
+ "cr-n-C": {
+  "total": 36,
+  "rank": 1,
+  "c": 9,
+  "comp": 9,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 1516
+ },
+ "cr-n-B": {
+  "total": 29,
+  "rank": 3,
+  "c": 7,
+  "comp": 7,
+  "exp": 8,
+  "comm": 7,
+  "skill_tokens": 4197
+ },
+ "cr-n-A": {
+  "total": 33,
+  "rank": 2,
+  "c": 8,
+  "comp": 8,
+  "exp": 9,
+  "comm": 8,
+  "skill_tokens": 0
+ },
+ "da-b-B": {
+  "total": 31,
+  "rank": 2,
+  "c": 7,
+  "comp": 9,
+  "exp": 8,
+  "comm": 7,
+  "skill_tokens": 4176
+ },
+ "da-b-A": {
+  "total": 28,
+  "rank": 3,
+  "c": 6,
+  "comp": 8,
+  "exp": 7,
+  "comm": 7,
+  "skill_tokens": 0
+ },
+ "da-b-C": {
+  "total": 36,
+  "rank": 1,
+  "c": 9,
+  "comp": 9,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 5284
+ },
+ "da-n-B": {
+  "total": 35,
+  "rank": 1,
+  "c": 9,
+  "comp": 9,
+  "exp": 9,
+  "comm": 8,
+  "skill_tokens": 4176
+ },
+ "da-n-A": {
+  "total": 30,
+  "rank": 3,
+  "c": 8,
+  "comp": 8,
+  "exp": 5,
+  "comm": 9,
+  "skill_tokens": 0
+ },
+ "da-n-C": {
+  "total": 31,
+  "rank": 2,
+  "c": 9,
+  "comp": 8,
+  "exp": 7,
+  "comm": 7,
+  "skill_tokens": 2444
+ },
+ "pa-b-A": {
+  "total": 38,
+  "rank": 1,
+  "c": 10,
+  "comp": 10,
+  "exp": 8,
+  "comm": 10,
+  "skill_tokens": 0
+ },
+ "pa-b-B": {
+  "total": 37,
+  "rank": 2,
+  "c": 10,
+  "comp": 9,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 4702
+ },
+ "pa-b-C": {
+  "total": 33,
+  "rank": 3,
+  "c": 9,
+  "comp": 8,
+  "exp": 8,
+  "comm": 8,
+  "skill_tokens": 3702
+ },
+ "pa-n-A": {
+  "total": 37,
+  "rank": 2,
+  "c": 10,
+  "comp": 9,
+  "exp": 8,
+  "comm": 10,
+  "skill_tokens": 0
+ },
+ "pa-n-B": {
+  "total": 35,
+  "rank": 3,
+  "c": 10,
+  "comp": 9,
+  "exp": 8,
+  "comm": 8,
+  "skill_tokens": 4702
+ },
+ "pa-n-C": {
+  "total": 38,
+  "rank": 1,
+  "c": 10,
+  "comp": 10,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 2483
+ },
+ "tw-b-C": {
+  "total": 36,
+  "rank": 2,
+  "c": 9,
+  "comp": 9,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 4371
+ },
+ "tw-b-B": {
+  "total": 32,
+  "rank": 3,
+  "c": 8,
+  "comp": 8,
+  "exp": 8,
+  "comm": 8,
+  "skill_tokens": 4298
+ },
+ "tw-b-A": {
+  "total": 39,
+  "rank": 1,
+  "c": 9,
+  "comp": 10,
+  "exp": 10,
+  "comm": 10,
+  "skill_tokens": 0
+ },
+ "tw-n-B": {
+  "total": 36,
+  "rank": 1,
+  "c": 8,
+  "comp": 9,
+  "exp": 9,
+  "comm": 10,
+  "skill_tokens": 4298
+ },
+ "tw-n-C": {
+  "total": 34,
+  "rank": 3,
+  "c": 9,
+  "comp": 9,
+  "exp": 8,
+  "comm": 8,
+  "skill_tokens": 2090
+ },
+ "tw-n-A": {
+  "total": 36,
+  "rank": 2,
+  "c": 9,
+  "comp": 9,
+  "exp": 9,
+  "comm": 9,
+  "skill_tokens": 0
+ }
+}
