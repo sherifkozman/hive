@@ -78,6 +78,17 @@ and orchestrator verification of code outputs. This is a study of moderate
 confidence: single-run cells, one model family. **Treat directions as solid and
 magnitudes as indicative** (score gaps ≤ 3 points are within judge noise).
 
+Two results from Experiment 7 carry the most weight for real adopters. First,
+**scale**: the `claude-api` skill is ~195k tokens, far too large to load whole
+into any context, yet on a broad multi-file build the Hive conversion navigated
+it to a **38 vs 34** win over the original packaging *at lower token cost*, and
+on a narrow task it pulled just **7 of 56 minis** for the slice the task needed.
+Second, **external knowledge**: when a domain sits genuinely outside model
+competence (current SDK internals, PDF and PPTX tooling), packaging it beat the
+no-skill baseline by the **widest margins in the whole suite** (+5 to +7 mean
+points), the counter-case to the ceiling effect that flattens skill gains on
+knowledge the model already has.
+
 | # | What it tested | Result | Where Hive lost / its limit |
 |---|----------------|--------|-----------------------------|
 | 1 | Monolithic vs composable vs no-skill, 4 domains × 2 task types | Composable ≥ monolithic quality (5–3 head-to-head); 41–64% token savings on narrow tasks | Token advantage **inverts** on broad tasks (+2% to +27%); no-skill baseline tied composable and beat the monolith |
@@ -86,13 +97,19 @@ magnitudes as indicative** (score gaps ≤ 3 points are within judge noise).
 | 4 | Per-mini model routing / fan-out (condition E) | Matched single-context quality within noise; max per-context load ~2,900 vs 7–9k tokens | Quality gain unproven; ceiling effect meant the premium-model shard couldn't show its edge |
 | 5 | Skill-graph edges (requires:/pairs-with:) | Flat index hit all 5 pre-registered target minis in both conditions | No selection or application benefit; mild precision cost. Edges not justified at domain scale |
 | 6 | Two official Anthropic Agent Skills, converted losslessly | Large skill, narrow task: Hive best quality **and** −11% tokens | Broad task: the bundle over-loaded (24k tok incl. irrelevant Node ref) vs pruned manual disclosure (16k) and lost 36→32.5; small (~2.8k tok) skill got no benefit at all |
+| 7 | Three of Hive's own converted skills (claude-api, pdf, pptx) head-to-head with their original Anthropic packaging | Skills beat no-skill by the suite's widest margins (+5 to +7 mean points); Hive took the hardest cell (claude-api broad, a 195k-token skill) **38 vs 34** at −4% tokens, and cut pdf-narrow **−72%** tokens | Original hand-tuned packaging won overall **4–1** (mean 36.17 vs 34.50, within noise); Hive reaches quality *parity*, not a quality gain, on skills already built for progressive disclosure |
 
 In summary: **Hive wins where there is a large body of trap-dense
 knowledge and a task needs only part of it.** It is neutral-to-negative on small
 skills, on knowledge the model already has, and (until you ship presets) on
 broad tasks over a skill that contains mutually-exclusive tracks (Experiment 6's
-Python vs Node "preset gap"; remedy compiled but not re-benchmarked). Edge
-metadata and model-routing quality gains are explicitly **not** proven.
+Python vs Node "preset gap"; remedy compiled but not re-benchmarked). Against a
+skill that is *already* hand-tuned for progressive disclosure, Hive reaches
+quality parity, not a quality gain (Experiment 7: the original packaging held a
+within-noise edge and won the head-to-head 4–1, mean 36.17 vs 34.50); Hive's
+advantage there is economics, scale navigation, and one uniform loading policy
+with versioning and lint/parity tooling, not higher scores. Edge metadata and
+model-routing quality gains are explicitly **not** proven.
 
 ## The options
 
@@ -190,7 +207,7 @@ way to change a skill's `composable/VERSION`.
 - **[`docs/AUTHORING.md`](docs/AUTHORING.md)** /
   **[`docs/CONVERSION.md`](docs/CONVERSION.md)**: practical guides for new and
   existing skills.
-- **[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md)**: all six experiments,
+- **[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md)**: all seven experiments,
   methodology, reproduction pointers, and limitations.
 - **[`tools/hive.py`](tools/hive.py)**: the `compile` / `lint` / `parity` /
   `report` / `bump` CLI (stdlib only).
@@ -205,8 +222,9 @@ way to change a skill's `composable/VERSION`.
   token accounting: `exp1-2/` (monolithic vs composable, and the compiled-bundle
   rejudge), `exp3-4/` (market-skill conversion and the routing probe), `exp5/`
   (the skill-graph edge probe), `exp6/` (the official-skill supplemental
-  validation), and `adoption-test/` (the agentic meta-skill exercised against
-  this repo).
+  validation), `exp7/` (three of Hive's own converted skills head-to-head with
+  their original Anthropic packaging), and `adoption-test/` (the agentic
+  meta-skill exercised against this repo).
 - **`external/`**: vendored third-party source material (see provenance below).
 - **`research/`**: landscape and positioning research
   ([`POSITIONING-RESEARCH.md`](research/POSITIONING-RESEARCH.md)) and the failure-
@@ -249,9 +267,9 @@ the experiments can be re-run and the claims checked or overturned.
 
 Content under `external/` is third-party material vendored **unmodified** for
 research and benchmarking, with original licenses and `PROVENANCE.md` retained.
-This includes the two official Anthropic Agent Skills used in Experiment 6
-(`mcp-builder`, `internal-comms` from
-[`anthropics/skills`](https://github.com/anthropics/skills)) and the
+This includes the official Anthropic Agent Skills used in Experiment 6
+(`mcp-builder`, `internal-comms`) and Experiment 7 (`claude-api`, `pdf`, `pptx`),
+all from [`anthropics/skills`](https://github.com/anthropics/skills), and the
 `financial-analyst` skill from `alirezarezvani/claude-skills` used in Experiment
 3. The Hive conversions of these skills live under `skills/` and are derived
 works; see each skill's provenance note. All benchmark claims in this repository

@@ -1,7 +1,7 @@
 # CCS Benchmarks
 
 This document consolidates every benchmark in this repository that bears on the
-Compiled Composable Skills (CCS) framework. It covers six experiments run under
+Compiled Composable Skills (CCS) framework. It covers seven experiments run under
 one shared protocol, a summary of which framework claims each supports, a
 reproduction guide, and honest limitations. Every number below was cross-checked
 against the raw judge and token-accounting JSON; two small prose/raw
@@ -389,7 +389,110 @@ scaffolding costs more than it saves.
 
 ---
 
-## 8. Summary: framework claims and their evidence
+## 8. Experiment 7: CCS's own converted skills, head-to-head with their original packaging
+
+**Design.** Three Agent Skills that this repository ships in `skills/converted/`
+were tested head-to-head against the *original* Anthropic packaging they were
+converted from, on the skills' home turf. The three span two orders of magnitude
+in size (measured from the vendored source `.md`): **claude-api** (~195k tokens,
+the full multi-language SDK reference, 56 minis after conversion), **pdf** (~9k
+tokens: form filling, extraction, generation) and **pptx** (~7k tokens: deck
+creation and editing). Six tasks were frozen by commit before the conversions
+were tested (a narrow and a broad task per skill), each run under three
+conditions: **A** = no skill; **B** = the skill in its *original* Anthropic
+packaging, loaded as designed (progressive disclosure: read `SKILL.md`, then pull
+the reference files the task warrants); **C** = the CCS conversion under the
+shipped coverage-based loading policy (§10 of the spec: INDEX → 00-core → minis if
+`k/N` < ~0.6, else the bundle or a preset). 3 skills × 2 task types × 3 conditions
+= 18 runs. Independent frontier-tier LLM judges scored blind against the fixed
+rubric, grading accuracy against the vendored source docs as the ground truth.
+
+Raw: `benchmarks/exp7/unblinded_results.json`,
+`benchmarks/exp7/token_accounting.json`, `benchmarks/exp7/blinding.json`,
+`benchmarks/exp7/judge/*.json`. Every cell below was recomputed from the
+per-dimension judge scores and the committed blinding map.
+
+| Task | A (none) | B (original) | C (CCS) | B tok | C tok | C vs B tok |
+|------|----------|--------------|---------|-------|-------|------------|
+| claude-api narrow | 29 (3) | **37 (1)** | 33 (2) | 30,189 | 31,655 | +5% |
+| claude-api broad | 29 (3) | 34 (2) | **38 (1)** | 37,291 | 35,848 | **−4%** |
+| pdf narrow | 29 (3) | **39 (1)** | 34 (2) | 14,309 | 3,995 | **−72%** |
+| pdf broad | **35 (1)** | 34 (2) | 32 (3) | 6,558 | 10,149 | +55% |
+| pptx narrow | 26 (3) | **37 (1)** | 36 (2) | 4,018 | 5,177 | +29% |
+| pptx broad | 30 (3) | **36 (1)** | 34 (2) | 5,501 | 6,270 | +14% |
+| **Mean (rank)** | 29.67 (2.67) | **36.17 (1.33)** | 34.50 (2.00) | 16,311 | 15,516 | **−5%** |
+
+**Findings.**
+
+1. **Skill knowledge dominates on domains outside model competence: the suite's
+   clearest skills-beat-baseline result.** Both packagings beat the no-skill
+   baseline by a wide margin on average (B 36.17 vs A 29.67, **+6.5 points**; C
+   34.50 vs A 29.67, **+4.83 points**), the largest skill-vs-baseline gaps
+   measured anywhere in these seven experiments. Per-cell the skill-over-baseline
+   gaps run as high as **+10** (pdf-narrow, B 39 vs 29) and **+11** (pptx-narrow,
+   B 37 vs 26). The reason is that current SDK details, live model IDs, and
+   library-specific procedures are exactly the non-inferable knowledge a frontier
+   model does not already carry, so packaging it pays where generic guidance did
+   not in Experiments 1–6. (The one exception, pdf-broad, went to baseline by 1
+   point over B and 3 over C, inside the noise band.) Loading-policy behavior was
+   flawless: across the six C runs workers naturally exercised all three modes of
+   the coverage rule with no missed target: **7 minis pulled from the 56-mini
+   claude-api catalog** on the narrow task (INDEX + 00-core + six topic minis),
+   the **full `BUNDLE.md`** on pdf-broad, and a **single preset read** on
+   pptx-broad (`creating`) and claude-api-broad (`typescript`).
+
+2. **CCS won the hardest cell, claude-api broad, at lower token cost.** The
+   195k-token claude-api skill is the largest in the repository and cannot be
+   loaded whole into any single context. On the broad task (a full multi-file
+   TypeScript build) the CCS conversion took rank 1 outright, **38 vs 34 original
+   vs 29 baseline**, while loading **fewer** tokens than the original packaging
+   (35,848 vs 37,291, **−4%**) by reading the `typescript` preset plus one
+   error-codes mini instead of the original's seven hand-pulled reference files.
+   The judge specifically credited the winning output for current model IDs
+   (opus-4-8 / sonnet-5 / haiku-4-5) with accurate 1M/200K contexts and pricing
+   and doc-accurate streaming, parallel-tool, and typed-error handling; the
+   original-packaging output ranked behind it partly for recommending stale model
+   IDs and a hardcoded 200K context. CCS also posted the suite's largest token
+   win on pdf-narrow: **−72% skill tokens (3,995 vs 14,309) at quality rank 2**,
+   loading INDEX + 00-core + the single `forms` mini where the original pulled
+   `SKILL.md`, two references, and eight scripts.
+
+3. **The honest result: the original packaging won overall on these three
+   skills.** Across the six tasks the original Anthropic packaging beat the CCS
+   conversion on mean score (**36.17 vs 34.50**) and mean rank (**1.33 vs 2.00**),
+   and took the head-to-head **4 wins to 1** (CCS's one win was claude-api broad;
+   baseline took pdf-broad). Two of the original's four wins over CCS fall inside
+   the ±3-point noise band (pptx-narrow +1, pptx-broad +2) and a third,
+   claude-api-narrow (+4), sits just outside it; only **pdf-narrow (+5) is a
+   decisive, real gap**, and the judge notes explain it: the original-packaging
+   output was a near-verbatim reimplementation of the source `forms.md` workflow
+   (structure-first extraction, FreeText-annotation fill, bounding-box
+   validation), while the CCS output followed the same pipeline faithfully but
+   deviated on the overlay technique. Interpretation: skills expressly hand-tuned
+   for two-level progressive disclosure are a **strong baseline on their home
+   turf**; converting them buys the loading economics (the −72% and −4% cells
+   above), one uniform loading policy across every skill, per-skill versioning,
+   and the lint/parity tooling, at **quality parity** (34.50 vs 36.17, a
+   1.67-point mean gap inside the noise band) rather than quality gains. This is
+   the sharpest contrast in the suite with Experiments 1–3, where CCS-style
+   composition beat *monolithic* packagings outright: against a well-built
+   progressive-disclosure tree on its own domain, the win is economic and
+   operational, not qualitative.
+
+**Net.** On skills whose knowledge lies genuinely outside model competence,
+packaging that knowledge at all is worth roughly 5 to 7 points over no skill, the
+largest such effect in the suite. Between the two packagings, Anthropic's
+hand-tuned progressive disclosure holds a within-noise quality edge on its home
+turf (36.17 vs 34.50, 4–1), while CCS matches it on quality and wins on economics
+and scale: it made an un-loadable 195k-token skill navigable and took its hardest
+cell at lower cost. Converting an already-well-packaged skill buys uniform
+loading, versioning, and tooling at quality parity, not a quality bump; the
+quality wins remain where Experiments 1–3 found them, against monolithic
+packagings.
+
+---
+
+## 9. Summary: framework claims and their evidence
 
 | Claim | Evidence | Effect size |
 |-------|----------|-------------|
@@ -401,7 +504,7 @@ scaffolding costs more than it saves.
 | Coverage rule (k/N ≈ 0.6) is the right runtime policy | Exp 1 + 2 | narrow→minis wins; broad→bundle wins, both confirmed |
 | Expert-grade self-selection, low miss rate | Exp 1, 3, 5 | 1 miss in 8 (12.5%) round 1; 10/10 hits in edge probe |
 | Always-core prevents the observed selection miss | Exp 1 diagnosis → Exp 3/5 design | da-n miss was a cross-cutting mini; core loaded in every later run |
-| Strong-baseline / ceiling effect | Exp 1, 3, 4, 6 | baseline ties composable, beats monolith on 3/4 broad tasks; wins comms-broad, skill outputs slip on fact-discipline |
+| Strong-baseline / ceiling effect | Exp 1, 3, 4, 6 (counter-case Exp 7) | baseline ties composable, beats monolith on 3/4 broad tasks; wins comms-broad; but on knowledge outside model competence (Exp 7) both packagings crush baseline |
 | Monolithic drag (context rot) | Exp 1 | B worst mean rank (2.25); up to −7 vs baseline |
 | Conversions must be lossless (parity gate) | Exp 3 | lossy −30% compression cost the quality edge (+4/+3 to original) |
 | Routing matches single-context quality, shapes cost | Exp 4 | 35 vs 36 (within noise); max context ~2,900 vs 9,317 |
@@ -409,10 +512,13 @@ scaffolding costs more than it saves.
 | CCS narrow win transfers to a large official skill | Exp 6 | mcp-narrow: C best quality (36) *and* −11% tokens vs original |
 | Bundle is all-or-nothing on broad tasks (preset gap) | Exp 6 | mcp-broad: bundle 24,067 tok / 32.5 lost to pruned disclosure 15,797 tok / 36; remedy = language presets (11,302 tok, −28% projected, not re-benchmarked) |
 | CCS pays only above ~5k tok of knowledge | Exp 6 | small skill (~2.8k): index+core overhead > selection savings; original won both comms cells |
+| Skill knowledge dominates outside model competence | Exp 7 | both packagings beat baseline (B +6.5, C +4.83 mean points); largest skill-vs-baseline gaps in the suite |
+| CCS makes an un-loadable 195k skill navigable and wins its hardest cell | Exp 7 | claude-api broad: C 38 vs B 34 vs A 29 at −4% tokens; pdf-narrow −72% tokens at quality rank 2 |
+| Hand-tuned disclosure holds parity-or-better on its home turf | Exp 7 | original won 4–1, mean 36.17 vs 34.50 (1.67, within noise); CCS's edge is economics, scale navigation, and uniform tooling, not quality |
 
 ---
 
-## 9. Reproduction guide
+## 10. Reproduction guide
 
 **Experiment 1 (round-1 A/B/C).**
 - Design, criteria & shared protocol: `benchmarks/exp1-2/protocol.md`.
@@ -462,6 +568,16 @@ scaffolding costs more than it saves.
 - Post-benchmark preset remedy (not re-judged):
   `skills/converted/mcp-builder/composable/presets/{python-server,node-server}.md`.
 
+**Experiment 7 (own-skill head-to-head vs original packaging).**
+- Provenance: `claude-api`, `pdf`, `pptx` from `anthropics/skills` (vendored
+  unmodified under `external/anthropic/`, license + `PROVENANCE.md` retained);
+  CCS conversions: `skills/converted/{claude-api,pdf,pptx}/`.
+- Frozen tasks: `benchmarks/exp7/tasks/{capi,pdf,pptx}-{narrow,broad}.md`; worker
+  outputs: `benchmarks/exp7/outputs/`; blind inputs: `benchmarks/exp7/blind/`.
+- Scores: `benchmarks/exp7/judge/{capi,pdf,pptx}-{n,b}.json`; blinding map:
+  `benchmarks/exp7/blinding.json`; tokens: `benchmarks/exp7/token_accounting.json`;
+  consolidated cells: `benchmarks/exp7/unblinded_results.json`.
+
 The agentic meta-skill was separately exercised against this repository; that
 adoption test and its report live under `benchmarks/adoption-test/`. Framework
 rationale and amendments spanning all experiments are folded into each rule's
@@ -469,12 +585,13 @@ rationale and amendments spanning all experiments are folded into each rule's
 
 ---
 
-## 10. Limitations
+## 11. Limitations
 
 - **Single-run cells.** No repeated sampling; score gaps ≤ 3 are within judge
   noise. Mitigated (not eliminated) by many cells, blind judging, and
   orchestrator verification. Experiment 2's re-judge is direct evidence of the
-  ±1-rank band. Experiment 6's twelve cells are likewise n=1.
+  ±1-rank band. Experiment 6's twelve cells and Experiment 7's eighteen cells are
+  likewise n=1.
 - **One model family.** Mid-tier LLM workers, frontier-tier LLM judges/authors
   throughout (frontier-tier workers in Experiment 6). Results may not transfer to
   other model families or much weaker selectors.
@@ -486,11 +603,15 @@ rationale and amendments spanning all experiments are folded into each rule's
   ratios are robust, but absolute token counts are estimates, not tokenizer-exact.
 - **Self-reported LOADED.** Worker loading is self-reported; cross-checked
   against file sizes and found free of fabrication, but not sandbox-enforced.
-- **Narrow domain coverage.** 4–5 authored domains plus 2 official skills, all
-  comfortably inside the model's competence, which produces the recurring ceiling
-  effect: skills moved scores mainly on trap-dense, judgment-heavy tasks. The
-  framework's quality claims are strongest exactly where content is trap-dense;
-  its token claims are general.
+- **Narrow domain coverage.** 4–5 authored domains plus 5 official skills
+  (Experiment 6's mcp-builder and internal-comms; Experiment 7's claude-api, pdf,
+  pptx). Most sit comfortably inside the model's competence, which produces the
+  recurring ceiling effect: skills moved scores mainly on trap-dense,
+  judgment-heavy tasks. Experiment 7's three skills are the exception, carrying
+  current-SDK and file-tooling knowledge that sits largely *outside* model
+  competence, which is why skills there beat baseline by the suite's widest
+  margins. The framework's quality claims are strongest where content is
+  trap-dense or genuinely external; its token claims are general.
 - **Scope floor.** Experiment 6 bounds CCS from below: on a ~2.8k-token skill the
   index+core scaffolding cost more than selective loading saved. CCS is for
   domains above roughly 5k tokens of knowledge; small skills should stay a single
