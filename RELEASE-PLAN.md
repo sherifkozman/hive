@@ -161,7 +161,7 @@ PyPI page.
 
 1. Shipping Hive: a spec + CLI for packaging AI-agent skills as composable
    modules instead of one big prompt file. The pitch: load only the slice of
-   domain knowledge a task needs, prove the packaging earns its cost with
+   a skill a task needs, prove the packaging earns its cost with
    actual benchmarks, not vibes. 🧵
 2. 6 blind-judged experiments, frozen tasks, independent judges, deterministic
    token accounting. Composable beat monolithic on quality, saved 41-64%

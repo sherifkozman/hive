@@ -10,7 +10,7 @@ stability promises on either.
 ## [0.1.0] (2026-07-05)
 
 Initial public release of Hive: the CCS (Compiled Composable Skills) framework
-for packaging AI-agent domain knowledge as small authored modules plus
+for packaging an agent skill as small authored modules plus
 deterministic compiled artifacts, with an explicit runtime rule for what to
 load.
 

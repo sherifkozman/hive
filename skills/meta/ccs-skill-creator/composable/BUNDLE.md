@@ -10,7 +10,7 @@ All composable mini-skills for `ccs-skill-creator` concatenated in index order, 
 
 ## What CCS is
 
-Compiled Composable Skills (CCS) packages agent domain knowledge as small
+Compiled Composable Skills (CCS) packages an agent skill as small
 authored markdown **minis** (one subtopic each), a knowledge-free **INDEX** that
 lists them with "load when" hints, an optional always-loaded **00-core** holding
 cross-cutting traps, and a tool-compiled **BUNDLE.md** (the deterministic
@@ -32,8 +32,8 @@ bundle for the same task.
 
 ## The two iron rules
 
-1. **The index is a menu, not a meal.** `INDEX.md` carries zero domain
-   knowledge, only mini filenames, terse descriptors, and "load when"
+1. **The index is a menu, not a meal.** `INDEX.md` carries none of the
+   skill's content, only mini filenames, terse descriptors, and "load when"
    conditions. Any knowledge a mini needs in order to be applied lives *in the
    mini*, never in the index.
 2. **Conversion is repackaging, never summarization.** Moving a skill into CCS
@@ -50,7 +50,7 @@ bundle for the same task.
 - **Knowledge a frontier model already applies well** → write no skill at all.
   Generic guidance adds tokens and steps without adding quality; a no-skill
   baseline repeatedly tied or beat skills on tasks inside model competence.
-- **Every task needs the entire domain** → it is one document; just ship the
+- **Every task needs the entire skill** → it is one document; just ship the
   bundle, no selective loading to do.
 
 ---
@@ -64,14 +64,14 @@ lists exact commands and an **Acceptance** bar you must clear before moving on.
 
 ## Step 0: Decide whether to write a skill at all
 
-Apply the "When NOT to use CCS" test from `00-core`: skip the skill if the domain
-is under ~5k tokens of knowledge (ship a single `SKILL.md` instead), or if a
+Apply the "When NOT to use CCS" test from `00-core`: skip the skill if it would
+carry under ~5k tokens of content (ship a single `SKILL.md` instead), or if a
 frontier model already handles it well (write nothing). For each candidate piece
 of guidance ask: *"would a strong model reliably do this unprompted?"* If yes,
 cut it. What remains (the traps and non-obvious calls) is your skill.
 
 **Acceptance:** you can name at least a few trap-dense, non-inferable pieces of
-knowledge, and tasks in the domain vary in which subtopics they need.
+knowledge, and tasks that use it vary in which subtopics they need.
 
 ## Step 1: Scope the domain
 
@@ -144,7 +144,7 @@ a task-scoped reader would guess (data-quality/input-validation discipline,
 "prove it before you claim it", "present ranges not points"). Keep it small. It
 is paid on every load, like the index. It states the cross-cutting rule and
 points to the focused mini for depth; it MUST NOT reproduce a subtopic's full
-treatment. If the domain has no genuinely cross-cutting traps, omit `00-core` and
+treatment. If the skill has no genuinely cross-cutting traps, omit `00-core` and
 instead mark the "start here" method mini always-load in the index.
 
 **Acceptance:** `00-core` (if present) is small and holds only cross-cutting
@@ -397,7 +397,7 @@ one mini file: `lint` fails on drift. So:
 
 Keep edits within the "index is a menu, not a meal" rule: never migrate
 knowledge into the index to "clarify" it. If a mini's trigger is unclear, sharpen
-the "load when" condition, not by adding domain content.
+the "load when" condition, not by adding skill content.
 
 **Acceptance:** one index line per mini and one mini per index line; index still
 under ~200 words (~300 for >12 minis); no line reads like knowledge.

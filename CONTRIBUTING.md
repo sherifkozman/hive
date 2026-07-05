@@ -57,16 +57,16 @@ is non-negotiable for conversions.
 
 ### Scope rule
 
-Hive is not the right packaging for every domain. Use it only when both hold:
-the domain carries more than roughly 5k tokens of non-inferable, trap-dense
-knowledge, and tasks vary in which subtopics they need (so selective loading
-has something to select). If a domain's knowledge fits comfortably under ~5k
+Hive is not the right packaging for every skill. Use it only when both hold:
+the skill carries more than roughly 5k tokens of non-inferable, trap-dense
+content, and tasks vary in which subtopics they need (so selective loading
+has something to select). If a skill's content fits comfortably under ~5k
 tokens, or every task needs all of it, it belongs upstream as a single
 `SKILL.md` or `AGENTS.md` file, not as a Hive skill. Bringing a small,
-non-trap-dense domain into `skills/` anyway adds INDEX + `00-core` scaffolding
+non-trap-dense skill into `skills/` anyway adds INDEX + `00-core` scaffolding
 that costs more than selective loading saves (see README, "When to use it,
 and when not," and `docs/SPEC.md` §12.1). A PR proposing a new skill must
-justify, in the PR description, why the domain clears this bar (see §2 and
+justify, in the PR description, why the skill clears this bar (see §2 and
 §6).
 
 ## 2. Contributing a new skill (`skills/authored/`)
@@ -89,14 +89,14 @@ explanation is not ready for review.
 - [ ] `INDEX.md` is under the ~200-word budget (`docs/SPEC.md` §3.2), carries
       exactly one line per mini, and each line has a "load when" hint phrased
       as an observable task condition (§3.3), not a vague topic label.
-- [ ] `INDEX.md` contains no domain knowledge: it is a knowledge-free menu.
+- [ ] `INDEX.md` contains none of the skill's content: it is a knowledge-free menu.
       If applying a mini requires reading something the index says instead of
       the mini, that content is in the wrong place (§3.1). This is checked in
       review by hand; `lint` does not fully automate it.
-- [ ] A `mini/00-core.md` exists if the domain has cross-cutting traps:
+- [ ] A `mini/00-core.md` exists if the skill has cross-cutting traps:
       guidance relevant more often than a task-scoped reader would guess
       (input validation, "prove it before claiming it," data-quality caveats,
-      and similar). If the domain has no such cross-cutting concern, omitting
+      and similar). If the skill has no such cross-cutting concern, omitting
       `00-core` is fine and should be noted as a deliberate choice in the PR.
 - [ ] `BUNDLE.md` (and any `presets/*.md`) were produced by `python3
       tools/hive.py compile skills/authored/<name>` and never hand-edited.
@@ -107,19 +107,19 @@ explanation is not ready for review.
 - [ ] Non-knowledge assets (scripts, templates, fixtures) are left as-is and
       referenced from minis by path, never compiled into prose (`docs/SPEC.md`
       §9).
-- [ ] The domain justifies CCS packaging per the scope rule in §1: more than
+- [ ] The skill justifies CCS packaging per the scope rule in §1: more than
       roughly 5k tokens of trap-dense knowledge, and tasks that vary in
       coverage. A skill that doesn't clear this bar should be a single
       upstream file, not a Hive skill.
 
 **The PR must include, in the description, not just in code:**
 
-1. **Rationale**: why this domain needs a skill at all, what traps or
-   procedures does a frontier model miss without it, and why is the domain
+1. **Rationale**: why this skill is needed at all, what traps or
+   procedures does a frontier model miss without it, and why is its content
    too large or too trap-dense for the model's default behavior to cover.
 2. **A self-assessment against the scope rule**: your own accounting of
-   the domain's token size (rough word/token count of the knowledge) and
-   whether tasks in this domain vary in what they need. If you can't clear
+   the skill's token size (rough word/token count of its content) and
+   whether tasks that use it vary in what they need. If you can't clear
    the ~5k-token bar or tasks don't vary, say so and explain why a Hive skill
    is still the right call (or, better, reconsider and ship a single file
    upstream instead).
@@ -211,7 +211,7 @@ the two).
    or the specific spec/doc/tooling files named in the PR)?
 2. For a new or changed skill: does `lint` pass, does the checklist in §2 (and
    §3, for conversions) appear filled out in the PR description, and is the
-   rationale/self-assessment actually specific to this domain (not
+   rationale/self-assessment actually specific to this skill (not
    boilerplate)?
 3. For a conversion: does `parity` meet the 85% floor, is the vendored source
    present with provenance and license notice, and does the upstream license
@@ -225,7 +225,7 @@ the two).
 
 - `lint` failures that aren't explained, or `lint` was never run.
 - `parity` below 85% on a conversion, or `parity` never run on a conversion.
-- Knowledge leaking into `INDEX.md` (index lines that carry domain content
+- Knowledge leaking into `INDEX.md` (index lines that carry skill content
   instead of a load-when hint).
 - A conversion that summarizes, trims, or paraphrases source content instead
   of repackaging it losslessly.

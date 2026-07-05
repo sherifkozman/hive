@@ -52,7 +52,7 @@ structural check; the warning flags the index length, not a defect.*
 Per `README.md`'s "When to use it, and when not" (and Experiment 6 in
 `docs/BENCHMARKS.md`, which found the ~2.8k-token official `internal-comms`
 skill got no benefit from CCS packaging), a skill under roughly 5k tokens of
-domain knowledge doesn't clear CCS's break-even point: the `INDEX.md` +
+content doesn't clear CCS's break-even point: the `INDEX.md` +
 `00-core` scaffolding costs more than selective loading saves. The following
 official Anthropic Agent Skills were evaluated and left **unconverted** for
 that reason. Use them upstream, as a single `SKILL.md` file, as-is:

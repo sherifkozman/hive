@@ -44,7 +44,7 @@ one mini file: `lint` fails on drift. So:
 
 Keep edits within the "index is a menu, not a meal" rule: never migrate
 knowledge into the index to "clarify" it. If a mini's trigger is unclear, sharpen
-the "load when" condition, not by adding domain content.
+the "load when" condition, not by adding skill content.
 
 **Acceptance:** one index line per mini and one mini per index line; index still
 under ~200 words (~300 for >12 minis); no line reads like knowledge.

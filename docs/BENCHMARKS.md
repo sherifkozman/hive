@@ -25,7 +25,7 @@ the conditions being contrasted.
   tailoring in either direction: tasks cannot be written to a skill's
   strengths, and skills cannot be written to a task's needs.
 - **Content-parity authoring.** In round 1, the monolithic and composable
-  packagings of a domain were authored to carry *identical knowledge*; packaging
+  packagings of a skill were authored to carry *identical knowledge*; packaging
   was the only variable. Where a conversion later compressed content, that became
   a finding, not a silent confound (see Experiment 3).
 - **Blind judging.** Worker outputs are stripped of condition labels, presented
@@ -81,7 +81,7 @@ Raw: `benchmarks/exp1-2/scores/unblinded_results.json`,
   **41–64% (mean ~51%)** with equal-or-better narrow quality (C 34.75 vs B 33.75).
   On broad tasks the advantage **inverts** (+2% to +27% in 3 of 4 domains):
   loading the index plus nearly every mini as separate files costs more than one
-  monolith when most of the domain is relevant.
+  monolith when most of the skill is relevant.
 - **Robustness: no broad-task collapse.** C beat B on broad quality (35.0 vs
   32.5) and won data-analysis broad outright. The predicted selection-error
   failure mode occurred exactly **once in 8 C-runs (12.5%)**: `da-n-C` skipped
@@ -320,7 +320,7 @@ per-dimension judge scores and the committed blinding map.
    mcp-narrow, C had the best quality of the three (**36 vs 34 baseline vs 31
    original**) *and* cost **−11%** tokens versus the original packaging. This is
    the coverage rule's narrow path doing precisely its job on a genuinely large
-   (~23k) knowledge domain: C read the INDEX, loaded `00-core` plus the handful
+   skill (~23k tokens of content): C read the INDEX, loaded `00-core` plus the handful
    of relevant minis (naming, response formats, error handling; 9 files,
    9,200 tok) and skipped the rest, while the original had to pull whole coarse
    reference files (`mcp_best_practices.md` + `python_mcp_server.md`, 10,381 tok)
@@ -355,9 +355,9 @@ per-dimension judge scores and the committed blinding map.
    exceeded any selection savings (comms-narrow C 687 tok / 3 files vs original
    529 / 2 files; comms-broad C 1,283 vs 1,121). The scaffolding CCS adds only
    earns back its cost when there is a large body of knowledge to load
-   *selectively* from. **New scope rule: CCS pays above roughly 5k tokens of
-   domain knowledge; below that, a single `SKILL.md` is the right packaging**.
-   Do not convert a small skill.
+   *selectively* from. **New scope rule: CCS pays for a skill carrying above
+   roughly 5k tokens of content; below that, a single `SKILL.md` is the right
+   packaging**. Do not convert a small skill.
 
 4. **Baseline won comms-broad: the ceiling effect again, with a fact-discipline
    twist.** The no-skill baseline took comms-broad outright (36, rank 1),
@@ -614,8 +614,8 @@ rationale and amendments spanning all experiments are folded into each rule's
   trap-dense or genuinely external; its token claims are general.
 - **Scope floor.** Experiment 6 bounds CCS from below: on a ~2.8k-token skill the
   index+core scaffolding cost more than selective loading saved. CCS is for
-  domains above roughly 5k tokens of knowledge; small skills should stay a single
-  file.
+  a skill carrying above roughly 5k tokens of content; small skills should stay
+  a single file.
 - **Edges and routing under-tested.** The edge probe (n=5, one worker model,
   traps partly discoverable from index lines) *bounds* rather than settles the
   library-scale edge question; routing's quality gains could not express

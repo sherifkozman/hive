@@ -38,7 +38,7 @@ the model already does well. Write a skill only when both hold:
   quality.
 
 If the domain is standard and the model handles it well, **do not write a
-skill.** If only part of the domain is trap-dense, write minis for that part and
+skill.** If only part of it is trap-dense, write minis for that part and
 skip the rest.
 
 **Litmus test:** for each candidate piece of guidance, ask "would a strong model
@@ -52,7 +52,7 @@ non-obvious calls) is your skill.
 Define the skill as one coherent domain a practitioner would recognize
 ("code review", "financial analysis"), broad enough to have several subtopics
 but narrow enough that any one task touches only some of them. The coverage
-rule only pays off when tasks vary in which subtopics they need; a domain where
+rule only pays off when tasks vary in which subtopics they need; a skill where
 every task needs everything should just be one document (its bundle).
 
 Write down, before slicing:
@@ -73,7 +73,7 @@ index marks *load at the start of any review*.
 
 ## 3. Slice the minis
 
-One mini = one subtopic. Aim for roughly 6–12 minis per domain. Guidelines:
+One mini = one subtopic. Aim for roughly 6–12 minis per skill. Guidelines:
 
 - **One subtopic per mini, focused.** If a mini covers two things a task might
   want separately, split it. If two minis are never useful apart, merge them.
@@ -118,7 +118,7 @@ Rules of thumb:
   across 8 runs was a cross-cutting concern (data quality) left as an optional
   mini and skipped; `00-core` fixes that class of miss by construction.
 
-If the domain has no genuinely cross-cutting traps, you may omit `00-core`
+If the skill has no genuinely cross-cutting traps, you may omit `00-core`
 (code-review folds its cross-cutting method into the always-load `01` mini
 instead; either pattern is fine, as long as the always-load guidance exists).
 

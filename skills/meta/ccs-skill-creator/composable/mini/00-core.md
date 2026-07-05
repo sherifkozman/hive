@@ -2,7 +2,7 @@
 
 ## What CCS is
 
-Compiled Composable Skills (CCS) packages agent domain knowledge as small
+Compiled Composable Skills (CCS) packages an agent skill as small
 authored markdown **minis** (one subtopic each), a knowledge-free **INDEX** that
 lists them with "load when" hints, an optional always-loaded **00-core** holding
 cross-cutting traps, and a tool-compiled **BUNDLE.md** (the deterministic
@@ -24,8 +24,8 @@ bundle for the same task.
 
 ## The two iron rules
 
-1. **The index is a menu, not a meal.** `INDEX.md` carries zero domain
-   knowledge, only mini filenames, terse descriptors, and "load when"
+1. **The index is a menu, not a meal.** `INDEX.md` carries none of the
+   skill's content, only mini filenames, terse descriptors, and "load when"
    conditions. Any knowledge a mini needs in order to be applied lives *in the
    mini*, never in the index.
 2. **Conversion is repackaging, never summarization.** Moving a skill into CCS
@@ -42,5 +42,5 @@ bundle for the same task.
 - **Knowledge a frontier model already applies well** → write no skill at all.
   Generic guidance adds tokens and steps without adding quality; a no-skill
   baseline repeatedly tied or beat skills on tasks inside model competence.
-- **Every task needs the entire domain** → it is one document; just ship the
+- **Every task needs the entire skill** → it is one document; just ship the
   bundle, no selective loading to do.
