@@ -1,6 +1,6 @@
 # Hive: composable, benchmarked skills for AI agents
 
-Hive packages a domain's knowledge for an AI agent as many small, self-contained
+Hive packages an agent skill as many small, self-contained
 **minis** behind one knowledge-free **INDEX**, plus a deterministic build step
 that compiles the minis into a single **BUNDLE** or into task-shaped subsets
 (**presets**). At load time a **coverage rule** decides whether a worker loads a
@@ -23,7 +23,7 @@ flowchart TD
 
 ## The hypothesis
 
-Hive tests one claim: that packaging a single domain's knowledge as an index of
+Hive tests one claim: that packaging a skill as an index of
 small, self-contained mini-skills, loadable in task-shaped configurations, beats
 a monolithic skill on both quality and token efficiency, without the model losing
 guidance that a single always-loaded document would have kept in front of it.
@@ -31,20 +31,20 @@ guidance that a single always-loaded document would have kept in front of it.
 **What testing found: partially validated.** The direction holds where the
 theory predicts and fails where the theory is weakest. Composable packaging met
 or beat a monolithic file on quality and cut tokens 41–64% on narrow tasks that
-touch only part of a domain. But the token advantage *inverts* on broad tasks
-that need most of the domain (loading the index plus nearly every mini as
+touch only part of a skill's content. But the token advantage *inverts* on broad tasks
+that need most of the skill's content (loading the index plus nearly every mini as
 separate files costs more than one monolith), recovered only by compiling the
 minis into a single bundle read in one shot. A lossy conversion that compressed
 its source ~30% kept the token win but *lost* the quality edge, which is why
-conversions are now gated on content parity. And below roughly 5k tokens of
-domain knowledge the index-plus-core scaffolding costs more than selective
-loading saves, so a small skill should stay a single file. The claim is real,
-but it is a *conditional* win: it holds for large, trap-dense domains whose
+conversions are now gated on content parity. And for a skill carrying fewer than
+roughly 5k tokens of content, the index-plus-core scaffolding costs more than
+selective loading saves, so a small skill should stay a single file. The claim is real,
+but it is a *conditional* win: it holds for large, trap-dense skills whose
 tasks vary in what they need, and it is neutral-to-negative outside that band.
 
 ## Why Hive exists
 
-The common ways to give an agent domain knowledge each have measurable failure
+The common ways to package a skill for an agent each have measurable failure
 modes.
 
 - **The monolith.** One always-loaded instruction file (an `AGENTS.md`, a big
@@ -63,7 +63,7 @@ modes.
 
 Hive's answer is a discipline, not a wish: load only the slice a task needs,
 restate only what the model does not already know, compile the frequent
-whole-domain case into one deterministic artifact, and prove every packaging
+whole-skill case into one deterministic artifact, and prove every packaging
 choice earns its cost against a benchmark. The evidence base is what separates
 Hive from "write more guidance."
 
@@ -114,15 +114,15 @@ model-routing quality gains are explicitly **not** proven.
 ## The options
 
 Hive offers a small menu of packaging tricks, each with a distinct
-evidence status. An author picks the ones a domain warrants; a loading agent
+evidence status. An author picks the ones a skill warrants; a loading agent
 picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
 
 - **Selective mini loading (narrow path).** Read the INDEX, load `00-core` plus
   only the minis a task needs. *Evidence: strong.* 41–64% token savings (mean
   ~51%) at equal-or-better quality on narrow tasks; selection was expert-grade in
   all but 1 of 8 round-1 runs.
-- **Compiled bundle (broad path).** When most of a domain is relevant, load one
-  concatenated `BUNDLE.md` in a single read instead of many files. *Evidence:
+- **Compiled bundle (broad path).** When most of a skill's content is relevant,
+  load one concatenated `BUNDLE.md` in a single read instead of many files. *Evidence:
   strong.* Beat loose-mini loading 4–0 on broad tasks and had the best mean rank
   of four conditions: one file op, zero selection risk. Costs +8–22% tokens vs a
   hand monolith (the self-containment redundancy), narrowable by dedup into
@@ -144,7 +144,8 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
   warrants, so fan-out can run a premium model only on the hardest shard.
   *Evidence: cost-shaping shown, quality gain unproven.* The routed run shaped
   cost and parallelized wall-clock, but a ceiling effect on the tested task meant
-  the premium-model shard's quality advantage could not express itself.
+  the premium-model shard's quality advantage could not express itself. See
+  [`docs/MODEL-ROUTING.md`](docs/MODEL-ROUTING.md) for the full guide.
 - **Per-mini and per-skill versioning (new).** A mini MAY carry a `version:`
   frontmatter key and a skill MAY carry a `composable/VERSION` file, both bare
   semver (`X.Y.Z`); `hive.py bump` is the supported mutator for the skill-level
@@ -156,8 +157,8 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
 
 Use Hive when **both** hold:
 
-- The domain carries **more than roughly 5k tokens of non-inferable, trap-dense
-  knowledge**: specific procedures, thresholds, easy-to-miss failure modes the
+- The skill carries **more than roughly 5k tokens of non-inferable, trap-dense
+  content**: specific procedures, thresholds, easy-to-miss failure modes the
   model won't apply unprompted.
 - **Tasks vary in which subtopics they need**, so selective loading has something
   to select.
@@ -170,7 +171,7 @@ Do **not** use Hive when:
 - The knowledge is something **a frontier model already does well**. Generic
   guidance adds tokens and steps without adding quality; the no-skill baseline
   repeatedly tied or beat skill conditions on tasks inside model competence.
-- Every task needs **all** of the domain. Then it's one document; just ship the
+- Every task needs **all** of the skill. Then it's one document; just ship the
   bundle.
 
 ## Quick start

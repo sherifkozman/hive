@@ -366,22 +366,32 @@ FRAMEWORK.md §Probe: routing, negated by also front-loading the bundle).
 
 **11.1** A mini **MAY** carry YAML frontmatter with `model-hint` and/or
 `effort-hint` fields advising the orchestrator which model / reasoning effort a
-shard loading this mini warrants.
+shard loading this mini warrants. Values **MUST** be capability/effort **tier**
+names (e.g. `fast`/`standard`/`premium`, `low`/`standard`/`high`), never
+vendor-specific model IDs, so a skill stays portable across harnesses; the
+orchestrator resolves a tier against whatever models its harness exposes. The
+operator's manual for these keys is `docs/MODEL-ROUTING.md`.
 
 *Evidence:* the fan-out probe ran the frontier-tier model only on the hardest
 shard (DCF) and the mid-tier model elsewhere and matched single-context quality;
 the amendment is "minis MAY
 carry optional model-hint/effort-hint frontmatter" feeding a routed-fan-out
-branch (FRAMEWORK.md §Probe: routing).
+branch (FRAMEWORK.md §Probe: routing). Tier-not-vendor naming is *Evidence:
+convention* (portability; the harness owns the tier-to-model mapping).
 
 **11.2** `model-hint`/`effort-hint` are advisory. An orchestrator **MAY** ignore
 them, and their quality benefit is **unproven**: on the tested task all
 candidates hit the exact ground truth, so the premium-model shard's advantage
-could not express itself (ceiling effect).
+could not express itself (ceiling effect). A single-agent run that does not fan
+out simply ignores them (graceful degradation). Routing's demonstrated value was
+cost shaping (premium tokens spent only on the hard shard), clean small
+per-context loads (~2,900 tokens), and wall-clock parallelism, at the cost of
+~36% cumulative-token overhead from core+index duplication per shard; see
+`docs/MODEL-ROUTING.md`.
 
-*Evidence:* FRAMEWORK.md §Probe: routing. Routing's demonstrated value was clean
-small loads, cost shaping, and wall-clock parallelism, not a measured quality
-gain.
+*Evidence:* FRAMEWORK.md §Probe: routing. Routing matched single-context quality
+within noise (35 vs 36); its demonstrated value was cost shaping and clean small
+loads, not a measured quality gain.
 
 **11.3** Cross-mini dependency edges (`requires:`, `pairs-with:`) are **NOT
 RECOMMENDED** at the scale CCS targets (≤5 domains, ≤~12 minis per domain). They
