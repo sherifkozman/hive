@@ -1,6 +1,6 @@
 # Reading, Converting, and Accepting Changes
 
-Analyzing existing .docx content, converting legacy `.doc` files, rendering to images, and accepting tracked changes. Scripts referenced here are vendored at `external/anthropic/docx/scripts/`.
+Analyzing existing .docx content, converting legacy `.doc` files, rendering to images, and accepting tracked changes. Scripts referenced here are vendored at `skills/sources/anthropic/docx/scripts/`.
 
 ## Converting .doc to .docx
 

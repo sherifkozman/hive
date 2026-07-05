@@ -141,11 +141,11 @@ following, which are additional gates specific to conversions:
       looks (see the lossless-conversion rule in §1 and Experiment 3 in
       `docs/BENCHMARKS.md`).
 - [ ] **Vendored source.** The original, unmodified source material is
-      checked in under `external/<origin>/` (e.g. `external/anthropic/`,
-      `external/financial-analyst/`), byte-for-byte, alongside a
+      checked in under `skills/sources/<origin>/` (e.g. `skills/sources/anthropic/`,
+      `skills/sources/financial-analyst/`), byte-for-byte, alongside a
       `PROVENANCE.md` recording where it came from and what it was used for.
 - [ ] **License notice.** `THIRD_PARTY_NOTICES.md` has an entry for the new
-      `external/<origin>/` directory naming the upstream source, the license
+      `skills/sources/<origin>/` directory naming the upstream source, the license
       it carries, and a note that the license (not this project's MIT
       license) governs the vendored files. If the upstream directory carries
       its own `LICENSE.txt`, that file is vendored too.

@@ -1,6 +1,6 @@
 # Post-hoc Analyzer Agent
 
-Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `external/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
+Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `skills/sources/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
 
 Analyze blind comparison results to understand WHY the winner won and generate improvement suggestions.
 

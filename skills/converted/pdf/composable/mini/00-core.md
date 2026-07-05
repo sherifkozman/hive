@@ -36,7 +36,7 @@ for page in reader.pages:
 
 ## Vendored scripts
 
-The form-filling helper scripts referenced by the forms mini (`check_fillable_fields.py`, `extract_form_field_info.py`, `convert_pdf_to_images.py`, `fill_fillable_fields.py`, `extract_form_structure.py`, `check_bounding_boxes.py`, `fill_pdf_form_with_annotations.py`) are vendored in the source skill at `external/anthropic/pdf/scripts/`. Command lines that say `scripts/...` refer to that vendored directory.
+The form-filling helper scripts referenced by the forms mini (`check_fillable_fields.py`, `extract_form_field_info.py`, `convert_pdf_to_images.py`, `fill_fillable_fields.py`, `extract_form_structure.py`, `check_bounding_boxes.py`, `fill_pdf_form_with_annotations.py`) are vendored in the source skill at `skills/sources/anthropic/pdf/scripts/`. Command lines that say `scripts/...` refer to that vendored directory.
 
 ## Next Steps
 

@@ -1,6 +1,6 @@
 # Blind Comparator Agent
 
-Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
+Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
 
 Compare two outputs WITHOUT knowing which skill produced them.
 

@@ -4,7 +4,7 @@ This section is one continuous sequence — don't stop partway through. Do NOT u
 
 Put results in `<skill-name>-workspace/` as a sibling to the skill directory. Within the workspace, organize results by iteration (`iteration-1/`, `iteration-2/`, etc.) and within that, each test case gets a directory (`eval-0/`, `eval-1/`, etc.). Don't create all of this upfront — just create directories as you go.
 
-> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `external/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
+> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `skills/sources/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
 
 ## Step 1: Spawn all runs (with-skill AND baseline) in the same turn
 

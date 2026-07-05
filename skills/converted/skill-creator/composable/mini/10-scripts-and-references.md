@@ -1,6 +1,6 @@
 # Scripts, reference files, and vendored resources
 
-This skill's bundled scripts, subagent instructions, and reference docs remain **vendored** at `external/anthropic/skill-creator/`. Every script/asset/agent path mentioned anywhere in this skill (e.g. `scripts.aggregate_benchmark`, `eval-viewer/generate_review.py`, `agents/grader.md`, `assets/eval_review.html`, `references/schemas.md`) refers to that vendored source directory. Run Python module invocations (`python -m scripts.<name>`) from the vendored skill-creator directory so the `scripts` package resolves.
+This skill's bundled scripts, subagent instructions, and reference docs remain **vendored** at `skills/sources/anthropic/skill-creator/`. Every script/asset/agent path mentioned anywhere in this skill (e.g. `scripts.aggregate_benchmark`, `eval-viewer/generate_review.py`, `agents/grader.md`, `assets/eval_review.html`, `references/schemas.md`) refers to that vendored source directory. Run Python module invocations (`python -m scripts.<name>`) from the vendored skill-creator directory so the `scripts` package resolves.
 
 ## Reference files
 
@@ -15,7 +15,7 @@ The references/ directory has additional documentation:
 
 ## Vendored scripts inventory
 
-The `scripts/` directory (at `external/anthropic/skill-creator/scripts/`) contains the executable tooling this workflow drives. Script paths refer to the vendored source.
+The `scripts/` directory (at `skills/sources/anthropic/skill-creator/scripts/`) contains the executable tooling this workflow drives. Script paths refer to the vendored source.
 
 - `aggregate_benchmark.py` — Aggregate individual run results into benchmark summary statistics. Reads `grading.json` files from run directories and produces a `run_summary` with mean, stddev, min, max for each metric, plus the delta between with_skill and without_skill configurations. Usage: `python aggregate_benchmark.py <benchmark_dir>` (e.g. `python aggregate_benchmark.py benchmarks/2026-01-15T10-30-00/`). Supports two directory layouts, including the workspace layout produced by skill-creator iterations (`<benchmark_dir>/eval-N/with_skill/run-1/grading.json`, etc.).
 - `generate_report.py` — Generate an HTML report from `run_loop.py` output. Takes the JSON output from `run_loop.py` and generates a visual HTML report showing each description attempt with check/x for each test case, distinguishing between train and test queries.

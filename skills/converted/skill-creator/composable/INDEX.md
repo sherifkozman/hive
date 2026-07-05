@@ -1,6 +1,6 @@
 # Skill Creator: Loading Menu
 
-Create new skills, improve existing ones, and measure skill performance. Scripts, agents, and references remain vendored at `external/anthropic/skill-creator/`; script paths in the minis refer to that source.
+Create new skills, improve existing ones, and measure skill performance. Scripts, agents, and references remain vendored at `skills/sources/anthropic/skill-creator/`; script paths in the minis refer to that source.
 
 Loading policy: read this menu, then load 00-core (if present) plus the minis relevant to your task. If most of this skill is relevant, load BUNDLE.md (or a matching presets/*.md) in one read instead.
 

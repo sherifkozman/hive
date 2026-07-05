@@ -1,6 +1,6 @@
 # JSON Schemas
 
-This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `external/anthropic/skill-creator/`.)
+This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `skills/sources/anthropic/skill-creator/`.)
 
 ## evals.json
 

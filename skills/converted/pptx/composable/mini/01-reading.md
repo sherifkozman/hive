@@ -19,7 +19,7 @@ python scripts/office/unpack.py presentation.pptx unpacked/
 - `python scripts/thumbnail.py presentation.pptx` — create a visual overview (grid of slide thumbnails).
 - `python scripts/office/unpack.py presentation.pptx unpacked/` — extract and pretty-print the raw XML for inspection.
 
-Script paths (`scripts/thumbnail.py`, `scripts/office/unpack.py`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+Script paths (`scripts/thumbnail.py`, `scripts/office/unpack.py`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## thumbnail.py
 

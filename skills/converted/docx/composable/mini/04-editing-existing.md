@@ -1,6 +1,6 @@
 # Editing Existing Documents
 
-Unpack → edit XML → repack workflow for modifying existing .docx files. Scripts referenced here are vendored at `external/anthropic/docx/scripts/`. See the xml-reference mini for XML patterns.
+Unpack → edit XML → repack workflow for modifying existing .docx files. Scripts referenced here are vendored at `skills/sources/anthropic/docx/scripts/`. See the xml-reference mini for XML patterns.
 
 **Follow all 3 steps in order.**
 

@@ -2,7 +2,7 @@
 
 The description field in SKILL.md frontmatter is the primary mechanism that determines whether Claude invokes a skill. After creating or improving a skill, offer to optimize the description for better triggering accuracy.
 
-> Note on script paths: the `scripts.run_loop` / `scripts.run_eval` module paths and `assets/eval_review.html` below refer to the vendored source at `external/anthropic/skill-creator/`. Run them from that directory. See the `scripts-and-references` mini for the full inventory.
+> Note on script paths: the `scripts.run_loop` / `scripts.run_eval` module paths and `assets/eval_review.html` below refer to the vendored source at `skills/sources/anthropic/skill-creator/`. Run them from that directory. See the `scripts-and-references` mini for the full inventory.
 
 ## Step 1: Generate trigger eval queries
 

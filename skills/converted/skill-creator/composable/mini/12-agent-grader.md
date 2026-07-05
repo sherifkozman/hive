@@ -1,6 +1,6 @@
 # Grader Agent
 
-Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
+Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
 
 Evaluate expectations against an execution transcript and outputs.
 

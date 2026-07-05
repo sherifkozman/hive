@@ -206,7 +206,7 @@ This section is one continuous sequence — don't stop partway through. Do NOT u
 
 Put results in `<skill-name>-workspace/` as a sibling to the skill directory. Within the workspace, organize results by iteration (`iteration-1/`, `iteration-2/`, etc.) and within that, each test case gets a directory (`eval-0/`, `eval-1/`, etc.). Don't create all of this upfront — just create directories as you go.
 
-> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `external/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
+> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `skills/sources/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
 
 ## Step 1: Spawn all runs (with-skill AND baseline) in the same turn
 
@@ -368,7 +368,7 @@ Keep going until:
 
 # Advanced: Blind comparison
 
-For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), there's a blind comparison system. Read `agents/comparator.md` and `agents/analyzer.md` for the details (their content is carried in the `agent-comparator` and `agent-analyzer` minis of this skill; the `agents/` script paths refer to the vendored source at `external/anthropic/skill-creator/`). The basic idea is: give two outputs to an independent agent without telling it which is which, and let it judge quality. Then analyze why the winner won.
+For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), there's a blind comparison system. Read `agents/comparator.md` and `agents/analyzer.md` for the details (their content is carried in the `agent-comparator` and `agent-analyzer` minis of this skill; the `agents/` script paths refer to the vendored source at `skills/sources/anthropic/skill-creator/`). The basic idea is: give two outputs to an independent agent without telling it which is which, and let it judge quality. Then analyze why the winner won.
 
 This is optional, requires subagents, and most users won't need it. The human review loop is usually sufficient.
 
@@ -379,7 +379,7 @@ This is optional, requires subagents, and most users won't need it. The human re
 
 The description field in SKILL.md frontmatter is the primary mechanism that determines whether Claude invokes a skill. After creating or improving a skill, offer to optimize the description for better triggering accuracy.
 
-> Note on script paths: the `scripts.run_loop` / `scripts.run_eval` module paths and `assets/eval_review.html` below refer to the vendored source at `external/anthropic/skill-creator/`. Run them from that directory. See the `scripts-and-references` mini for the full inventory.
+> Note on script paths: the `scripts.run_loop` / `scripts.run_eval` module paths and `assets/eval_review.html` below refer to the vendored source at `skills/sources/anthropic/skill-creator/`. Run them from that directory. See the `scripts-and-references` mini for the full inventory.
 
 ## Step 1: Generate trigger eval queries
 
@@ -463,7 +463,7 @@ python -m scripts.package_skill <path/to/skill-folder>
 
 After packaging, direct the user to the resulting `.skill` file path so they can install it.
 
-> Note on script paths: `scripts.package_skill` refers to the vendored source at `external/anthropic/skill-creator/scripts/package_skill.py`. See the `scripts-and-references` mini for the full inventory. The `package_skill.py` script works anywhere with Python and a filesystem.
+> Note on script paths: `scripts.package_skill` refers to the vendored source at `skills/sources/anthropic/skill-creator/scripts/package_skill.py`. See the `scripts-and-references` mini for the full inventory. The `package_skill.py` script works anywhere with Python and a filesystem.
 
 ---
 <!-- module: 09-environment-specific.md -->
@@ -512,7 +512,7 @@ If you're in Cowork, the main things to know are:
 
 # Scripts, reference files, and vendored resources
 
-This skill's bundled scripts, subagent instructions, and reference docs remain **vendored** at `external/anthropic/skill-creator/`. Every script/asset/agent path mentioned anywhere in this skill (e.g. `scripts.aggregate_benchmark`, `eval-viewer/generate_review.py`, `agents/grader.md`, `assets/eval_review.html`, `references/schemas.md`) refers to that vendored source directory. Run Python module invocations (`python -m scripts.<name>`) from the vendored skill-creator directory so the `scripts` package resolves.
+This skill's bundled scripts, subagent instructions, and reference docs remain **vendored** at `skills/sources/anthropic/skill-creator/`. Every script/asset/agent path mentioned anywhere in this skill (e.g. `scripts.aggregate_benchmark`, `eval-viewer/generate_review.py`, `agents/grader.md`, `assets/eval_review.html`, `references/schemas.md`) refers to that vendored source directory. Run Python module invocations (`python -m scripts.<name>`) from the vendored skill-creator directory so the `scripts` package resolves.
 
 ## Reference files
 
@@ -527,7 +527,7 @@ The references/ directory has additional documentation:
 
 ## Vendored scripts inventory
 
-The `scripts/` directory (at `external/anthropic/skill-creator/scripts/`) contains the executable tooling this workflow drives. Script paths refer to the vendored source.
+The `scripts/` directory (at `skills/sources/anthropic/skill-creator/scripts/`) contains the executable tooling this workflow drives. Script paths refer to the vendored source.
 
 - `aggregate_benchmark.py` — Aggregate individual run results into benchmark summary statistics. Reads `grading.json` files from run directories and produces a `run_summary` with mean, stddev, min, max for each metric, plus the delta between with_skill and without_skill configurations. Usage: `python aggregate_benchmark.py <benchmark_dir>` (e.g. `python aggregate_benchmark.py benchmarks/2026-01-15T10-30-00/`). Supports two directory layouts, including the workspace layout produced by skill-creator iterations (`<benchmark_dir>/eval-N/with_skill/run-1/grading.json`, etc.).
 - `generate_report.py` — Generate an HTML report from `run_loop.py` output. Takes the JSON output from `run_loop.py` and generates a visual HTML report showing each description attempt with check/x for each test case, distinguishing between train and test queries.
@@ -550,7 +550,7 @@ The `scripts/` directory (at `external/anthropic/skill-creator/scripts/`) contai
 
 # JSON Schemas
 
-This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `external/anthropic/skill-creator/`.)
+This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `skills/sources/anthropic/skill-creator/`.)
 
 ## evals.json
 
@@ -968,7 +968,7 @@ Output from post-hoc analyzer. Located at `<grading-dir>/analysis.json`.
 
 # Grader Agent
 
-Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
+Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
 
 Evaluate expectations against an execution transcript and outputs.
 
@@ -1197,7 +1197,7 @@ Write a JSON file with this structure:
 
 # Blind Comparator Agent
 
-Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
+Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
 
 Compare two outputs WITHOUT knowing which skill produced them.
 
@@ -1405,7 +1405,7 @@ If no expectations were provided, omit the `expectation_results` field entirely.
 
 # Post-hoc Analyzer Agent
 
-Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `external/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
+Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `skills/sources/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
 
 Analyze blind comparison results to understand WHY the winner won and generate improvement suggestions.
 

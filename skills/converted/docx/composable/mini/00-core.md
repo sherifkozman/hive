@@ -16,7 +16,7 @@ A .docx file is a ZIP archive containing XML files.
 
 ## Vendored scripts
 
-Every `python scripts/...` command in this skill refers to helper scripts vendored in the source skill at `external/anthropic/docx/scripts/`: `office/soffice.py`, `office/unpack.py`, `office/pack.py`, `office/validate.py`, `accept_changes.py`, and `comment.py` (with XML templates under `scripts/templates/` and schemas under `scripts/office/schemas/`).
+Every `python scripts/...` command in this skill refers to helper scripts vendored in the source skill at `skills/sources/anthropic/docx/scripts/`: `office/soffice.py`, `office/unpack.py`, `office/pack.py`, `office/validate.py`, `accept_changes.py`, and `comment.py` (with XML templates under `scripts/templates/` and schemas under `scripts/office/schemas/`).
 
 ## Dependencies
 

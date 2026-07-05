@@ -14,7 +14,7 @@ Always-loaded foundation for working with PowerPoint `.pptx` files. Load the foc
 
 Use this skill any time a `.pptx` file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any `.pptx` file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions "deck," "slides," "presentation," or references a `.pptx` filename, regardless of what they plan to do with the content afterward. If a `.pptx` file needs to be opened, created, or touched, use this skill.
 
-License: Proprietary. `external/anthropic/pptx/LICENSE.txt` has complete terms.
+License: Proprietary. `skills/sources/anthropic/pptx/LICENSE.txt` has complete terms.
 
 ## Quick Reference
 
@@ -34,7 +34,7 @@ Design guidance (palettes, layout, typography) and the required QA/verification 
 
 ## Scripts location
 
-Helper scripts referenced throughout this skill (e.g. `scripts/thumbnail.py`, `scripts/office/unpack.py`, `scripts/add_slide.py`, `scripts/clean.py`, `scripts/office/pack.py`, `scripts/office/soffice.py`) are vendored in the source at `external/anthropic/pptx/scripts/`. Paths shown as `scripts/...` are relative to that vendored source directory.
+Helper scripts referenced throughout this skill (e.g. `scripts/thumbnail.py`, `scripts/office/unpack.py`, `scripts/add_slide.py`, `scripts/clean.py`, `scripts/office/pack.py`, `scripts/office/soffice.py`) are vendored in the source at `skills/sources/anthropic/pptx/scripts/`. Paths shown as `scripts/...` are relative to that vendored source directory.
 
 ## Dependencies
 
@@ -49,7 +49,7 @@ Helper scripts referenced throughout this skill (e.g. `scripts/thumbnail.py`, `s
 
 # Editing Presentations & Templates
 
-Editing, modifying, or updating existing presentations, and building a deck from an existing presentation used as a template. Also read the design mini for layout/palette guidance and the qa-and-rendering mini for the required verification loop. Script paths (`scripts/...`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+Editing, modifying, or updating existing presentations, and building a deck from an existing presentation used as a template. Also read the design mini for layout/palette guidance and the qa-and-rendering mini for the required verification loop. Script paths (`scripts/...`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## Template-Based Workflow
 
@@ -353,7 +353,7 @@ Choose colors that match your topic — don't default to generic blue. Use these
 
 # QA & Rendering
 
-The required verification process for any deck you create or edit, plus how to render slides to images for inspection. Do this before declaring any presentation done. Script paths (`scripts/...`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+The required verification process for any deck you create or edit, plus how to render slides to images for inspection. Do this before declaring any presentation done. Script paths (`scripts/...`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## QA (Required)
 
@@ -467,7 +467,7 @@ python scripts/office/unpack.py presentation.pptx unpacked/
 - `python scripts/thumbnail.py presentation.pptx` — create a visual overview (grid of slide thumbnails).
 - `python scripts/office/unpack.py presentation.pptx unpacked/` — extract and pretty-print the raw XML for inspection.
 
-Script paths (`scripts/thumbnail.py`, `scripts/office/unpack.py`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+Script paths (`scripts/thumbnail.py`, `scripts/office/unpack.py`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## thumbnail.py
 

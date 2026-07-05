@@ -8,4 +8,4 @@ python -m scripts.package_skill <path/to/skill-folder>
 
 After packaging, direct the user to the resulting `.skill` file path so they can install it.
 
-> Note on script paths: `scripts.package_skill` refers to the vendored source at `external/anthropic/skill-creator/scripts/package_skill.py`. See the `scripts-and-references` mini for the full inventory. The `package_skill.py` script works anywhere with Python and a filesystem.
+> Note on script paths: `scripts.package_skill` refers to the vendored source at `skills/sources/anthropic/skill-creator/scripts/package_skill.py`. See the `scripts-and-references` mini for the full inventory. The `package_skill.py` script works anywhere with Python and a filesystem.

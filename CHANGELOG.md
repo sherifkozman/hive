@@ -34,11 +34,11 @@ load.
   - `skills/converted/` (7): `claude-api`, `docx`, `internal-comms`,
     `mcp-builder`, `pdf`, `pptx`, `skill-creator`. All seven are lossless CCS
     conversions of official Anthropic Agent Skills (source vendored unmodified
-    under `external/anthropic/`, see `THIRD_PARTY_NOTICES.md`).
+    under `skills/sources/anthropic/`, see `THIRD_PARTY_NOTICES.md`).
   - `skills/meta/` (1): `ccs-skill-creator`.
 
   `financial-analysis` was authored with a third-party market skill as a
-  benchmarking reference (source vendored under `external/financial-analyst/`,
+  benchmarking reference (source vendored under `skills/sources/financial-analyst/`,
   see `THIRD_PARTY_NOTICES.md` for that provenance).
 - **`ccs-skill-creator`**, an agentic meta-skill and the recommended entry
   point for most adopters: a CCS-conformant skill (dogfooded against its own
@@ -73,11 +73,11 @@ load.
      losslessly converted: CCS won on quality and tokens for a large skill on
      a narrow task, but lost on a broad task against pruned manual disclosure,
      and showed no benefit at all on a small (~2.8k-token) skill.
-- **Provenance and licensing scaffolding**: `external/` vendors third-party
+- **Provenance and licensing scaffolding**: `skills/sources/` vendors third-party
   source material unmodified for benchmarking (see each directory's
   `PROVENANCE.md`); `LICENSE` (MIT) and `THIRD_PARTY_NOTICES.md` clarify what
   this project's license covers versus the vendored, separately-licensed
-  material under `external/`.
+  material under `skills/sources/`.
 - **Research notes** (`research/`): a positioning scan against prior art
   (Anthropic Agent Skills, Cursor rules, GitHub Copilot instructions,
   `llms.txt`, DSPy, DITA) and a failure-mode survey informing the spec's

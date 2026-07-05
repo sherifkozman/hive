@@ -22,9 +22,9 @@ at it.
       scanning (`run_secret_scanning` / push protection) once the repo is
       public, as a second check, not a substitute for this one.
 - [ ] **License clarity.** `LICENSE` (MIT) now covers the project;
-      `THIRD_PARTY_NOTICES.md` carves out `external/anthropic/` (Apache-2.0,
+      `THIRD_PARTY_NOTICES.md` carves out `skills/sources/anthropic/` (Apache-2.0,
       `LICENSE.txt` present in each subdirectory) and
-      `external/financial-analyst/` (no upstream license found: notice says
+      `skills/sources/financial-analyst/` (no upstream license found: notice says
       "see upstream repository for license terms"). Do this before going
       public: an unlicensed public repo defaults to "all rights reserved" and
       an ambiguous one invites exactly the question this file answers.
@@ -39,8 +39,8 @@ at it.
       `python3 tools/hive.py lint skills/<category>/<name>` returns zero
       failures for every skill before tagging.
 - [ ] **Repo metadata.** Suggested GitHub description: *"CCS: a spec and
-      toolchain for packaging AI-agent skills as composable, benchmarked,
-      compiled modules instead of one big prompt."* Suggested topics:
+      toolchain for packaging AI-agent skills as composable, compiled
+      modules instead of one big prompt."* Suggested topics:
       `ai-agents`, `llm`, `prompt-engineering`, `agent-skills`, `claude`,
       `developer-tools`, `documentation-as-code`, `mcp`. Pin `README.md` (already
       does the job) and consider enabling GitHub's "Releases" and "Discussions"
@@ -124,7 +124,7 @@ PyPI page.
 
 ### Blog / HN / r/LocalLLaMA post (~300 words)
 
-> **Hive: composable AI-agent skills, with the benchmarks to back the packaging**
+> **Hive: a framework for building composable skills for AI agents**
 >
 > We kept seeing the same failure mode with agent instruction files: either one
 > big always-loaded `SKILL.md`/`AGENTS.md` that pays its full token cost on
@@ -226,7 +226,7 @@ PyPI page.
       eight skills.
 - [ ] `python3 tools/hive.py parity skills/<category>/<name> <source>` re-run and
       attached for the three converted skills (`internal-comms`,
-      `mcp-builder`, `financial-analysis`) against their `external/` sources.
+      `mcp-builder`, `financial-analysis`) against their `skills/sources/` sources.
 - [ ] `python3 tools/hive.py report skills` output reviewed for any skill
       whose token footprint drifted unexpectedly since the last recorded
       benchmark run.

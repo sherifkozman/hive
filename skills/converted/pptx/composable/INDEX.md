@@ -1,6 +1,6 @@
 # PPTX: Loading Menu
 
-Working with PowerPoint `.pptx` files: reading, creating, editing, and QA. Helper scripts stay vendored at `external/anthropic/pptx/scripts/`.
+Working with PowerPoint `.pptx` files: reading, creating, editing, and QA. Helper scripts stay vendored at `skills/sources/anthropic/pptx/scripts/`.
 
 Loading policy: read this menu, then load 00-core (if present) plus the minis relevant to your task. If most of this skill is relevant, load BUNDLE.md (or a matching presets/*.md) in one read instead.
 

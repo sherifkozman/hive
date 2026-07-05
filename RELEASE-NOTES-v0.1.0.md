@@ -1,6 +1,6 @@
 # Hive v0.1.0
 
-First public release of Hive: composable, benchmarked skills for AI agents.
+First public release of Hive: a framework for building composable skills for AI agents.
 
 ## What is in this release
 

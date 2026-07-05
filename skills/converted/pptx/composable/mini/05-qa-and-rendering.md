@@ -1,6 +1,6 @@
 # QA & Rendering
 
-The required verification process for any deck you create or edit, plus how to render slides to images for inspection. Do this before declaring any presentation done. Script paths (`scripts/...`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+The required verification process for any deck you create or edit, plus how to render slides to images for inspection. Do this before declaring any presentation done. Script paths (`scripts/...`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## QA (Required)
 

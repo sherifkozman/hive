@@ -75,7 +75,7 @@ This section is one continuous sequence — don't stop partway through. Do NOT u
 
 Put results in `<skill-name>-workspace/` as a sibling to the skill directory. Within the workspace, organize results by iteration (`iteration-1/`, `iteration-2/`, etc.) and within that, each test case gets a directory (`eval-0/`, `eval-1/`, etc.). Don't create all of this upfront — just create directories as you go.
 
-> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `external/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
+> Note on script paths: commands below such as `python -m scripts.aggregate_benchmark` and `eval-viewer/generate_review.py` refer to the vendored source at `skills/sources/anthropic/skill-creator/`. Run them from that directory (or point paths at it). See the `scripts-and-references` mini for the full script inventory.
 
 ## Step 1: Spawn all runs (with-skill AND baseline) in the same turn
 
@@ -203,7 +203,7 @@ kill $VIEWER_PID 2>/dev/null
 
 # JSON Schemas
 
-This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `external/anthropic/skill-creator/`.)
+This document defines the JSON schemas used by skill-creator. (Source: the vendored `references/schemas.md` at `skills/sources/anthropic/skill-creator/`.)
 
 ## evals.json
 
@@ -621,7 +621,7 @@ Output from post-hoc analyzer. Located at `<grading-dir>/analysis.json`.
 
 # Grader Agent
 
-Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
+Instructions for the specialized grader subagent. (Source: the vendored `agents/grader.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions — or grade inline — when grading a run.)
 
 Evaluate expectations against an execution transcript and outputs.
 
@@ -850,7 +850,7 @@ Write a JSON file with this structure:
 
 # Blind Comparator Agent
 
-Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `external/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
+Instructions for the specialized blind-comparator subagent. (Source: the vendored `agents/comparator.md` at `skills/sources/anthropic/skill-creator/`. Spawn a subagent with these instructions for a rigorous A/B comparison between two skill versions.)
 
 Compare two outputs WITHOUT knowing which skill produced them.
 
@@ -1058,7 +1058,7 @@ If no expectations were provided, omit the `expectation_results` field entirely.
 
 # Post-hoc Analyzer Agent
 
-Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `external/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
+Instructions for the specialized analyzer subagent. (Source: the vendored `agents/analyzer.md` at `skills/sources/anthropic/skill-creator/`.) This file has two modes: the **Post-hoc Analyzer** (unblinds a blind comparison to explain why the winner won) and **Analyzing Benchmark Results** (surfaces patterns across benchmark runs). Spawn a subagent with the relevant section.
 
 Analyze blind comparison results to understand WHY the winner won and generate improvement suggestions.
 

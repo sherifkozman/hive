@@ -4,7 +4,7 @@ This repository is licensed under the MIT License (see `LICENSE`) for
 everything authored in this project: the CCS specification, the
 `tools/hive.py` CLI, the eight reference skills, and the evaluation harness.
 
-The `external/` directory is an exception: it vendors third-party source
+The `skills/sources/` directory is an exception: it vendors third-party source
 material, **unmodified**, that was used as input to the framework's
 benchmarking and conversion experiments. That material is not relicensed by
 this project. It is reproduced here, alongside its own `PROVENANCE.md`, so the
@@ -12,28 +12,28 @@ benchmark and conversion work in `docs/BENCHMARKS.md` and `docs/CONVERSION.md`
 is reproducible. This file records what is vendored, where it came from, and
 what license information is available for it.
 
-## `external/anthropic/`
+## `skills/sources/anthropic/`
 
 - **Source:** [`github.com/anthropics/skills`](https://github.com/anthropics/skills),
   the `skills/mcp-builder` and `skills/internal-comms` directories.
 - **Used for:** Experiment 6 in `docs/BENCHMARKS.md`, a supplemental
   validation of the CCS conversion process against two official Anthropic
   Agent Skills, one large (`mcp-builder`) and one small (`internal-comms`).
-- **Modification:** none. The files under `external/anthropic/` are vendored
+- **Modification:** none. The files under `skills/sources/anthropic/` are vendored
   copies of the upstream `SKILL.md` and accompanying files, byte-for-byte.
   This project's CCS *conversions* of these skills (the composable
   mini/INDEX/BUNDLE decompositions) live under `skills/mcp-builder/` and
   `skills/internal-comms/` and are derived works produced by this project,
   distinct from the vendored originals.
 - **License:** Each vendored skill directory carries its own `LICENSE.txt`,
-  copied unmodified from upstream: both `external/anthropic/internal-comms/LICENSE.txt`
-  and `external/anthropic/mcp-builder/LICENSE.txt` are the Apache License,
+  copied unmodified from upstream: both `skills/sources/anthropic/internal-comms/LICENSE.txt`
+  and `skills/sources/anthropic/mcp-builder/LICENSE.txt` are the Apache License,
   Version 2.0, copyright Anthropic, PBC. That license, not this project's MIT
   license, governs the vendored files in those two directories. See the
   `LICENSE.txt` in each directory and the upstream repository for the
   authoritative terms.
 
-## `external/financial-analyst/`
+## `skills/sources/financial-analyst/`
 
 - **Source:** [`github.com/alirezarezvani/claude-skills`](https://github.com/alirezarezvani/claude-skills),
   the `finance/skills/financial-analyst` directory.
@@ -61,11 +61,11 @@ what license information is available for it.
 
 | Directory | Upstream | License found in this repo | Modified? |
 |---|---|---|---|
-| `external/anthropic/internal-comms/` | anthropics/skills | Apache-2.0 (`LICENSE.txt`, present) | No |
-| `external/anthropic/mcp-builder/` | anthropics/skills | Apache-2.0 (`LICENSE.txt`, present) | No |
-| `external/financial-analyst/` | alirezarezvani/claude-skills | Not found: see upstream repository for license terms | No |
+| `skills/sources/anthropic/internal-comms/` | anthropics/skills | Apache-2.0 (`LICENSE.txt`, present) | No |
+| `skills/sources/anthropic/mcp-builder/` | anthropics/skills | Apache-2.0 (`LICENSE.txt`, present) | No |
+| `skills/sources/financial-analyst/` | alirezarezvani/claude-skills | Not found: see upstream repository for license terms | No |
 
-If you are redistributing this repository, or extracting `external/` content
+If you are redistributing this repository, or extracting `skills/sources/` content
 for use outside of reading the CCS benchmark writeups, treat each directory
 according to the license row above rather than the project-wide MIT license.
 If you are a rights holder for any of the above and believe this notice is

@@ -1,6 +1,6 @@
 # Editing Presentations & Templates
 
-Editing, modifying, or updating existing presentations, and building a deck from an existing presentation used as a template. Also read the design mini for layout/palette guidance and the qa-and-rendering mini for the required verification loop. Script paths (`scripts/...`) refer to the vendored source at `external/anthropic/pptx/scripts/`.
+Editing, modifying, or updating existing presentations, and building a deck from an existing presentation used as a template. Also read the design mini for layout/palette guidance and the qa-and-rendering mini for the required verification loop. Script paths (`scripts/...`) refer to the vendored source at `skills/sources/anthropic/pptx/scripts/`.
 
 ## Template-Based Workflow
 
