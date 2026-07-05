@@ -242,3 +242,26 @@ PyPI page.
       submission process is confirmed compatible with this repo's layout.
 - [ ] Announcement post and thread (§4) go out only after the tag and release
       are live, so links in the announcement resolve.
+
+## Release status (updated)
+
+Completed: repository public, `main` is the default branch (created from the
+release branch), working branches removed, secrets scan clean, all docs and
+skills lint-clean.
+
+Remaining single step, the v0.1.0 Release. Fastest paths:
+
+Web (about 60 seconds):
+1. Open https://github.com/sherifkozman/hive/releases/new
+2. "Choose a tag": type `v0.1.0`, select "Create new tag: v0.1.0 on publish",
+   target `main`.
+3. Title: `Hive v0.1.0`
+4. Body: paste the contents of `RELEASE-NOTES-v0.1.0.md` (repo root).
+5. Publish. GitHub creates the tag and source archives automatically.
+
+CLI (from any local clone with gh authenticated):
+    gh release create v0.1.0 --target main --title "Hive v0.1.0" \
+      --notes-file RELEASE-NOTES-v0.1.0.md
+
+After publishing: submit directory listings and the announcement per the
+channels section above.
