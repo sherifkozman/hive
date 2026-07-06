@@ -159,7 +159,9 @@ async function readComposableContent(composableDir) {
  */
 function referencesDir(content, dirName) {
   const escaped = dirName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?<![A-Za-z0-9_])${escaped}/`);
+  // Lookbehind includes '-' and '.' so `widgets` never matches inside
+  // `test-widgets/` or `foo.widgets/` (hyphen/dot are path-name chars).
+  const re = new RegExp(`(?<![A-Za-z0-9_.-])${escaped}/`);
   return re.test(content);
 }
 
@@ -327,4 +329,4 @@ if (isMain) {
   });
 }
 
-export { main, packageRoot, repoRoot, assetsDir };
+export { main, packageRoot, repoRoot, assetsDir, referencesDir };

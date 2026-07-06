@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { main as bundleAssets, assetsDir, packageRoot, repoRoot } from '../scripts/bundle-assets.mjs';
+import { main as bundleAssets, assetsDir, packageRoot, repoRoot, referencesDir } from '../scripts/bundle-assets.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -263,3 +263,25 @@ describe('bundle-assets: npm pack file list (golden)', () => {
   }, 60_000);
 });
 
+
+describe('bundle-assets: referencesDir (synthetic, repo-independent)', () => {
+  // Isolates the discriminator from real repo content. Semantics match the
+  // implementation comment: word-boundary before the name, literal slash
+  // after; a bare `name/` token (e.g. "read from `go/`") IS a reference.
+  it('excludes a dir name only mentioned in prose without a slash', () => {
+    expect(referencesDir('mentions the widgets directory in prose', 'widgets')).toBe(false);
+  });
+
+  it('includes a dir name referenced as a path token', () => {
+    expect(referencesDir('Run `widgets/build.py` to regenerate.', 'widgets')).toBe(true);
+  });
+
+  it('includes a bare `name/` reference with nothing after the slash', () => {
+    expect(referencesDir('read from `widgets/` at runtime', 'widgets')).toBe(true);
+  });
+
+  it('does not false-positive on hyphenated or dotted supersets (test-widgets/, foo.widgets/)', () => {
+    expect(referencesDir('See the test-widgets/ directory.', 'widgets')).toBe(false);
+    expect(referencesDir('See foo.widgets/ for fixtures.', 'widgets')).toBe(false);
+  });
+});
