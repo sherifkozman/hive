@@ -259,3 +259,17 @@ only meaningful under this repo's particular multi-file split).
 No other cases were changed. pdf-narrow-02, pdf-broad-03, and pdf-broad-04
 are unchanged from the original submission and were independently accepted
 by QA.
+
+## Amendment 2 (pre-scoring-run; orchestrator, not case author)
+
+Pilot repeat 1 revealed harness verifier mechanics: ground_truth cases are scored by
+scanning agent OUTPUT FILES for the verbatim ground-truth string with word-boundary
+regex (templates/judge.py.tmpl judge_exact_match) — no LLM judge. Two consequences:
+(1) chat-text answers never score; (2) `re.escape(gt)+\b` cannot match when gt ends in
+')' (regex \b needs a word char), so function-call ground truths were unwinnable.
+Fix, identical for every condition: each question now instructs writing the final
+answer to answer.txt in an exact format; ground truths normalized to boundary-safe
+canonical strings (parentheses dropped from function names; multi-part answers given
+explicit formats). Knowledge content of cases unchanged; authorship of content remains
+the sources-only case author; formatting sentences are orchestrator-authored and
+condition-neutral. Repeat 1 (pre-amendment) is archived as non-scoring diagnostic data.
