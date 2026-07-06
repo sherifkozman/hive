@@ -9,7 +9,13 @@ import {
   resolveProjectPointerFile,
   type ClientRegistryEntry,
 } from './registry.js';
-import { type Catalog, type CatalogSkill, getCatalogSkill, resolveSkillComposableDir } from './catalog.js';
+import {
+  type Catalog,
+  type CatalogSkill,
+  getCatalogSkill,
+  resolveSkillAssetSrcDir,
+  resolveSkillComposableDir,
+} from './catalog.js';
 import { collectTreeEntries, hashEntries } from './hashTree.js';
 import {
   computeInstalledTreeHash,
@@ -23,6 +29,8 @@ import { snapshot, type SnapshotResult } from './backup.js';
 import { withLock } from './lock.js';
 import { renderPointerBlock, renderPointerDiff, upsertManagedBlock } from './pointer.js';
 import { INSTALLER_VERSION } from '../version.js';
+import { stripGeneratedMarker } from './bundleMarker.js';
+import { selectPackingMode, type PackingMode } from './packing.js';
 
 // --- Errors -----------------------------------------------------------
 
@@ -75,7 +83,36 @@ export class ForeignSkillDirError extends Error {
   }
 }
 
+/**
+ * Thrown by planInstall (packing-modes.md v2 item 2, "HARD-FAILS if the
+ * skill has no BUNDLE.md") when a skill selected for bundle-inline
+ * packing has no compiled BUNDLE.md to inline. This is a build/catalog
+ * defect (every skill's `hive.py compile` output should always include
+ * one) — surfaced as a typed, fail-fast error rather than silently
+ * installing an empty or missing SKILL.md.
+ */
+export class MissingBundleError extends Error {
+  readonly skillName: string;
+  readonly bundlePath: string;
+  constructor(skillName: string, bundlePath: string) {
+    super(
+      `Cannot generate an inline SKILL.md for "${skillName}": no BUNDLE.md found at "${bundlePath}". ` +
+        'Regenerate the skill\'s compiled artifacts (`hive.py compile`), or force tree packing for this ' +
+        'install (`--packing tree`).',
+    );
+    this.name = 'MissingBundleError';
+    this.skillName = skillName;
+    this.bundlePath = bundlePath;
+  }
+}
+
 // --- Plan types ---------------------------------------------------------
+
+/** A bundled non-knowledge asset dir (spec §9) to materialize at the installed skill dir's root, e.g. { name: 'scripts', srcDir: '.../assets-src/scripts' } -> `<destSkillDir>/scripts`. */
+export interface AssetSrcDir {
+  name: string;
+  srcDir: string;
+}
 
 export interface CopyTreeAction {
   kind: 'copy-tree' | 'upgrade';
@@ -83,6 +120,10 @@ export interface CopyTreeAction {
   skillName: string;
   srcComposableDir: string;
   destSkillDir: string;
+  /** Non-knowledge asset dirs to copy into destSkillDir's root alongside composable/ and SKILL.md. Empty for skills with no bundled assets. */
+  assetSrcDirs: AssetSrcDir[];
+  /** Always 'tree' — carried on the action so callers (e.g. a plan preview) can read the packing mode uniformly across action kinds. */
+  packing: 'tree';
 }
 
 export interface WriteSkillShimAction {
@@ -93,12 +134,36 @@ export interface WriteSkillShimAction {
   content: string;
 }
 
+/**
+ * Packing-modes.md's `bundle-inline` mode (v2 items 2-3): installs a
+ * single SKILL.md — frontmatter (name, upstream-verbatim description)
+ * plus the compiled BUNDLE.md body, marker stripped — at the skill's
+ * root, alongside any materialized non-knowledge asset dirs. No
+ * composable/ tree and no separate shim: this action's `content` IS the
+ * whole installed SKILL.md.
+ */
+export interface WriteInlineSkillAction {
+  kind: 'write-inline-skill';
+  clientId: string;
+  skillName: string;
+  destSkillDir: string;
+  content: string;
+  assetSrcDirs: AssetSrcDir[];
+  packing: 'bundle-inline';
+}
+
 export interface WriteInstallManifestAction {
   kind: 'write-install-manifest';
   clientId: string;
   skillName: string;
   destPath: string;
   skillVersion: string;
+  packing: PackingMode;
+  /** True iff an explicit --packing (not the size-rule "auto") chose `packing`. */
+  packingForced: boolean;
+  inlineThreshold: number;
+  /** The bundled catalog's `hiveCommit` at install time (packing-modes.md v2 item 5: "pins a repo commit"). */
+  catalogHash: string;
 }
 
 export interface WritePointerBlockAction {
@@ -118,6 +183,7 @@ export interface SkipIdenticalAction {
 export type InstallAction =
   | CopyTreeAction
   | WriteSkillShimAction
+  | WriteInlineSkillAction
   | WriteInstallManifestAction
   | WritePointerBlockAction
   | SkipIdenticalAction;
@@ -135,6 +201,18 @@ export interface PlanInstallOptions {
   registry?: readonly ClientRegistryEntry[];
   /** The bundled skill catalog (assets/manifest.json), sources of truth for versions/paths. */
   catalog: Catalog;
+  /**
+   * Packing mode selection (docs/packing-modes.md). Omitting this field
+   * entirely — the historical, pre-0.2.0 call shape — preserves the
+   * original always-tree behavior for backward compatibility: existing
+   * callers that never asked for packing awareness keep getting exactly
+   * what they got before. Passing 'auto' (the CLI/wizard's own explicit
+   * default) applies the size rule; passing a concrete PackingMode forces
+   * it for every skill in this call.
+   */
+  packing?: 'auto' | PackingMode;
+  /** Overrides packing.ts's DEFAULT_INLINE_THRESHOLD for the size rule. */
+  inlineThreshold?: number;
 }
 
 // --- SKILL.md shim template ----------------------------------------------
@@ -164,21 +242,98 @@ export function renderSkillShim(skill: CatalogSkill): string {
   ].join('\n');
 }
 
+// --- Inline SKILL.md (bundle-inline packing mode) -------------------------
+
+/**
+ * YAML-safe double-quoted scalar: wraps `value` in double quotes,
+ * escaping backslashes and double quotes, and collapsing newlines to
+ * literal `\n` escapes (a frontmatter `description:` value must stay a
+ * single YAML line here — unlike the upstream sources this repo reads,
+ * which may use a block-literal `|-` scalar, this generator always emits
+ * the simpler quoted-scalar form, valid for any input including
+ * multi-line ones like claude-api's).
+ */
+function yamlQuoteScalar(value: string): string {
+  const escaped = value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\r\n/g, '\\n')
+    .replace(/\n/g, '\\n');
+  return `"${escaped}"`;
+}
+
+/**
+ * Renders a bundle-inline install's SKILL.md (packing-modes.md v2 items
+ * 2-3): frontmatter `name: hive-<skill>` + `description` (the skill's
+ * upstream-verbatim `sourceDescription`, falling back to `description`
+ * when a skill has no vendored source — see catalog.ts), YAML-safely
+ * quoted/escaped, followed by the compiled BUNDLE.md body with the
+ * generated-marker line stripped. HARD-FAILS with MissingBundleError if
+ * the skill has no BUNDLE.md at all (packing-modes.md v2 item 2) — this
+ * is the ONE thing that can't be pure, since it needs to read the file
+ * that would be missing.
+ */
+export async function renderInlineSkillMd(catalog: Catalog, skill: CatalogSkill): Promise<string> {
+  const composableDir = resolveSkillComposableDir(catalog, skill);
+  const bundlePath = path.join(composableDir, 'BUNDLE.md');
+  let bundleRaw: string;
+  try {
+    bundleRaw = await fs.readFile(bundlePath, 'utf8');
+  } catch {
+    throw new MissingBundleError(skill.name, bundlePath);
+  }
+
+  const description = skill.sourceDescription ?? skill.description;
+  const body = stripGeneratedMarker(bundleRaw).replace(/^\n+/, '');
+
+  return [
+    '---',
+    `name: hive-${skill.name}`,
+    `description: ${yamlQuoteScalar(description)}`,
+    '---',
+    '',
+    body,
+  ].join('\n');
+}
+
+/** Same shape as computeVirtualInstalledTreeHash, for a bundle-inline install: SKILL.md (the inline content) + materialized asset dirs, no composable/ prefix. */
+async function computeVirtualInlineTreeHash(content: string, assetSrcDirs: AssetSrcDir[]): Promise<string> {
+  const skillEntry = { relPath: 'SKILL.md', content: Buffer.from(content, 'utf8') };
+
+  const assetEntries = [];
+  for (const { name, srcDir } of assetSrcDirs) {
+    const entries = await collectTreeEntries(srcDir);
+    for (const entry of entries) {
+      assetEntries.push({ relPath: path.join(name, entry.relPath), content: entry.content });
+    }
+  }
+
+  return hashEntries([skillEntry, ...assetEntries]);
+}
+
 // --- Plan-time virtual tree hash ------------------------------------------
 
 /**
  * The tree hash a skill install WOULD have once written: the bundled
- * composable/ source tree (read-only — nothing written here) plus the
- * to-be-generated SKILL.md shim, hashed exactly as computeInstalledTreeHash
- * would hash the real destSkillDir afterward (same algorithm, same
- * relative paths, same manifest-file exclusion — there's nothing to
- * exclude here since the manifest itself isn't part of the virtual set).
- * This is what lets planInstall decide skip-identical/upgrade/copy-tree
- * up front, with zero filesystem writes (dry-run correctness).
+ * composable/ source tree, any bundled non-knowledge asset dirs (read-only
+ * — nothing written here), plus the to-be-generated SKILL.md shim, hashed
+ * exactly as computeInstalledTreeHash would hash the real destSkillDir
+ * afterward (same algorithm, same relative paths — each assetSrcDirs entry
+ * is prefixed with its own `name` the same way executeInstall copies it to
+ * `<destSkillDir>/<name>`; same manifest-file exclusion — there's nothing
+ * to exclude here since the manifest itself isn't part of the virtual
+ * set). This is what lets planInstall decide skip-identical/upgrade/
+ * copy-tree up front, with zero filesystem writes (dry-run correctness) —
+ * and, critically, what keeps that decision correct once a skill has
+ * bundled assets: omitting them here would make every such skill look
+ * permanently "upgraded" (asset content never factored into the
+ * comparison) or, worse, permanently "skip-identical" after an asset-only
+ * change actually shipped.
  */
 async function computeVirtualInstalledTreeHash(
   srcComposableDir: string,
   shimContent: string,
+  assetSrcDirs: AssetSrcDir[],
 ): Promise<string> {
   const composableEntries = await collectTreeEntries(srcComposableDir);
   const prefixed = composableEntries.map((entry) => ({
@@ -186,7 +341,16 @@ async function computeVirtualInstalledTreeHash(
     content: entry.content,
   }));
   const shimEntry = { relPath: 'SKILL.md', content: Buffer.from(shimContent, 'utf8') };
-  return hashEntries([...prefixed, shimEntry]);
+
+  const assetEntries = [];
+  for (const { name, srcDir } of assetSrcDirs) {
+    const entries = await collectTreeEntries(srcDir);
+    for (const entry of entries) {
+      assetEntries.push({ relPath: path.join(name, entry.relPath), content: entry.content });
+    }
+  }
+
+  return hashEntries([...prefixed, shimEntry, ...assetEntries]);
 }
 
 // --- planInstall ----------------------------------------------------------
@@ -224,10 +388,59 @@ export async function planInstall(ctx: HomeContext, opts: PlanInstallOptions): P
 
     for (const skill of skills) {
       const destSkillDir = path.join(baseDir, `hive-${skill.name}`);
+      const assetSrcDirs: AssetSrcDir[] = (skill.assetDirs ?? []).map((name) => ({
+        name,
+        srcDir: resolveSkillAssetSrcDir(opts.catalog, skill, name),
+      }));
+
+      // Backward compat (see PlanInstallOptions.packing's doc comment):
+      // omitting `opts.packing` entirely defaults to 'tree', not 'auto' —
+      // only a caller that explicitly opts in (the CLI's `--packing`
+      // default of 'auto', or an explicit override) gets size-rule-aware
+      // packing.
+      const packingResult = selectPackingMode(skill, {
+        packing: opts.packing ?? 'tree',
+        inlineThreshold: opts.inlineThreshold,
+      });
+
+      const existingManifest = await readInstallManifest(destSkillDir);
+      const manifestAction: WriteInstallManifestAction = {
+        kind: 'write-install-manifest',
+        clientId: entry.id,
+        skillName: skill.name,
+        destPath: path.join(destSkillDir, INSTALL_MANIFEST_FILENAME),
+        skillVersion: skill.version,
+        packing: packingResult.mode,
+        packingForced: packingResult.forced,
+        inlineThreshold: packingResult.inlineThreshold,
+        catalogHash: opts.catalog.hiveCommit,
+      };
+
+      if (packingResult.mode === 'bundle-inline') {
+        const inlineContent = await renderInlineSkillMd(opts.catalog, skill);
+        const newTreeHash = await computeVirtualInlineTreeHash(inlineContent, assetSrcDirs);
+
+        if (existingManifest && existingManifest.treeSha256 === newTreeHash) {
+          actions.push({ kind: 'skip-identical', clientId: entry.id, skillName: skill.name, destSkillDir });
+          continue;
+        }
+
+        actions.push({
+          kind: 'write-inline-skill',
+          clientId: entry.id,
+          skillName: skill.name,
+          destSkillDir,
+          content: inlineContent,
+          assetSrcDirs,
+          packing: 'bundle-inline',
+        });
+        actions.push(manifestAction);
+        continue;
+      }
+
       const srcComposableDir = resolveSkillComposableDir(opts.catalog, skill);
       const shimContent = renderSkillShim(skill);
-      const newTreeHash = await computeVirtualInstalledTreeHash(srcComposableDir, shimContent);
-      const existingManifest = await readInstallManifest(destSkillDir);
+      const newTreeHash = await computeVirtualInstalledTreeHash(srcComposableDir, shimContent, assetSrcDirs);
 
       if (existingManifest && existingManifest.treeSha256 === newTreeHash) {
         actions.push({ kind: 'skip-identical', clientId: entry.id, skillName: skill.name, destSkillDir });
@@ -241,6 +454,8 @@ export async function planInstall(ctx: HomeContext, opts: PlanInstallOptions): P
         skillName: skill.name,
         srcComposableDir,
         destSkillDir,
+        assetSrcDirs,
+        packing: 'tree',
       });
       actions.push({
         kind: 'write-skill-shim',
@@ -249,13 +464,7 @@ export async function planInstall(ctx: HomeContext, opts: PlanInstallOptions): P
         destPath: path.join(destSkillDir, 'SKILL.md'),
         content: shimContent,
       });
-      actions.push({
-        kind: 'write-install-manifest',
-        clientId: entry.id,
-        skillName: skill.name,
-        destPath: path.join(destSkillDir, INSTALL_MANIFEST_FILENAME),
-        skillVersion: skill.version,
-      });
+      actions.push(manifestAction);
     }
 
     if (skills.length === 0) continue;
@@ -306,6 +515,8 @@ export interface ExecuteInstallOptions {
 export interface WouldWriteEntry {
   kind: InstallAction['kind'];
   destPath: string;
+  /** Present for the action that installs the skill's content (copy-tree/upgrade/write-inline-skill) — lets a plan preview show the packing mode directly (spec: "plan preview shows mode"). */
+  packing?: PackingMode;
 }
 
 export interface ExecuteInstallResult {
@@ -321,7 +532,13 @@ interface SkillUnit {
   skillName: string;
   tree?: CopyTreeAction;
   shim?: WriteSkillShimAction;
+  inlineSkill?: WriteInlineSkillAction;
   manifest?: WriteInstallManifestAction;
+}
+
+/** The unit's install destination, regardless of which packing mode produced it. */
+function unitDestDir(unit: SkillUnit): string | undefined {
+  return unit.tree?.destSkillDir ?? unit.inlineSkill?.destSkillDir;
 }
 
 function groupPlan(plan: InstallPlan): {
@@ -347,6 +564,7 @@ function groupPlan(plan: InstallPlan): {
     const unit: SkillUnit = unitsByKey.get(key) ?? { clientId: action.clientId, skillName: action.skillName };
     if (action.kind === 'copy-tree' || action.kind === 'upgrade') unit.tree = action;
     else if (action.kind === 'write-skill-shim') unit.shim = action;
+    else if (action.kind === 'write-inline-skill') unit.inlineSkill = action;
     else if (action.kind === 'write-install-manifest') unit.manifest = action;
     unitsByKey.set(key, unit);
   }
@@ -384,13 +602,15 @@ export async function executeInstall(
 
   if (opts.dryRun) {
     const skillActions: InstallAction[] = skillUnits.flatMap((unit) =>
-      [unit.tree, unit.shim, unit.manifest].filter(
-        (a): a is CopyTreeAction | WriteSkillShimAction | WriteInstallManifestAction => a !== undefined,
+      [unit.tree, unit.shim, unit.inlineSkill, unit.manifest].filter(
+        (a): a is CopyTreeAction | WriteSkillShimAction | WriteInlineSkillAction | WriteInstallManifestAction =>
+          a !== undefined,
       ),
     );
     const wouldWrite: WouldWriteEntry[] = [...skillActions, ...pointerActions].map((action) => ({
       kind: action.kind,
       destPath: actionDestPath(action),
+      ...('packing' in action ? { packing: action.packing } : {}),
     }));
 
     return { performed: [], skipped: [...skipActions], backups: [], dryRun: true, wouldWrite };
@@ -403,10 +623,11 @@ export async function executeInstall(
       // partial state — mirrors backup.ts's restore() ordering).
       if (!opts.force) {
         for (const unit of skillUnits) {
-          if (!unit.tree) continue;
-          const existingManifest = await readInstallManifest(unit.tree.destSkillDir);
-          if (!existingManifest && (await hasForeignContent(unit.tree.destSkillDir))) {
-            throw new ForeignSkillDirError(unit.tree.destSkillDir);
+          const destDir = unitDestDir(unit);
+          if (!destDir) continue;
+          const existingManifest = await readInstallManifest(destDir);
+          if (!existingManifest && (await hasForeignContent(destDir))) {
+            throw new ForeignSkillDirError(destDir);
           }
         }
       }
@@ -423,7 +644,7 @@ export async function executeInstall(
 
       const backups: SnapshotResult[] = [];
       if (!opts.noBackup) {
-        const treeDests = skillUnits.filter((unit) => unit.tree).map((unit) => unit.tree!.destSkillDir);
+        const treeDests = skillUnits.map((unit) => unitDestDir(unit)).filter((d): d is string => d !== undefined);
 
         // Pointer files: only back up ones that already exist. A
         // not-yet-existing pointer file is deliberately left OUT of the
@@ -456,16 +677,36 @@ export async function executeInstall(
       const skipped: InstallAction[] = [...skipActions];
 
       for (const unit of skillUnits) {
-        if (!unit.tree) continue;
-        const { destSkillDir, srcComposableDir } = unit.tree;
-        const shimContent = unit.shim?.content ?? '';
+        let destSkillDir: string | undefined;
 
-        await atomicReplaceDir(guard, destSkillDir, async (stagingDir) => {
-          await fs.cp(srcComposableDir, path.join(stagingDir, 'composable'), { recursive: true });
-          await fs.writeFile(path.join(stagingDir, 'SKILL.md'), shimContent, 'utf8');
-        });
-        performed.push(unit.tree);
-        if (unit.shim) performed.push(unit.shim);
+        if (unit.tree) {
+          const { destSkillDir: dir, srcComposableDir, assetSrcDirs } = unit.tree;
+          const shimContent = unit.shim?.content ?? '';
+          destSkillDir = dir;
+
+          await atomicReplaceDir(guard, dir, async (stagingDir) => {
+            await fs.cp(srcComposableDir, path.join(stagingDir, 'composable'), { recursive: true });
+            await fs.writeFile(path.join(stagingDir, 'SKILL.md'), shimContent, 'utf8');
+            for (const { name, srcDir } of assetSrcDirs) {
+              await fs.cp(srcDir, path.join(stagingDir, name), { recursive: true });
+            }
+          });
+          performed.push(unit.tree);
+          if (unit.shim) performed.push(unit.shim);
+        } else if (unit.inlineSkill) {
+          const { destSkillDir: dir, content, assetSrcDirs } = unit.inlineSkill;
+          destSkillDir = dir;
+
+          await atomicReplaceDir(guard, dir, async (stagingDir) => {
+            await fs.writeFile(path.join(stagingDir, 'SKILL.md'), content, 'utf8');
+            for (const { name, srcDir } of assetSrcDirs) {
+              await fs.cp(srcDir, path.join(stagingDir, name), { recursive: true });
+            }
+          });
+          performed.push(unit.inlineSkill);
+        } else {
+          continue;
+        }
 
         if (unit.manifest) {
           const treeSha256 = await computeInstalledTreeHash(destSkillDir);
@@ -475,6 +716,10 @@ export async function executeInstall(
             treeSha256,
             installerVersion: INSTALLER_VERSION,
             installedAt: new Date().toISOString(),
+            packing: unit.manifest.packing,
+            packingForced: unit.manifest.packingForced,
+            inlineThreshold: unit.manifest.inlineThreshold,
+            catalogHash: unit.manifest.catalogHash,
           };
           await atomicWriteFile(
             guard,

@@ -1,6 +1,6 @@
 # Tool Use — Go
 
-For conceptual overview (tool definitions, tool choice, tips), see [shared/tool-use-concepts.md](../../shared/tool-use-concepts.md).
+For conceptual overview (tool definitions, tool choice, tips), see [mini/17-tool-use-concepts.md](mini/17-tool-use-concepts.md).
 
 ## Tool Use
 
@@ -185,7 +185,7 @@ func main() {
 
 ## Anthropic-Defined Tools
 
-Version-suffixed struct names with `Param` suffix. `Name`/`Type` are `constant.*` types — zero value marshals correctly, so `{}` works. Wrap in `ToolUnionParam` with the matching `Of*` field. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `shared/tool-use-concepts.md`).
+Version-suffixed struct names with `Param` suffix. `Name`/`Type` are `constant.*` types — zero value marshals correctly, so `{}` works. Wrap in `ToolUnionParam` with the matching `Of*` field. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `mini/17-tool-use-concepts.md`).
 
 ```go
 Tools: []anthropic.ToolUnionParam{

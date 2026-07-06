@@ -64,7 +64,7 @@ Every session has a live trace view in the Anthropic Console at `https://platfor
 | Archive | Session becomes **read-only**. Not reversible. |
 | Delete | Permanently deletes session, event history, container, and checkpoints. |
 
-These are ops/inspection calls — typically made from a terminal, not application code. From the shell (see `shared/anthropic-cli.md`):
+These are ops/inspection calls — typically made from a terminal, not application code. From the shell (see `mini/19-anthropic-cli.md`):
 
 ```sh
 ant beta:sessions list --transform '{id,title,status,created_at}' --format jsonl
@@ -134,7 +134,7 @@ const session = await client.beta.sessions.create(
 | `environment_id`| string   | **Yes**  | Environment ID                                 |
 | `title`         | string   | No       | Human-readable name (appears in logs/dashboards) |
 | `resources`     | array    | No       | Files, GitHub repos, or memory stores, attached to the container at startup. Memory stores are session-create-only (not addable via `resources.add()`). |
-| `vault_ids`     | array    | No       | Vault IDs (`vlt_*`) — MCP credentials with auto-refresh + `environment_variable` secrets substituted at egress. See `shared/managed-agents-tools.md` → Vaults. |
+| `vault_ids`     | array    | No       | Vault IDs (`vlt_*`) — MCP credentials with auto-refresh + `environment_variable` secrets substituted at egress. See `mini/33-managed-agents-tools.md` → Vaults. |
 | `metadata`      | object   | No       | User-provided key-value pairs                  |
 
 **Agent configuration fields** (passed to `agents.create()`, not `sessions.create()`):
@@ -145,10 +145,10 @@ const session = await client.beta.sessions.create(
 | `model`       | string or object | **Yes** | Claude model ID (bare string, or `{id, speed}` object). All Claude 4.5+ models supported. |
 | `system`      | string   | No       | System prompt — defines the agent's behavior (up to 100K chars) |
 | `tools`       | array    | No       | Encompasses three kinds: (1) pre-built Claude Agent tools (`agent_toolset_20260401`), (2) MCP tools (`mcp_toolset`), and (3) custom client-side tools. Max 128. |
-| `mcp_servers` | array    | No       | MCP server connections — standardized third-party capabilities (e.g. GitHub, Asana). Max 20, unique names. See `shared/managed-agents-tools.md` → MCP Servers. |
-| `skills`      | array    | No       | Customized "best-practices" context with progressive disclosure. Max 20. See `shared/managed-agents-tools.md` → Skills. |
+| `mcp_servers` | array    | No       | MCP server connections — standardized third-party capabilities (e.g. GitHub, Asana). Max 20, unique names. See `mini/33-managed-agents-tools.md` → MCP Servers. |
+| `skills`      | array    | No       | Customized "best-practices" context with progressive disclosure. Max 20. See `mini/33-managed-agents-tools.md` → Skills. |
 | `description` | string   | No       | Description of the agent (up to 2048 chars)    |
-| `multiagent`  | object   | No       | `{type: "coordinator", agents: [...]}` — roster this agent may delegate to. See `shared/managed-agents-multiagent.md`. |
+| `multiagent`  | object   | No       | `{type: "coordinator", agents: [...]}` — roster this agent may delegate to. See `mini/36-managed-agents-multiagent.md`. |
 | `metadata`    | object   | No       | Arbitrary key-value pairs (max 16, keys ≤64 chars, values ≤512 chars) |
 
 ---
@@ -170,7 +170,7 @@ The API is **flat** — `model`, `system`, `tools` etc. are top-level fields, no
 | `mcp_servers`      | array    | No       | MCP server connections                             |
 | `skills`           | array    | No       | Skill references (max 20)                          |
 | `description`      | string   | No       | Description of the agent                           |
-| `multiagent`       | object   | No       | Coordinator roster — see `shared/managed-agents-multiagent.md` |
+| `multiagent`       | object   | No       | Coordinator roster — see `mini/36-managed-agents-multiagent.md` |
 | `metadata`         | object   | No       | Arbitrary key-value pairs                          |
 
 ### Lifecycle: create once, run many, update in place
@@ -187,7 +187,7 @@ The agent is a **persistent resource**, not a per-run parameter. The intended pa
 
 **Anti-pattern:** calling `agents.create()` at the top of every script run. This accumulates orphaned agent objects, pays create latency on every invocation, and defeats the versioning model. If you see `agents.create()` in a function that's called per-request or per-cron-tick, that's wrong — hoist it to one-time setup and persist the ID.
 
-> **Recommended — define agents and environments as YAML + apply via the `ant` CLI.** The split is **CLI for the control plane, SDK for the data plane**: agents and environments are relatively static resources you manage with `ant` (version-controlled YAML, applied from CI); sessions are dynamic and driven by your application through the SDK. See `shared/anthropic-cli.md` → *Version-controlled Managed Agents resources* for the `ant beta:agents create < agent.yaml` / `update --version N` flow. The SDK `agents.create()` call shown elsewhere in this doc is the in-code equivalent — use it when you need to provision programmatically, but prefer the YAML flow for anything a human maintains.
+> **Recommended — define agents and environments as YAML + apply via the `ant` CLI.** The split is **CLI for the control plane, SDK for the data plane**: agents and environments are relatively static resources you manage with `ant` (version-controlled YAML, applied from CI); sessions are dynamic and driven by your application through the SDK. See `mini/19-anthropic-cli.md` → *Version-controlled Managed Agents resources* for the `ant beta:agents create < agent.yaml` / `update --version N` flow. The SDK `agents.create()` call shown elsewhere in this doc is the in-code equivalent — use it when you need to provision programmatically, but prefer the YAML flow for anything a human maintains.
 
 ### Versioning
 
@@ -255,13 +255,13 @@ Each overridable field follows tri-state rules:
 - **`null` (or `[]` for list fields)** → the session runs with that field cleared. Applies in full to `system`, `mcp_servers`, `skills`. Two exceptions: `model` is never clearable (`model: null` → 400 `agent_model_required`); clearing `tools` returns 400 when the session's effective `skills` is non-empty (skills require the `read` tool), otherwise `tools: null` / `tools: []` clears.
 - **A value** → replaces the agent's value **in full**. Overrides never merge — a `tools` override must list every tool the session should have.
 
-Overrides are session-local: they do **not** modify the agent resource or create a new agent version. The response's `agent` object reflects the post-override configuration, while its `id` and `version` still identify the base agent — so you can trace a session back to its base. In multiagent sessions, overrides apply to the coordinator and its `{type: "self"}` copies; roster agents referenced by ID always use their own as-created configuration (see `shared/managed-agents-multiagent.md`).
+Overrides are session-local: they do **not** modify the agent resource or create a new agent version. The response's `agent` object reflects the post-override configuration, while its `id` and `version` still identify the base agent — so you can trace a session back to its base. In multiagent sessions, overrides apply to the coordinator and its `{type: "self"}` copies; roster agents referenced by ID always use their own as-created configuration (see `mini/36-managed-agents-multiagent.md`).
 
 ### Updating the agent configuration mid-session
 
 `sessions.update()` can change `agent.tools`, `agent.mcp_servers` (including permission policies), and `vault_ids` on an **existing** session. This is a **session-local override** — it does not create a new agent version and does not propagate back to the agent object. The provided arrays are **full replacements**; to append one tool, `GET` the session, modify, and `POST` back. The session must be `idle` — interrupt first if running.
 
-Only `tools` and `mcp_servers` can change after a session is created — to run with a `model`, `system`, or `skills` other than the agent's values, use `agent_with_overrides` at create time (above). The agent's configured `system` field is fixed for the session's lifetime; you can still **replace the effective system prompt between turns** by sending a `system.message` event (see `shared/managed-agents-events.md` § Updating the system prompt mid-session).
+Only `tools` and `mcp_servers` can change after a session is created — to run with a `model`, `system`, or `skills` other than the agent's values, use `agent_with_overrides` at create time (above). The agent's configured `system` field is fixed for the session's lifetime; you can still **replace the effective system prompt between turns** by sending a `system.message` event (see `mini/34-managed-agents-events.md` § Updating the system prompt mid-session).
 
 ```python
 client.beta.sessions.update(

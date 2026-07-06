@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) for the
 spec version and the CLI, with the understanding that a v0.x release makes no
 stability promises on either.
 
-## [Unreleased]
+## [0.2.0] (2026-07-06)
 
 ### Added
 
@@ -24,6 +24,81 @@ stability promises on either.
   bundled into the tarball; the packed artifact is validated by an
   extracted-tarball end-to-end test. Node ≥ 18; interactive wizard via
   `npx hive-skills`, non-interactive via subcommands with `--yes`/`--dry-run`.
+- **`hive-skills` v0.2.0 packing modes** (`packages/hive-installer/docs/packing-modes.md`,
+  evidence base `benchmarks/exp10-harness-econ/PRODUCT-DECISION.md`): installs
+  now default to `--packing auto`, which chooses per skill between
+  `bundle-inline` (a single `SKILL.md` — upstream-verbatim frontmatter
+  description plus the compiled `BUNDLE.md` body, marker stripped; no
+  `composable/` tree) and `tree` (the v0.1.0 shim + full composable tree
+  shape, retained for large skills) by a 25,000-marker-stripped-bundle-token
+  threshold, overridable per install (`--packing tree|bundle-inline`,
+  `--inline-threshold <n>`). Non-knowledge assets (`scripts/` etc.) still
+  materialize in both modes. `.hive-install.json` gains additive
+  `packing`/`packingForced`/`inlineThreshold`/`catalogHash` fields
+  (pre-0.2.0 manifests, with none of these, are treated as `tree`,
+  unforced); `doctor` branches its per-skill integrity checks on the
+  installed mode and warns when an auto (non-forced) install's mode now
+  differs from the current default. The payload-client pointer block
+  wording is mode-generic ("read the skill's SKILL.md; larger skills carry
+  a composable/INDEX.md menu") rather than assuming tree shape. Upgrading
+  between modes (either direction) is a normal hash-diff upgrade — no new
+  uninstall/reinstall step. A `preset-skills` mode (installing each compiled
+  preset as its own sibling skill) is spec'd but explicitly **descoped**
+  from 0.2.0 pending Exp 11's native-selection probes.
+  `scripts/bundle-assets.mjs` additionally records each skill's upstream
+  `sourceDescription` (verbatim from its vendored `SKILL.md` frontmatter,
+  falling back to the existing INDEX-first-sentence `description` with a
+  `descriptionSource` flag) for the inline `SKILL.md` generator to use.
+  Evidence for the default rule: measured PARITY between inline and tree at
+  mid-size on Claude Code (mcp-builder, ~23.5k tokens, 3/4 both), a
+  reproducible Codex quality win for single-file delivery at small/mid size
+  (4/4 vs 3/4), and −34%/−38% conversation-token deltas on engaged small-skill
+  (pdf) cases — the 10–25k inline default is called out as **provisional**
+  in the spec pending Experiment 11, not a settled mid-size win.
+
+### Fixed
+
+- **Dead non-knowledge-asset paths in installed converted skills** (found
+  via Experiment 10 dogfooding). Converted skills' minis reference vendored
+  non-knowledge assets by relative path per spec §9 (e.g. pdf's
+  `scripts/check_fillable_fields.py`, docx/pptx's `scripts/office/*`,
+  mcp-builder's `scripts/`, skill-creator's `scripts/`/`assets/`/
+  `references/`/`agents/`/`eval-viewer/`), but neither the asset bundle nor
+  the installer materialized those directories, so an installed skill's
+  path references pointed at nothing. `scripts/bundle-assets.mjs` now
+  detects each converted/authored skill's matching vendored source root and
+  bundles a top-level directory there iff the skill's own compiled
+  composable content (`INDEX.md`/`BUNDLE.md`/`mini/*.md`/`presets/*.md`)
+  references it by relative path — reference-based, not "ship every
+  directory": a source root can also hold already-converted knowledge
+  material (e.g. claude-api's per-language `.md` folders, whose content is
+  losslessly carried by its own minis; mcp-builder's `reference/`, never
+  mentioned by path) that must NOT be duplicated into the tarball. Shipped
+  dirs land under `assets/skills/<category>/<name>/assets-src/`, recorded
+  on the skill's `manifest.json` entry; the installer materializes them
+  into the installed skill dir's root (e.g. `<installed-skill>/scripts/`)
+  alongside `composable/` and `SKILL.md`, and the tree-hash used for
+  install-plan skip/upgrade decisions now accounts for them.
+- **Stale cross-references in `skills/converted/claude-api` (bumped
+  1.0.0 -> 1.0.1)**. The prior asset-discovery fix above still shipped
+  claude-api's 9 vendored per-language directories (`csharp`, `curl`, `go`,
+  `java`, `php`, `python`, `ruby`, `shared`, `typescript`) as assets, because
+  every one of them was still referenced by a `<dir>/` path somewhere in the
+  compiled minis — e.g. "read from `csharp/`", "see `shared/tool-use-concepts.md`",
+  `{lang}/claude-api/tool-use.md` — leftovers from the pre-conversion flat
+  source layout, even though that same content had already been losslessly
+  carried into sibling minis (e.g. `shared/tool-use-concepts.md` ->
+  `mini/17-tool-use-concepts.md`). In an installed skill those paths are
+  dead: there is no `shared/`/`csharp/`/etc. directory on disk. Every stale
+  reference now points at its sibling mini instead (verified by content,
+  not filename guessing); `00-core.md`'s language-routing table and Reading
+  Guide were rewritten to route to the `NN-<lang>-*.md` mini series rather
+  than deleted, since the routing behavior itself is still needed. Parity
+  vs `skills/sources/anthropic/claude-api` held at 100.4% (was 99.9%
+  pre-fix) with every source heading still fuzzy-matched. Net effect:
+  `scripts/bundle-assets.mjs` no longer bundles any of claude-api's 9
+  vendored per-language directories as assets (`assetDirs` shrinks to
+  none), since none of them are referenced by path anymore.
 
 ## [0.1.0] (2026-07-05)
 

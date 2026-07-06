@@ -76,7 +76,7 @@ This file contains WebFetch URLs for fetching current information from platform.
 
 ### Managed Agents
 
-Use these when a managed-agents binding, behavior, or wire-level detail isn't covered in the cached `shared/managed-agents-*.md` concept files or in `{lang}/managed-agents/README.md`.
+Use these when a managed-agents binding, behavior, or wire-level detail isn't covered in the cached `mini/3x-managed-agents-*.md` concept files or in your language's Managed Agents mini (00-core.md's Reading Guide table).
 
 | Topic                 | URL                                                                              | Extraction Prompt                                                                               |
 | --------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -118,7 +118,7 @@ The `ant` CLI provides terminal access to the Claude API. Every API resource is 
 
 ## Claude API SDK Repositories
 
-WebFetch these when a binding (class, method, namespace, field) isn't covered in the cached `{lang}/` skill files or in the managed-agents docs above. The SDKs include beta managed-agents support for `/v1/agents`, `/v1/sessions`, `/v1/environments`, and related resources — search the repo for `BetaManagedAgents`, `beta.agents`, `beta.sessions`, or the equivalent namespace for that language.
+WebFetch these when a binding (class, method, namespace, field) isn't covered in this skill's cached language-specific minis (00-core.md's Reading Guide table) or in the managed-agents docs above. The SDKs include beta managed-agents support for `/v1/agents`, `/v1/sessions`, `/v1/environments`, and related resources — search the repo for `BetaManagedAgents`, `beta.agents`, `beta.sessions`, or the equivalent namespace for that language.
 
 | SDK        | URL                                                      | Extraction Prompt                                                                                                       |
 | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |

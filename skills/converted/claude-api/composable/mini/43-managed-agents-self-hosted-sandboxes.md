@@ -78,7 +78,7 @@ await new EnvironmentWorker({
 
 ## Run a worker — `ant` CLI (fixed tools)
 
-The `ant` CLI ships a worker with the fixed built-in toolset (`bash`, `read`, `write`, `edit`, `glob`, `grep`). Install per `shared/anthropic-cli.md`, then:
+The `ant` CLI ships a worker with the fixed built-in toolset (`bash`, `read`, `write`, `edit`, `glob`, `grep`). Install per `mini/19-anthropic-cli.md`, then:
 
 ```sh
 export ANTHROPIC_ENVIRONMENT_KEY=sk-ant-oat01-...
@@ -97,7 +97,7 @@ Inside an `--on-work` container, run `ant beta:worker run --workdir <dir>` as th
 
 ## Webhook-driven wake (instead of always-on)
 
-Register a webhook for `session.status_run_started` (see `shared/managed-agents-webhooks.md`), verify the delivery, then drain one work item with `.run_one()`:
+Register a webhook for `session.status_run_started` (see `mini/37-managed-agents-webhooks.md`), verify the delivery, then drain one work item with `.run_one()`:
 
 ```python
 import os
@@ -156,7 +156,7 @@ These are **control-plane** calls — authenticate with `x-api-key` (not the env
 | Container lifecycle, hardening, networking | Anthropic | **You** — run non-root, read-only rootfs, drop caps; egress is whatever your VPC/firewall allows |
 | `file` / `github_repository` resource mounting | Anthropic mounts into the container | **You** — pass pointers via `sessions.create(metadata={...})` and have your orchestrator fetch/clone before dispatch |
 | `memory_store` resources | Supported | **Not yet supported** |
-| Vault `environment_variable` credentials | Supported (substituted at Anthropic-managed egress) | **Not yet supported** — egress is yours, so there's nowhere to substitute the secret. Use MCP credentials or a host-side custom tool (`shared/managed-agents-client-patterns.md` Pattern 9) |
+| Vault `environment_variable` credentials | Supported (substituted at Anthropic-managed egress) | **Not yet supported** — egress is yours, so there's nowhere to substitute the secret. Use MCP credentials or a host-side custom tool (`mini/40-managed-agents-client-patterns.md` Pattern 9) |
 | Built-in tools | Via `agent_toolset_20260401` | Supplied by your worker (`EnvironmentWorker` default / `beta_agent_toolset(env)` / `ant` CLI fixed set) |
 | Skills download | Automatic | `EnvironmentWorker` / `AgentToolContext` fetch into `{workdir}/skills/` (needs `client` + `session_id`) |
 | Claude Platform on AWS | Supported | **Not available** |
@@ -171,4 +171,4 @@ These are **control-plane** calls — authenticate with `x-api-key` (not the env
 
 ## Security — what you own
 
-Container hardening; egress restriction (there is no default); `ANTHROPIC_ENVIRONMENT_KEY` custody and rotation; one workspace + environment per trust boundary when running untrusted code; least-privilege for the tool process; log retention and redaction. **Anthropic cannot**: fast-revoke a leaked environment key, verify your image or supply chain, sandbox tool execution inside your container, or enforce retention after tool output reaches your infrastructure. See the Self-Hosted Sandboxes Security page in `shared/live-sources.md` for the full checklist.
+Container hardening; egress restriction (there is no default); `ANTHROPIC_ENVIRONMENT_KEY` custody and rotation; one workspace + environment per trust boundary when running untrusted code; least-privilege for the tool process; log retention and redaction. **Anthropic cannot**: fast-revoke a leaked environment key, verify your image or supply chain, sandbox tool execution inside your container, or enforce retention after tool output reaches your infrastructure. See the Self-Hosted Sandboxes Security page in `mini/13-live-sources.md` for the full checklist.

@@ -1,0 +1,6 @@
+
+=== median-per-case scores ===
+C0-baseline: score=1/4 {'pdf-narrow-01': 0, 'pdf-narrow-02': 1, 'pdf-broad-03': 0, 'pdf-broad-04': 0} | median neutral tokens: {'pdf-narrow-01': 112954, 'pdf-narrow-02': 177491, 'pdf-broad-03': 827559, 'pdf-broad-04': 293544}
+C1-upstream: score=3/4 {'pdf-narrow-01': 1, 'pdf-narrow-02': 1, 'pdf-broad-03': 0, 'pdf-broad-04': 1} | median neutral tokens: {'pdf-narrow-01': 257042, 'pdf-narrow-02': 177765, 'pdf-broad-03': 870741, 'pdf-broad-04': 584059}
+C2-ccs-full: score=3/4 {'pdf-narrow-01': 1, 'pdf-narrow-02': 1, 'pdf-broad-03': 0, 'pdf-broad-04': 1} | median neutral tokens: {'pdf-narrow-01': 321570, 'pdf-narrow-02': 177473, 'pdf-broad-03': 554651, 'pdf-broad-04': 340941}
+C3-bundle-only: score=3/4 {'pdf-narrow-01': 1, 'pdf-narrow-02': 1, 'pdf-broad-03': 0, 'pdf-broad-04': 1} | median neutral tokens: {'pdf-narrow-01': 211025, 'pdf-narrow-02': 210591, 'pdf-broad-03': 923852, 'pdf-broad-04': 211542}

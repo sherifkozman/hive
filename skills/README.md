@@ -29,7 +29,7 @@ current state if you have edited any skill.
 | [`financial-analysis`](authored/financial-analysis/composable/INDEX.md) | authored | 1.0.0 | 13 | 10,876 | 72P/0W/0F | Ratio analysis, DCF, comps, budget variance, forecasting (converted from the `financial-analyst` market skill, kept under `authored/` per its original categorization) |
 | [`python-api`](authored/python-api/composable/INDEX.md) | authored | 1.0.0 | 9 | 5,136 | 51P/0W/0F | FastAPI REST API design, auth, validation, testing |
 | [`tech-writing`](authored/tech-writing/composable/INDEX.md) | authored | 1.0.0 | 8 | 4,736 | 45P/0W/0F | Technical & product writing: changelogs, breaking changes, style |
-| [`claude-api`](converted/claude-api/composable/INDEX.md) | converted | 1.0.0 | 56 | 194,878 | 229P/1W/0F | Claude API / Anthropic SDK reference, with language-track presets (see note below) |
+| [`claude-api`](converted/claude-api/composable/INDEX.md) | converted | 1.0.1 | 56 | 195,982 | 229P/1W/0F | Claude API / Anthropic SDK reference, with language-track presets (see note below) |
 | [`docx`](converted/docx/composable/INDEX.md) | converted | 1.0.0 | 6 | 5,304 | 30P/0W/0F | Word document (.docx) creation, reading, editing, and XML manipulation (from `anthropics/skills`) |
 | [`internal-comms`](converted/internal-comms/composable/INDEX.md) | converted | 1.0.0 | 5 | 2,876 | 26P/0W/0F | Internal comms writing (from `anthropics/skills`) |
 | [`mcp-builder`](converted/mcp-builder/composable/INDEX.md) | converted | 1.0.0 | 17 | 23,441 | 74P/0W/0F | Building MCP servers (from `anthropics/skills`); ships `presets/{python-server,node-server}.md` |

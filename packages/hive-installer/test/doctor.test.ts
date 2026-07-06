@@ -30,7 +30,7 @@ function ctx() {
 }
 
 async function makeCatalog(
-  skillOpts: Array<{ category: string; name: string; version?: string }>,
+  skillOpts: Array<{ category: string; name: string; version?: string; bundleTokens?: number }>,
 ): Promise<Catalog> {
   const skills = [];
   for (const opts of skillOpts) {
@@ -45,8 +45,10 @@ async function makeCatalog(
       category: opts.category,
       version: opts.version ?? '1.0.0',
       minis: 1,
-      bundleTokens: 10,
+      bundleTokens: opts.bundleTokens ?? 10,
       description: 'A test skill.',
+      sourceDescription: 'A test skill.',
+      descriptionSource: 'index-fallback' as const,
       path: `skills/${opts.category}/${opts.name}`,
     });
   }
@@ -375,5 +377,179 @@ describe('formatDoctorReport', () => {
     const report = formatDoctorReport(result);
     expect(report).toContain('[FAIL]');
     expect(report).toContain('fix:');
+  });
+});
+
+// --- packing modes (docs/packing-modes.md v2 items 3 & 5) -----------------
+
+describe('doctor: packing-mode-aware per-skill integrity checks', () => {
+  it('reports ok for a healthy bundle-inline install (SKILL.md body present, no composable/ expected)', async () => {
+    const catalog = await makeCatalog([{ category: 'converted', name: 'pdf', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['pdf'],
+      catalog,
+      packing: 'auto',
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-pdf');
+    expect(check?.status).toBe('ok');
+    expect(check?.detail).toContain('healthy');
+  });
+
+  it('warns when a bundle-inline install\'s SKILL.md is missing entirely', async () => {
+    const catalog = await makeCatalog([{ category: 'converted', name: 'pdf', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['pdf'],
+      catalog,
+      packing: 'auto',
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const destDir = path.join(homeDir, '.claude', 'skills', 'hive-pdf');
+    const { rm: rmFile } = await import('node:fs/promises');
+    await rmFile(path.join(destDir, 'SKILL.md'));
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-pdf');
+    expect(check?.status).toBe('warn');
+    expect(check?.detail).toContain('SKILL.md missing');
+  });
+
+  it('warns when a bundle-inline install\'s SKILL.md body is emptied down to frontmatter only', async () => {
+    const catalog = await makeCatalog([{ category: 'converted', name: 'pdf', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['pdf'],
+      catalog,
+      packing: 'auto',
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const destDir = path.join(homeDir, '.claude', 'skills', 'hive-pdf');
+    await writeFile(path.join(destDir, 'SKILL.md'), '---\nname: hive-pdf\ndescription: "x"\n---\n\n');
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-pdf');
+    expect(check?.status).toBe('warn');
+    expect(check?.detail).toContain('body is empty');
+  });
+
+  it('does NOT check for composable/INDEX.md or VERSION on a bundle-inline install (mode-appropriate checks only)', async () => {
+    const catalog = await makeCatalog([{ category: 'converted', name: 'pdf', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['pdf'],
+      catalog,
+      packing: 'auto',
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-pdf');
+    expect(check?.status).toBe('ok'); // would warn about missing INDEX.md/VERSION if tree-mode checks ran
+  });
+
+  it('a tree-mode install is checked exactly as before (regression guard)', async () => {
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), { clients: ['claude-code'], skills: ['foo'], catalog, packing: 'tree' });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-foo');
+    expect(check?.status).toBe('ok');
+  });
+
+  it('a pre-0.2.0 manifest (no `packing` field at all) is treated as tree mode', async () => {
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo' }]);
+    const destDir = path.join(homeDir, '.claude', 'skills', 'hive-foo');
+    await mkdir(path.join(destDir, 'composable', 'mini'), { recursive: true });
+    await writeFile(path.join(destDir, 'composable', 'INDEX.md'), '# foo\n\nA test skill.\n');
+    await writeFile(path.join(destDir, 'composable', 'BUNDLE.md'), `${BUNDLE_GENERATED_MARKER}\nbundle content\n`);
+    await writeFile(path.join(destDir, 'composable', 'VERSION'), '1.0.0');
+    await writeFile(
+      path.join(destDir, '.hive-install.json'),
+      JSON.stringify({
+        skillName: 'foo',
+        skillVersion: '1.0.0',
+        treeSha256: 'irrelevant-for-this-check',
+        installerVersion: '0.1.0',
+        installedAt: new Date(0).toISOString(),
+      }),
+    );
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-foo');
+    // Tree-mode checks ran (not inline) — the hash mismatch is expected
+    // (synthetic manifest), but no "SKILL.md missing" (an inline-only
+    // check) should appear.
+    expect(check?.detail).not.toContain('SKILL.md missing');
+  });
+});
+
+describe('doctor: packing-differs-from-current-default upgrade hint', () => {
+  it('fires for an auto-installed skill whose current default has changed size category', async () => {
+    // Install as tree (forced) while the skill is catalogued small enough
+    // that the CURRENT default (auto, unforced at read time) would be inline.
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['foo'],
+      catalog,
+      packing: 'tree',
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    // Manually flip the recorded manifest to packingForced: false, simulating
+    // an auto install made back when this skill's bundle was above the
+    // threshold (the catalog has since shrunk, or the threshold changed).
+    const destDir = path.join(homeDir, '.claude', 'skills', 'hive-foo');
+    const raw = await readFile(path.join(destDir, '.hive-install.json'), 'utf8');
+    const manifest = JSON.parse(raw);
+    manifest.packingForced = false;
+    await writeFile(path.join(destDir, '.hive-install.json'), JSON.stringify(manifest));
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-foo');
+    expect(check?.status).toBe('warn');
+    expect(check?.detail).toContain("the CLI's auto rule would now choose");
+    expect(check?.detail).toContain('installed as tree');
+    expect(check?.detail).toContain('choose bundle-inline');
+    expect(check?.fix).toContain('switch to bundle-inline packing');
+  });
+
+  it('does NOT fire when packingForced is true (an explicit --packing choice is not staleness)', async () => {
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['foo'],
+      catalog,
+      packing: 'tree', // explicit force
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-foo');
+    expect(check?.status).toBe('ok');
+    expect(check?.detail).not.toContain('packing mode differs');
+  });
+
+  it('does NOT fire when the installed mode already matches the current default', async () => {
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo', bundleTokens: 5 }]);
+    const plan = await planInstall(ctx(), {
+      clients: ['claude-code'],
+      skills: ['foo'],
+      catalog,
+      packing: 'auto', // small skill -> bundle-inline, matches current default
+    });
+    await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const result = await doctor(ctx(), { python: false, catalog });
+    const check = find(result.checks, 'skill:claude-code:hive-foo');
+    expect(check?.status).toBe('ok');
+    expect(check?.detail).not.toContain('packing mode differs');
   });
 });

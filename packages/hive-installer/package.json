@@ -1,6 +1,6 @@
 {
   "name": "hive-skills",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Interactive installer for Hive CCS skills across AI coding clients (npx hive-skills)",
   "type": "module",
   "license": "MIT",

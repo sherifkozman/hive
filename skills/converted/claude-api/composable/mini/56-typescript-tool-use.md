@@ -1,6 +1,6 @@
 # Tool Use — TypeScript
 
-For conceptual overview (tool definitions, tool choice, tips), see [shared/tool-use-concepts.md](../../shared/tool-use-concepts.md).
+For conceptual overview (tool definitions, tool choice, tips), see [mini/17-tool-use-concepts.md](mini/17-tool-use-concepts.md).
 
 ## Tool Runner (Recommended)
 
@@ -210,7 +210,7 @@ const response = await client.messages.create({
 
 ## Anthropic-Defined Tools
 
-Version-suffixed `type` literals; `name` is fixed per interface. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `shared/tool-use-concepts.md`). Pass plain object literals — the `ToolUnion` type is satisfied structurally. **The `name`/`type` pair must match the interface**: mixing `str_replace_based_edit_tool` (20250728 name) with `text_editor_20250124` (which expects `str_replace_editor`) is a TS2322.
+Version-suffixed `type` literals; `name` is fixed per interface. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `mini/17-tool-use-concepts.md`). Pass plain object literals — the `ToolUnion` type is satisfied structurally. **The `name`/`type` pair must match the interface**: mixing `str_replace_based_edit_tool` (20250728 name) with `text_editor_20250124` (which expects `str_replace_editor`) is a TS2322.
 
 **Don't type-annotate as `Tool[]`** — `Tool` is just the custom-tool variant. Let structural typing infer from the `tools` param, or annotate as `Anthropic.Messages.ToolUnion[]` if you must:
 

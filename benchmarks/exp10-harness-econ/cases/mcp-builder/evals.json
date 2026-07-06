@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "skill_name": "mcp-builder",
+  "defaults": {
+    "timeout_sec": 300,
+    "judge_model": "claude-haiku-4-5-20251001"
+  },
+  "cases": [
+    {
+      "id": "mcp-narrow-01",
+      "question": "MCP server evaluation guidance specifies an exact target count for the number of test questions to create when evaluating any MCP server — not \"several\", not \"as many as needed to cover the API\", but one specific number. What is that exact number? Write your final answer to a file named answer.txt in your working directory, formatted exactly as: a single integer and nothing else, e.g. 7",
+      "ground_truth": "10"
+    },
+    {
+      "id": "mcp-narrow-02",
+      "question": "A guide's closing list of tips for creating quality MCP server evaluations includes one tip whose bolded name is two words, and whose advice is to rely on historical data and closed/completed concepts in order to achieve a specific evaluation quality goal. What is the exact two-word bolded name of that tip? Write your final answer to a file named answer.txt in your working directory, formatted exactly as: the two-word tip name only, no numbering, no bold markup (asterisks), no trailing punctuation, e.g. Verify Answers",
+      "ground_truth": "Ensure Stability"
+    },
+    {
+      "id": "mcp-broad-01",
+      "question": "Two independent facts, each drawn from a different reference document: (1) When an MCP tool response supports a machine-readable structured format as an alternative to its human-readable default, what is the exact lowercase string used as the value that selects that machine-readable format? (2) In the MCP TypeScript SDK, when a tool is registered with registerTool and a JSDoc-style comment is written directly above its handler function, does that comment automatically become the tool's description field in the registered tool config — answer yes or no. Write your final answer to a file named answer.txt in your working directory, formatted exactly as: <format-string>_<yes-or-no> (lowercase, single underscore separator), e.g. markdown_yes",
+      "ground_truth": "json_no"
+    },
+    {
+      "id": "mcp-broad-02",
+      "question": "Two independent facts, each drawn from a different reference document: (1) In a Node/TypeScript MCP server's code-quality checklist, large tool responses must be checked against one specific module-level constant before being truncated — what is that constant's exact name (all uppercase, words separated by a single underscore)? (2) In Python's FastMCP, what exact string literal must be passed as the transport argument to mcp.run() to start the server on Streamable HTTP instead of the stdio default? Write your final answer to a file named answer.txt in your working directory, formatted exactly as: <constant-name>-<transport-literal> (single hyphen separator, exact casing preserved), e.g. MAX_LEN-http",
+      "ground_truth": "CHARACTER_LIMIT-streamable_http"
+    }
+  ]
+}

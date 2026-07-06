@@ -21,12 +21,12 @@ in [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
 
 ## Contents
 
+- [Quick start](#quick-start)
 - [The hypothesis](#the-hypothesis)
 - [Why Hive exists](#why-hive-exists)
 - [Evidence](#evidence)
 - [The options](#the-options)
 - [When to use it, and when not](#when-to-use-it-and-when-not)
-- [Quick start](#quick-start)
 - [Repo map](#repo-map)
 - [Relationship to prior art](#relationship-to-prior-art)
 - [Limitations & invitation to replicate](#limitations--invitation-to-replicate)
@@ -40,6 +40,52 @@ flowchart TD
     E -->|k/N at or above 0.6| B[Load BUNDLE or matching preset]
     E -->|very broad and decomposable| F[Fan out parallel workers, 1-2 minis each]
 ```
+
+## Quick start
+
+**Install the skills into your AI tools (no clone needed):** run the installer
+with `npx`. It scans for installed AI coding clients (Claude Code, Codex,
+OpenCode, VS Code Copilot, Cline, Gemini, Windsurf, Cursor, and more), installs
+the bundled CCS skills into the ones you pick, and can propose converting your
+*existing* skills to CCS form. It backs up before every change, never edits a
+client's rules file without explicit consent, and supports a zero-write
+`--dry-run`.
+
+```bash
+npx hive-skills            # interactive wizard: scan → pick clients → pick skills → install
+npx hive-skills scan       # just report detected clients and their current skills
+npx hive-skills doctor     # diagnose install health and toolchain
+npx hive-skills propose    # list conversion candidates with ready-to-run recipes
+```
+
+The installer's source lives in [`packages/hive-installer/`](packages/hive-installer/)
+(published as `hive-skills`); see its [README](packages/hive-installer/README.md)
+for the full command reference, client-support table, and safety model.
+
+**The fast path (agentic; how most adopters should start):** point your AI
+coding agent (Claude Code, Codex, anything that reads files) at
+[`skills/meta/ccs-skill-creator/composable/INDEX.md`](skills/meta/ccs-skill-creator/composable/INDEX.md)
+and ask it to create, convert, or update a skill. The meta-skill walks the agent
+through the whole workflow, including running the verification commands below on
+its own output.
+
+**The manual path:** author a new skill with
+[`docs/AUTHORING.md`](docs/AUTHORING.md); convert an existing one with
+[`docs/CONVERSION.md`](docs/CONVERSION.md) (the one rule: repackaging, never
+summarization). Then use the zero-dependency CLI:
+
+```bash
+python3 tools/hive.py compile skills/<category>/<domain>   # minis/ → BUNDLE.md (+ presets)
+python3 tools/hive.py lint    skills/<category>/<domain>   # check index/mini/core rules
+python3 tools/hive.py parity  skills/<category>/<domain> <source-dir>   # source vs union-of-minis
+python3 tools/hive.py report  skills             # token/size/version summary across all skills, any depth
+python3 tools/hive.py bump    skills/<category>/<domain> [major|minor|patch]   # bump composable/VERSION
+```
+
+`compile` regenerates artifacts (never hand-edit `BUNDLE.md` or `presets/*.md`);
+`parity` is the gate that a conversion dropped no content; `lint` enforces the
+structural rules in [`docs/SPEC.md`](docs/SPEC.md); `bump` is the only supported
+way to change a skill's `composable/VERSION`.
 
 ## The hypothesis
 
@@ -89,32 +135,38 @@ Hive from "write more guidance."
 
 ## Evidence
 
-Every claim below traces to a benchmark table in
-[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md). The protocol is the same throughout:
-tasks frozen by commit *before* the skills exist (no tailoring in either
-direction), blind judging by independent frontier-tier LLM judges against a
-fixed rubric, deterministic token accounting (chars/4 of files actually loaded),
-and orchestrator verification of code outputs. This is a study of moderate
-confidence: single-run cells, one model family. **Treat directions as solid and
-magnitudes as indicative** (score gaps ≤ 3 points are within judge noise).
+Every claim traces to `docs/BENCHMARKS.md` — ten experiments, one protocol:
+tasks frozen by commit before the skills exist, blind judging against a fixed
+rubric, deterministic token accounting, raw materials committed. Single-run
+cells; treat directions as solid and magnitudes as indicative.
 
-Two results from Experiment 7 carry the most weight for real adopters. First,
-**scale**: the `claude-api` skill is ~195k tokens, far too large to load whole
-into any context, yet on a broad multi-file build the Hive conversion navigated
-it to a **38 vs 34** win over the original packaging *at lower token cost*, and
-on a narrow task it pulled just **7 of 56 minis** for the slice the task needed.
-Second, **external knowledge**: when a domain sits genuinely outside model
-competence (current SDK internals, PDF and PPTX tooling), packaging it beat the
-no-skill baseline by the **widest margins in the whole suite** (+5 to +7 mean
-points), the counter-case to the ceiling effect that flattens skill gains on
-knowledge the model already has.
+**What is proven:**
 
-**Token savings on narrow tasks, at a glance.** Skill tokens loaded per narrow
-task, original/monolithic packaging vs Hive selective loading, across every
-domain measured:
+- **Quality**: composable packaging meets or beats a monolithic file (Exp 1)
+  and holds parity with skills already hand-tuned for progressive disclosure
+  (Exp 6–7) — confirmed independently on a community benchmark harness
+  (Exp 9). Where knowledge sits outside model competence, skills beat
+  no-skill by the widest margins in the suite (Exp 7: +5 to +7 points).
+- **Tokens**: 41–64% file-level savings on narrow tasks (Exp 1); presets cut
+  −53% vs the full bundle at parity (Exp 8); delivering small skills as one
+  inlined bundle cuts −34–38% conversation tokens at parity in real harnesses
+  (Exp 10 — the installer's automatic default since 0.2.0). At 195k-token
+  scale, selective loading is the only feasible path, and its routing is
+  measured-accurate (Exp 7, 10).
 
-Skill tokens loaded per narrow-task benchmark cell, original packaging vs
-Hive selective loading. Each bar is the share of tokens Hive avoided:
+**What is not:**
+
+- No quality *gain* over hand-tuned originals — parity, not superiority
+  (Exp 7: originals won the head-to-head 4–1 within noise).
+- Small skills (< ~5k tokens) should stay a single file — the scaffolding
+  costs more than selection saves (Exp 6).
+- In turn-based harnesses, runtime mini-navigation costs extra conversation
+  turns at small/mid size — the reason delivery shape now matters (Exp 10).
+- Index edge metadata (Exp 5) and premium-model shard routing (Exp 4, 8)
+  showed no measured benefit.
+
+Skill tokens loaded per narrow-task cell, original packaging vs Hive
+selective loading:
 
 | Skill | Original packaging (tokens) | Hive selective load (tokens) | Tokens saved |
 |---|---|---|---|
@@ -125,34 +177,8 @@ Hive selective loading. Each bar is the share of tokens Hive avoided:
 | financial-analyst | 4,833 | 2,299 | `██████████░░░░░░░░░░` 52% |
 | pdf | 14,309 | 3,995 | `██████████████░░░░░░` 72% |
 
-Bars left to right in each pair: original/monolithic packaging, then Hive
-selective loading. The y-axis starts at zero. These are the **narrow-task**
-cells only, the ones selective loading is built for; see
-[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md) for the full tables, including the
-**broad-task** cells where the token advantage shrinks or inverts.
-
-| # | What it tested | Result | Where Hive lost / its limit |
-|---|----------------|--------|-----------------------------|
-| 1 | Monolithic vs composable vs no-skill, 4 domains × 2 task types | Composable ≥ monolithic quality (5–3 head-to-head); 41–64% token savings on narrow tasks | Token advantage **inverts** on broad tasks (+2% to +27%); no-skill baseline tied composable and beat the monolith |
-| 2 | Loading the compiled bundle in one read (condition D) | Bundle beat loose-mini loading **4–0** on broad tasks; best mean rank of four conditions | Bundle costs +8–22% tokens vs a hand monolith (self-containment redundancy) |
-| 3 | Converting a third-party market skill (financial-analyst) | Token savings transferred (−52% narrow, −23% broad) | **Lossy** conversion (~30% compression) cost the quality edge; original won both tasks. Fix: lossless parity gate |
-| 4 | Per-mini model routing / fan-out (condition E) | Matched single-context quality within noise; max per-context load ~2,900 vs 7–9k tokens | Quality gain unproven; ceiling effect meant the premium-model shard couldn't show its edge |
-| 5 | Skill-graph edges (requires:/pairs-with:) | Flat index hit all 5 pre-registered target minis in both conditions | No selection or application benefit; mild precision cost. Edges not justified at domain scale |
-| 6 | Two official Anthropic Agent Skills, converted losslessly | Large skill, narrow task: Hive best quality **and** −11% tokens | Broad task: the bundle over-loaded (24k tok incl. irrelevant Node ref) vs pruned manual disclosure (16k) and lost 36→32.5; small (~2.8k tok) skill got no benefit at all |
-| 7 | Three of Hive's own converted skills (claude-api, pdf, pptx) head-to-head with their original Anthropic packaging | Skills beat no-skill by the suite's widest margins (+5 to +7 mean points); Hive took the hardest cell (claude-api broad, a 195k-token skill) **38 vs 34** at −4% tokens, and cut pdf-narrow **−72%** tokens | Original hand-tuned packaging won overall **4–1** (mean 36.17 vs 34.50, within noise); Hive reaches quality *parity*, not a quality gain, on skills already built for progressive disclosure |
-| 8 | Cherry-picked measured results (presets, stack-scale routing) | Preset loads −53% tokens vs bundle at parity quality; flat index routes 6/6 correctly across a 13-skill catalog | Preset does not beat a hand-tuned original on quality (37 vs 34); routing a premium model to a hard shard still showed no quality gain |
-
-In summary: **Hive wins where there is a large body of trap-dense
-knowledge and a task needs only part of it.** It is neutral-to-negative on small
-skills, on knowledge the model already has, and (until you ship presets) on
-broad tasks over a skill that contains mutually-exclusive tracks (Experiment 6's
-Python vs Node "preset gap"; remedy compiled but not re-benchmarked). Against a
-skill that is *already* hand-tuned for progressive disclosure, Hive reaches
-quality parity, not a quality gain (Experiment 7: the original packaging held a
-within-noise edge and won the head-to-head 4–1, mean 36.17 vs 34.50); Hive's
-advantage there is economics, scale navigation, and one uniform loading policy
-with versioning and lint/parity tooling, not higher scores. Edge metadata and
-model-routing quality gains are explicitly **not** proven.
+Full methodology, per-experiment tables, and every loss:
+[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md).
 
 ## The options
 
@@ -161,7 +187,8 @@ evidence status. An author picks the ones a skill warrants; a loading agent
 picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
 
 - **Selective mini loading (narrow path).** Read the INDEX, load `00-core` plus
-  only the minis a task needs. *Evidence: strong.* 41–64% token savings (mean
+  only the minis a task needs. *Evidence: strong at scale; conditional below it.*
+  41–64% file-level token savings (mean
   ~51%) at equal-or-better quality on narrow tasks; selection was expert-grade in
   all but 1 of 8 round-1 runs.
 - **Compiled bundle (broad path).** When most of a skill's content is relevant,
@@ -195,6 +222,18 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
   the mid-tier model matching the premium model exactly, so the quality-gain case
   remains unproven. See [`docs/MODEL-ROUTING.md`](docs/MODEL-ROUTING.md) for the
   full guide.
+- **Measured delivery shapes (the installer's edge).** The same compiled
+  artifacts can be *delivered* differently per client, and Experiment 10
+  measured which shape wins where in real installed harnesses: bundle-inline
+  for skills ≤~25k tokens (−34–38% conversation tokens at quality parity on
+  Claude Code; outscored the thin-shim tree 4/4 vs 3/4 on Codex), the
+  composable tree for large skills (where selective loading is the only
+  physically possible path — and its INDEX routing measured accurate),
+  presets for recurring tracks. `npx hive-skills` applies these defaults
+  automatically since 0.2.0. *Evidence: measured (Exp 10, 2 skills × 2
+  harnesses × n=3); the 10–25k inline band is provisional pending Exp 11.*
+  No monolithic skill can make this choice at all — there is only one shape
+  to deliver.
 - **Per-mini and per-skill versioning (new).** A mini MAY carry a `version:`
   frontmatter key and a skill MAY carry a `composable/VERSION` file, both bare
   semver (`X.Y.Z`); `hive.py bump` is the supported mutator for the skill-level
@@ -222,52 +261,6 @@ Do **not** use Hive when:
   repeatedly tied or beat skill conditions on tasks inside model competence.
 - Every task needs **all** of the skill. Then it's one document; just ship the
   bundle.
-
-## Quick start
-
-**Install the skills into your AI tools (no clone needed):** run the installer
-with `npx`. It scans for installed AI coding clients (Claude Code, Codex,
-OpenCode, VS Code Copilot, Cline, Gemini, Windsurf, Cursor, and more), installs
-the bundled CCS skills into the ones you pick, and can propose converting your
-*existing* skills to CCS form. It backs up before every change, never edits a
-client's rules file without explicit consent, and supports a zero-write
-`--dry-run`.
-
-```bash
-npx hive-skills            # interactive wizard: scan → pick clients → pick skills → install
-npx hive-skills scan       # just report detected clients and their current skills
-npx hive-skills doctor     # diagnose install health and toolchain
-npx hive-skills propose    # list conversion candidates with ready-to-run recipes
-```
-
-The installer's source lives in [`packages/hive-installer/`](packages/hive-installer/)
-(published as `hive-skills`); see its [README](packages/hive-installer/README.md)
-for the full command reference, client-support table, and safety model.
-
-**The fast path (agentic; how most adopters should start):** point your AI
-coding agent (Claude Code, Codex, anything that reads files) at
-[`skills/meta/ccs-skill-creator/composable/INDEX.md`](skills/meta/ccs-skill-creator/composable/INDEX.md)
-and ask it to create, convert, or update a skill. The meta-skill walks the agent
-through the whole workflow, including running the verification commands below on
-its own output.
-
-**The manual path:** author a new skill with
-[`docs/AUTHORING.md`](docs/AUTHORING.md); convert an existing one with
-[`docs/CONVERSION.md`](docs/CONVERSION.md) (the one rule: repackaging, never
-summarization). Then use the zero-dependency CLI:
-
-```bash
-python3 tools/hive.py compile skills/<category>/<domain>   # minis/ → BUNDLE.md (+ presets)
-python3 tools/hive.py lint    skills/<category>/<domain>   # check index/mini/core rules
-python3 tools/hive.py parity  skills/<category>/<domain> <source-dir>   # source vs union-of-minis
-python3 tools/hive.py report  skills             # token/size/version summary across all skills, any depth
-python3 tools/hive.py bump    skills/<category>/<domain> [major|minor|patch]   # bump composable/VERSION
-```
-
-`compile` regenerates artifacts (never hand-edit `BUNDLE.md` or `presets/*.md`);
-`parity` is the gate that a conversion dropped no content; `lint` enforces the
-structural rules in [`docs/SPEC.md`](docs/SPEC.md); `bump` is the only supported
-way to change a skill's `composable/VERSION`.
 
 ## Repo map
 

@@ -6,6 +6,7 @@ import {
   CatalogLoadError,
   getCatalogSkill,
   loadCatalog,
+  resolveSkillAssetSrcDir,
   resolveSkillComposableDir,
   type Catalog,
 } from '../src/core/catalog.js';
@@ -32,6 +33,7 @@ const fixtureManifest = {
       bundleTokens: 4521,
       description: 'Review code for bugs and cleanups.',
       path: 'skills/authored/code-review',
+      assetDirs: ['scripts'],
     },
   ],
   files: [{ relPath: 'skills/authored/code-review/composable/INDEX.md', sha256: 'abc', size: 10 }],
@@ -78,5 +80,18 @@ describe('getCatalogSkill / resolveSkillComposableDir', () => {
     const skill = getCatalogSkill(catalog, 'code-review')!;
     const dir = resolveSkillComposableDir(catalog, skill);
     expect(dir).toBe(path.join(tmp, 'skills', 'authored', 'code-review', 'composable'));
+  });
+
+  it('passes assetDirs through from the manifest', () => {
+    const skill = getCatalogSkill(catalog, 'code-review')!;
+    expect(skill.assetDirs).toEqual(['scripts']);
+  });
+
+  it('resolves the absolute assets-src dir for a named asset dir', () => {
+    const skill = getCatalogSkill(catalog, 'code-review')!;
+    const dir = resolveSkillAssetSrcDir(catalog, skill, 'scripts');
+    expect(dir).toBe(
+      path.join(tmp, 'skills', 'authored', 'code-review', 'assets-src', 'scripts'),
+    );
   });
 });

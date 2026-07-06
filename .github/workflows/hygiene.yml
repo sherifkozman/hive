@@ -1,0 +1,12 @@
+name: hygiene
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repository hygiene check
+        run: bash tools/hygiene-check.sh

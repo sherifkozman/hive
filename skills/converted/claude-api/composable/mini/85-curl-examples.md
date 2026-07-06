@@ -159,7 +159,7 @@ curl https://api.anthropic.com/v1/messages \
 
 ## Prompt Caching
 
-Put `cache_control` on the last block of the stable prefix. See `shared/prompt-caching.md` for placement patterns and the silent-invalidator audit checklist.
+Put `cache_control` on the last block of the stable prefix. See `mini/15-prompt-caching.md` for placement patterns and the silent-invalidator audit checklist.
 
 ```bash
 curl https://api.anthropic.com/v1/messages \
@@ -241,7 +241,7 @@ if [ "$(echo "$response" | jq -r '.stop_reason')" != "refusal" ] && \
 fi
 ```
 
-The header must be exactly `server-side-fallback-2026-06-01`. The parameter is rejected on the Batches API and unavailable on Amazon Bedrock, Vertex AI, and Microsoft Foundry. Full semantics (sticky routing, billing, streaming, echoing fallback turns back): `shared/model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
+The header must be exactly `server-side-fallback-2026-06-01`. The parameter is rejected on the Batches API and unavailable on Amazon Bedrock, Vertex AI, and Microsoft Foundry. Full semantics (sticky routing, billing, streaming, echoing fallback turns back): `mini/20-model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
 
 ---
 

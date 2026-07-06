@@ -34,7 +34,9 @@ function ctx() {
   return resolveHomeContext({ homeFlag: homeDir, platform: 'linux' });
 }
 
-async function makeCatalog(skillOpts: Array<{ category: string; name: string }>): Promise<Catalog> {
+async function makeCatalog(
+  skillOpts: Array<{ category: string; name: string; bundleTokens?: number }>,
+): Promise<Catalog> {
   const skills = [];
   for (const opts of skillOpts) {
     const composableDir = path.join(assetsDir, 'skills', opts.category, opts.name, 'composable');
@@ -51,8 +53,18 @@ async function makeCatalog(skillOpts: Array<{ category: string; name: string }>)
       category: opts.category,
       version: '1.0.0',
       minis: 1,
-      bundleTokens: 10,
+      // Default well ABOVE packing.ts's DEFAULT_INLINE_THRESHOLD (25_000):
+      // runWizard defaults planInstall's packing to 'auto', and every
+      // existing test in this file below is exercising wizard MECHANICS
+      // (prompts/cancellation/confirm flow), not packing-mode selection —
+      // keeping these fixtures tree-sized preserves their original
+      // tree-shape assertions unchanged. The dedicated
+      // "runWizard: bundle-inline packing" block below overrides this to
+      // cover the inline path explicitly.
+      bundleTokens: opts.bundleTokens ?? 30_000,
       description: 'A test skill.',
+      sourceDescription: 'A test skill.',
+      descriptionSource: 'index-fallback' as const,
       path: `skills/${opts.category}/${opts.name}`,
     });
   }
@@ -347,5 +359,28 @@ describe('runWizard: doctor action', () => {
     const outcome = await runWizard(deps(catalog), ports);
     expect(outcome).toEqual({ outcome: 'doctor-run' });
     expect(calls.note.some((n) => n.title === 'Doctor report')).toBe(true);
+  });
+});
+
+describe('runWizard: bundle-inline packing (docs/packing-modes.md — wizard defaults to "auto" like the CLI)', () => {
+  it('installs a small skill bundle-inline (no composable/ dir, SKILL.md carries the bundle)', async () => {
+    await mkdir(path.join(homeDir, '.claude'), { recursive: true });
+    const catalog = await makeCatalog([{ category: 'converted', name: 'pdf', bundleTokens: 5_000 }]);
+    const { ports } = makeMockPorts({
+      multiselect: [['claude-code'], ['pdf']],
+      select: ['install'],
+      confirm: [true],
+    });
+
+    const outcome = await runWizard(deps(catalog), ports);
+    expect(outcome.outcome).toBe('installed');
+    if (outcome.outcome === 'installed') {
+      expect(outcome.result.performed.length).toBe(2); // write-inline-skill + write-install-manifest, no shim
+    }
+
+    const destDir = path.join(homeDir, '.claude', 'skills', 'hive-pdf');
+    await expect(stat(path.join(destDir, 'composable'))).rejects.toThrow();
+    const skillMd = await readFile(path.join(destDir, 'SKILL.md'), 'utf8');
+    expect(skillMd).toContain('bundle');
   });
 });

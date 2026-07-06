@@ -1,0 +1,3 @@
+date: 2026-07-06T16:45:06Z  rc: 0
+repeat: 2 condition: C1-upstream case: pdf-broad-03 harness: codex-exec model: unknown
+cases_sha: ff15c09b9bb6249acbdfd977c309a82f19defef60aeba4b219dd04e3d596dca0 order: C3-bundle-only C0-baseline C2-ccs-full C1-upstream

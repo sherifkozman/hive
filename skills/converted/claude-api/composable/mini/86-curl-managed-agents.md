@@ -315,7 +315,7 @@ curl -X POST https://api.anthropic.com/v1/sessions \
   }'
 ```
 
-See `shared/managed-agents-tools.md` §Vaults for creating vaults and adding credentials.
+See `mini/33-managed-agents-tools.md` §Vaults for creating vaults and adding credentials.
 
 ---
 

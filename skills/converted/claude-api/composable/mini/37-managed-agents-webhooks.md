@@ -54,7 +54,7 @@ def webhook():
     return "", 204
 ```
 
-Pass the **raw request body** to `unwrap()` — frameworks that re-serialize JSON (Express `.json()`, Flask `.get_json()`) change the bytes and break the MAC. For other languages, look up the `beta.webhooks.unwrap` binding in the SDK repo (`shared/live-sources.md`); don't hand-roll verification.
+Pass the **raw request body** to `unwrap()` — frameworks that re-serialize JSON (Express `.json()`, Flask `.get_json()`) change the bytes and break the MAC. For other languages, look up the `beta.webhooks.unwrap` binding in the SDK repo (`mini/13-live-sources.md`); don't hand-roll verification.
 
 ---
 
@@ -110,7 +110,7 @@ Switch on `data.type`, fetch the resource by `data.id`, return any **2xx** to ac
 | `deployment_run.succeeded` | Scheduled run created its session. Same `data.id` (the run ID) as the run's `.started` event — fetch the deployment run for its `session_id`, then subscribe to the session events to follow the work. |
 | `deployment_run.failed` | Scheduled run did not create a session. Same `data.id` as the run's `.started` event — fetch the deployment run for `error.type` / `error.message`. |
 
-> These are **webhook** `data.type` values — a separate namespace from SSE event types (`session.status_idle`, `span.outcome_evaluation_end`, etc. in `shared/managed-agents-events.md`). Don't reuse SSE constants in webhook handlers.
+> These are **webhook** `data.type` values — a separate namespace from SSE event types (`session.status_idle`, `span.outcome_evaluation_end`, etc. in `mini/34-managed-agents-events.md`). Don't reuse SSE constants in webhook handlers.
 
 ---
 

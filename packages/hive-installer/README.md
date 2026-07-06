@@ -9,7 +9,12 @@ state.
 
 All 13 bundled Hive skills, the `tools/hive.py` CLI, and their
 licenses/provenance ship inside this package — installs work fully offline, no
-network calls at runtime.
+network calls at runtime. Where a converted skill's minis reference a
+non-knowledge asset by relative path (CCS spec §9 — e.g. pdf's
+`scripts/check_fillable_fields.py`), that asset directory ships in the
+package too and is materialized at the installed skill's root (e.g.
+`<installed-skill>/scripts/`) alongside `composable/` and `SKILL.md`, so the
+path resolves for real.
 
 ## Quickstart
 
@@ -50,15 +55,17 @@ Subcommands:
   `{ clients: [{ id, name, detected, strategy, confidence, skills: [...] }] }`.
 - **`list`** — the bundled skill catalog: name, category, version, mini count,
   bundle token count, description.
-- **`install [--client <id>...] [--skill <name>...] [--all] [--project <dir>] [--write-pointers]`**
+- **`install [--client <id>...] [--skill <name>...] [--all] [--project <dir>] [--write-pointers] [--packing auto|tree|bundle-inline] [--inline-threshold <tokens>]`**
   — install bundled skills into clients. `--client`/`--skill` are repeatable;
   `--all` fills in whichever of the two you didn't pass explicitly (e.g.
   `install --client claude-code --all --yes` installs every bundled skill into
   just `claude-code`). Requires `--yes` to actually write; without it, use
-  `--dry-run` to preview the plan. For a payload+pointer client (see below),
-  the pointer-file snippet is only written when both `--write-pointers` and
-  `--yes` are given — otherwise the write is skipped and the snippet is
-  printed for you to add by hand.
+  `--dry-run` to preview the plan (the preview names each skill's packing
+  mode). For a payload+pointer client (see below), the pointer-file snippet
+  is only written when both `--write-pointers` and `--yes` are given —
+  otherwise the write is skipped and the snippet is printed for you to add
+  by hand. `--packing`/`--inline-threshold` select the [install shape](#packing-modes-020)
+  — default `auto`.
 - **`propose [--client <id>...] [--out <file>]`** — scan a client's existing
   skills/rules and write a conversion-candidate doc (default
   `./hive-conversion-proposals.md`). Never executes a conversion itself — see
@@ -77,6 +84,50 @@ Subcommands:
 
 With no subcommand: the interactive wizard on a TTY, or help text (exit `0`)
 otherwise.
+
+## Packing modes (0.2.0)
+
+Every install picks one of two on-disk shapes per skill, controlled by
+`install --packing <mode>` (default `auto`):
+
+- **`bundle-inline`** — a single `SKILL.md`: frontmatter (the skill's
+  upstream-verbatim description where one exists) plus the compiled
+  `BUNDLE.md` body, generated marker stripped. No `composable/` tree.
+  Non-knowledge assets (`scripts/` etc., where a skill has them) still
+  materialize alongside it.
+- **`tree`** — the original (0.1.x) shape: a thin `SKILL.md` shim pointing
+  at `composable/INDEX.md`, plus the full composable tree.
+
+`auto` (the default) picks `bundle-inline` when a skill's compiled bundle is
+≤ 25,000 tokens (marker-stripped `BUNDLE.md` chars ÷ 4 — same accounting the
+bundled catalog uses) and `tree` otherwise; override the threshold with
+`--inline-threshold <tokens>`, or force a mode outright with
+`--packing tree` / `--packing bundle-inline`. Upgrading an already-installed
+skill between modes (either direction) is just a normal hash-diff upgrade —
+no separate uninstall step, and `doctor` flags an installed skill whose mode
+no longer matches the current default (only for `auto` installs — an
+explicit `--packing` choice is never treated as stale).
+
+**Why 25,000, and why `auto` at all**: this default is evidence-cited, not
+asserted — see `docs/packing-modes.md` (design) and
+`benchmarks/exp10-harness-econ/PRODUCT-DECISION.md` (the underlying
+measurement) in the main Hive repo. In short: the tree shape (this
+installer's only shape through 0.1.x) was never the best-measured condition
+in that experiment's confirmation waves (2 skills × 2 harnesses × n=3) — a
+single-file delivery matched or beat it on both tested clients at small/mid
+skill size (Claude Code: parity at ~23.5k tokens, 3/4 vs 3/4; Codex: a
+reproducible quality win, 4/4 vs 3/4, plus −34%/−38% conversation-token
+deltas on the small-skill (`pdf`) cases where the tree shape engaged at
+all), while the composable tree remains the only viable shape once a skill
+is large enough that its INDEX routing measurably still works (claude-api,
+~195k tokens). The 10–25k band specifically is called out in
+`docs/packing-modes.md` as **provisional pending a follow-up experiment**,
+not a settled result — read that doc before treating the threshold as more
+than "our current best call, evidence-linked."
+
+`preset-skills` (installing each compiled preset — e.g. a Python vs. Node
+track — as its own sibling skill) is spec'd in `docs/packing-modes.md` but
+explicitly not implemented in 0.2.0.
 
 ## Safety model
 

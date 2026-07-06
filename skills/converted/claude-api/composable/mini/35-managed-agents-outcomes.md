@@ -90,7 +90,7 @@ for ev in session.outcome_evaluations:
     print(f"{ev.outcome_id}: {ev.result}")  # outc_01a...: satisfied
 ```
 
-**Deliverables** — the agent writes to `/mnt/session/outputs/`. Once idle, fetch via the Files API with `scope_id=session.id`. This is the same session-outputs mechanism documented in `shared/managed-agents-environments.md` → Session outputs (including the dual-beta-header requirement on `files.list`).
+**Deliverables** — the agent writes to `/mnt/session/outputs/`. Once idle, fetch via the Files API with `scope_id=session.id`. This is the same session-outputs mechanism documented in `mini/32-managed-agents-environments.md` → Session outputs (including the dual-beta-header requirement on `files.list`).
 
 ---
 
@@ -101,6 +101,6 @@ for ev in session.outcome_evaluations:
 - **`user.interrupt` pauses the current outcome** — it marks `result: "interrupted"` and leaves the session `idle`, ready for a new outcome or conversational turn.
 - **After terminal, the session is reusable** — continue conversationally or define a new outcome.
 - **Outcome ≠ session-create field.** Don't put `outcome`, `rubric`, or `description` on `sessions.create()` — outcomes are always sent as a `user.define_outcome` event.
-- **Idle-break gate is unchanged.** In your drain loop, keep using `event.type === 'session.status_idle' && event.stop_reason?.type !== 'requires_action'` — do **not** gate on `span.outcome_evaluation_end` alone (on `needs_revision` the session keeps running). See `shared/managed-agents-client-patterns.md` Pattern 5.
+- **Idle-break gate is unchanged.** In your drain loop, keep using `event.type === 'session.status_idle' && event.stop_reason?.type !== 'requires_action'` — do **not** gate on `span.outcome_evaluation_end` alone (on `needs_revision` the session keeps running). See `mini/40-managed-agents-client-patterns.md` Pattern 5.
 
-For the raw HTTP shapes and per-language SDK bindings beyond Python, WebFetch `https://platform.claude.com/docs/en/managed-agents/define-outcomes.md` (see `shared/live-sources.md`).
+For the raw HTTP shapes and per-language SDK bindings beyond Python, WebFetch `https://platform.claude.com/docs/en/managed-agents/define-outcomes.md` (see `mini/13-live-sources.md`).

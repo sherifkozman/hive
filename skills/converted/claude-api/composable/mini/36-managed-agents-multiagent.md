@@ -35,7 +35,7 @@ session = client.beta.sessions.create(agent=orchestrator.id, environment_id=env.
 | Agent reference | `{type: "agent", id, version?}` | Omit `version` to pin the latest at coordinator save time. |
 | Self | `{type: "self"}` | The coordinator can spawn copies of itself. |
 
-If the session was created with `agent_with_overrides` (see `shared/managed-agents-core.md` → Override agent configuration for a session), those overrides apply to the **coordinator and its `self` copies**. Roster agents referenced by ID always use their own as-created configuration — overrides do not propagate to them.
+If the session was created with `agent_with_overrides` (see `mini/31-managed-agents-core.md` → Override agent configuration for a session), those overrides apply to the **coordinator and its `self` copies**. Roster agents referenced by ID always use their own as-created configuration — overrides do not propagate to them.
 
 Up to **20 unique agents** in the roster; the coordinator may spawn **multiple copies** of each. **One level of delegation only** — depth > 1 is ignored.
 
@@ -98,4 +98,4 @@ The same pattern applies to `user.custom_tool_result`.
 - **Don't assume shared context.** Threads share the filesystem but not conversation history or tools. If the coordinator needs a subagent to act on something, it must say so in the delegated message (or write it to disk).
 - **Depth > 1 is ignored.** A subagent's own `multiagent` roster (if any) doesn't cascade — only the session's coordinator delegates.
 
-For per-language bindings beyond Python, WebFetch `https://platform.claude.com/docs/en/managed-agents/multi-agent.md` (see `shared/live-sources.md`).
+For per-language bindings beyond Python, WebFetch `https://platform.claude.com/docs/en/managed-agents/multi-agent.md` (see `mini/13-live-sources.md`).
