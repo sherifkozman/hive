@@ -8,6 +8,8 @@ import {
   CLIENT_REGISTRY,
   resolveGlobalSkillLocation,
   resolvePayloadLocation,
+  resolvePointerFile,
+  resolveProjectPointerFile,
   type ClientRegistryEntry,
 } from './registry.js';
 import { detectClients } from './scanner.js';
@@ -16,6 +18,7 @@ import { computeInstalledTreeHash, INSTALL_MANIFEST_FILENAME, readInstallManifes
 import { listBackups } from './backup.js';
 import { getCatalogSkill, type Catalog } from './catalog.js';
 import { isOlderVersion, isValidSemver } from './semver.js';
+import { MANAGED_BLOCK_END, MANAGED_BLOCK_START } from './pointer.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -61,6 +64,14 @@ export interface DoctorOptions {
    * internally" seam as installer.ts's PlanInstallOptions.catalog.
    */
   catalog?: Catalog;
+  /**
+   * Project dir for resolving a payload-project-pointer client's (e.g.
+   * cursor) project-level pointer file in the dangling-pointer-block
+   * check below. Without it, only home-relative pointer files (gemini,
+   * windsurf) are checked — matches planInstall's "no projectDir -> skip
+   * gracefully" treatment of the same client family.
+   */
+  projectDir?: string;
   ports?: DoctorPorts;
 }
 
@@ -154,13 +165,34 @@ async function pathReadable(p: string): Promise<boolean> {
   }
 }
 
+/**
+ * Probe writability by actually writing (and immediately removing) a
+ * temp file. If `dir` itself didn't exist yet, it's removed again after
+ * the probe (best-effort) so `doctor` — a diagnostic command — doesn't
+ * leave behind a persistent, empty side effect. This matters beyond
+ * tidiness: checkClients() probes every detected client's skill/payload
+ * location, and if that probe *created* the directory permanently, a
+ * later check in the same doctor() run (checkPointerBlocks, which asks
+ * "does this client's payload dir exist") would always see it as
+ * present — silently defeating that check. Any newly-created *parent*
+ * directories from a multi-level `mkdir(dir, {recursive:true})` are not
+ * unwound (only `dir` itself); in practice a detected client's config
+ * dir already exists, so `dir`'s immediate parent does too.
+ */
 async function probeWritable(guard: PathGuard, dir: string): Promise<boolean> {
+  const existedBefore = await fs.stat(dir).then(
+    () => true,
+    () => false,
+  );
   try {
     await guard.assertWritable(dir);
     await fs.mkdir(dir, { recursive: true });
     const probeFile = path.join(dir, `.hive-doctor-probe-${process.pid}-${Date.now()}`);
     await fs.writeFile(probeFile, '');
     await fs.unlink(probeFile);
+    if (!existedBefore) {
+      await fs.rmdir(dir).catch(() => {}); // best-effort; leave it if something else raced in
+    }
     return true;
   } catch {
     return false;
@@ -315,6 +347,76 @@ async function checkInstalledSkills(
   return checks;
 }
 
+// --- dangling pointer blocks -----------------------------------------
+
+/**
+ * A client's rules/pointer file (GEMINI.md, memories/global_rules.md, a
+ * project .cursor/rules/*.mdc) can end up with the hive-skills managed
+ * block present while the payload dir it points at no longer exists —
+ * e.g. after restoring a pre-install backup that intentionally leaves
+ * the block behind (installer.ts's documented pointer-backup-scope
+ * decision: a freshly-created pointer file isn't backed up, so restore
+ * can't touch it, but it also can't remove a now-stale block). Flag it
+ * so the user knows to clean it up or re-run install.
+ */
+async function checkPointerBlocks(
+  ctx: HomeContext,
+  registry: readonly ClientRegistryEntry[],
+  projectDir: string | undefined,
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [];
+  const seenFiles = new Set<string>();
+
+  for (const entry of registry) {
+    const pointerFiles: string[] = [];
+    const homePointer = resolvePointerFile(ctx, entry);
+    if (homePointer) pointerFiles.push(homePointer);
+    if (projectDir) {
+      const projectPointer = resolveProjectPointerFile(projectDir, entry);
+      if (projectPointer) pointerFiles.push(projectPointer);
+    }
+
+    for (const pointerFile of pointerFiles) {
+      if (seenFiles.has(pointerFile)) continue;
+      seenFiles.add(pointerFile);
+
+      const content = await fs.readFile(pointerFile, 'utf8').catch(() => undefined);
+      if (content === undefined) continue; // no pointer file -> nothing to flag
+      if (!content.includes(MANAGED_BLOCK_START) || !content.includes(MANAGED_BLOCK_END)) continue; // no block -> check not emitted
+
+      const payloadDir = resolvePayloadLocation(ctx, entry);
+      const payloadExists = payloadDir
+        ? await fs.stat(payloadDir).then(
+            () => true,
+            () => false,
+          )
+        : false;
+
+      const id = `dangling-pointer-block:${entry.id}`;
+      if (payloadExists) {
+        checks.push({
+          id,
+          status: 'ok',
+          detail: `${entry.name}: managed block in ${pointerFile} matches an existing payload dir (${payloadDir})`,
+        });
+      } else {
+        checks.push({
+          id,
+          status: 'warn',
+          detail:
+            `${entry.name}: ${pointerFile} contains the hive-skills managed block, but its payload dir ` +
+            `(${payloadDir ?? 'unknown'}) does not exist`,
+          fix:
+            `Remove the block between \`${MANAGED_BLOCK_START}\` and \`${MANAGED_BLOCK_END}\` in ${pointerFile}, ` +
+            `or re-run install to recreate ${payloadDir ?? 'the payload dir'}.`,
+        });
+      }
+    }
+  }
+
+  return checks;
+}
+
 // --- backups dir ------------------------------------------------------
 
 async function dirSizeBytes(dir: string): Promise<number> {
@@ -381,6 +483,7 @@ export async function doctor(ctx: HomeContext, opts: DoctorOptions = {}): Promis
     await checkPython(opts),
     ...(await checkClients(ctx, registry)),
     ...(await checkInstalledSkills(ctx, registry, opts.catalog)),
+    ...(await checkPointerBlocks(ctx, registry, opts.projectDir)),
     await checkBackups(ctx),
   ];
 

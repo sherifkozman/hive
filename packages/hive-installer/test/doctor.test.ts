@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { resolveHomeContext } from '../src/core/paths.js';
 import { loadCatalog, type Catalog } from '../src/core/catalog.js';
 import { executeInstall, planInstall, type ExecutePorts } from '../src/core/installer.js';
 import { snapshot } from '../src/core/backup.js';
+import { renderPointerBlock } from '../src/core/pointer.js';
 import { BUNDLE_GENERATED_MARKER, doctor, formatDoctorReport, type DoctorCheck } from '../src/core/doctor.js';
 
 let tmp: string;
@@ -214,6 +215,88 @@ describe('doctor: installed skills', () => {
     const result = await doctor(ctx(), { python: false, catalog });
     const matches = result.checks.filter((c) => c.id === 'skill:gemini:hive-foo');
     expect(matches.length).toBe(1);
+  });
+});
+
+describe('doctor: dangling pointer blocks', () => {
+  it('warns when the managed block is present but its payload dir does not exist', async () => {
+    await mkdir(path.join(homeDir, '.gemini'), { recursive: true });
+    const payloadDir = path.join(homeDir, '.gemini', 'hive-skills');
+    await writeFile(
+      path.join(homeDir, '.gemini', 'GEMINI.md'),
+      `my rules\n\n${renderPointerBlock(payloadDir)}\n`,
+    );
+    // payloadDir deliberately never created (simulates restore-uninstall
+    // of a fresh install, which leaves the block behind by design).
+
+    const result = await doctor(ctx(), { python: false });
+    const check = find(result.checks, 'dangling-pointer-block:gemini');
+    expect(check?.status).toBe('warn');
+    expect(check?.detail).toContain(payloadDir);
+    expect(check?.fix).toContain('# >>> hive-skills >>>');
+  });
+
+  it('ok when the managed block is present and its payload dir exists', async () => {
+    await mkdir(path.join(homeDir, '.gemini'), { recursive: true });
+    const payloadDir = path.join(homeDir, '.gemini', 'hive-skills');
+    await mkdir(payloadDir, { recursive: true });
+    await writeFile(
+      path.join(homeDir, '.gemini', 'GEMINI.md'),
+      `my rules\n\n${renderPointerBlock(payloadDir)}\n`,
+    );
+
+    const result = await doctor(ctx(), { python: false });
+    expect(find(result.checks, 'dangling-pointer-block:gemini')?.status).toBe('ok');
+  });
+
+  it('does not emit a check when the pointer file has no managed block', async () => {
+    await mkdir(path.join(homeDir, '.gemini'), { recursive: true });
+    await writeFile(path.join(homeDir, '.gemini', 'GEMINI.md'), 'just my own rules, no hive block\n');
+
+    const result = await doctor(ctx(), { python: false });
+    expect(find(result.checks, 'dangling-pointer-block:gemini')).toBeUndefined();
+  });
+
+  it('does not emit a check when the pointer file does not exist at all', async () => {
+    await mkdir(path.join(homeDir, '.gemini'), { recursive: true });
+    const result = await doctor(ctx(), { python: false });
+    expect(find(result.checks, 'dangling-pointer-block:gemini')).toBeUndefined();
+  });
+
+  // KNOWN GAP (flagged to team-lead, not resolved here — see chat):
+  // literal "payload dir does not exist" does NOT actually fire for the
+  // single-skill install -> restore-uninstall flow that motivated this
+  // check. atomicReplaceDir's destSkillDir write does
+  // `mkdir(path.dirname(destSkillDir), {recursive:true})`, which creates
+  // the payload ROOT dir (e.g. .gemini/hive-skills) as a side effect of
+  // installing the first skill under it; restore() only rm's the
+  // specific hive-<skill> subdir it recorded as absent, never its parent
+  // — so the (now-empty) payload root persists and this check reports
+  // 'ok', not 'warn', in that exact scenario (proven below). Catching it
+  // for real would need "payload dir exists but has no hive-* subdirs"
+  // treated as dangling too, not just raw existence. Implemented
+  // literally per the requested test spec for now; not silently papered
+  // over — this test documents the gap with a real assertion.
+  it('KNOWN GAP: install -> restore-uninstall leaves an empty payload root, which reads as ok, not warn', async () => {
+    const catalog = await makeCatalog([{ category: 'authored', name: 'foo' }]);
+    const plan = await planInstall(ctx(), { clients: ['gemini'], skills: ['foo'], catalog });
+    const installResult = await executeInstall(ctx(), plan, alwaysConfirm, {});
+
+    const { restore } = await import('../src/core/backup.js');
+    await restore(ctx(), installResult.backups[0]!.id, {});
+
+    const skillDir = path.join(homeDir, '.gemini', 'hive-skills', 'hive-foo');
+    const payloadRoot = path.join(homeDir, '.gemini', 'hive-skills');
+    await expect(stat(skillDir)).rejects.toThrow(); // the skill itself is gone
+    await expect(stat(payloadRoot)).resolves.toBeTruthy(); // but the empty parent lingers
+
+    const gemini = await readFile(path.join(homeDir, '.gemini', 'GEMINI.md'), 'utf8');
+    expect(gemini).toContain('# >>> hive-skills >>>'); // block left behind, as designed
+
+    const doctorResult = await doctor(ctx(), { python: false, catalog });
+    // Documents current behavior: this reports 'ok', not 'warn', despite
+    // the skill being fully uninstalled — see the GAP note above.
+    expect(find(doctorResult.checks, 'dangling-pointer-block:gemini')?.status).toBe('ok');
   });
 });
 
