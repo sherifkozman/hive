@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Hive implements the CCS (Compiled Composable Skills) v1.0 spec: a way to package an AI-agent skill as many small self-contained **minis** behind a knowledge-free **INDEX**, compiled deterministically into a **BUNDLE** and optional **presets**. It is four things: a normative spec (`docs/SPEC.md`), a stdlib-only CLI (`tools/hive.py`, Python 3.11), a library of skills (`skills/`), and the benchmark evidence base (`benchmarks/` + `docs/BENCHMARKS.md`). There is no build system, package manager, or test suite — the CLI run against the skills tree IS the verification.
+Hive implements the CCS (Compiled Composable Skills) v1.0 spec: a way to package an AI-agent skill as many small self-contained **minis** behind a knowledge-free **INDEX**, compiled deterministically into a **BUNDLE** and optional **presets**. It is five things: a normative spec (`docs/SPEC.md`), a stdlib-only CLI (`tools/hive.py`, Python 3.11), a library of skills (`skills/`), the benchmark evidence base (`benchmarks/` + `docs/BENCHMARKS.md`), and the npm installer package (`packages/hive-installer/`, published as `hive-skills`) that distributes the skills to AI clients.
+
+The two halves have different toolchains. The **framework core** (spec, `tools/hive.py`, `skills/`, `benchmarks/`) has no build system or test suite — running `hive.py` against the skills tree IS its verification. The **installer package** under `packages/hive-installer/` is a conventional TypeScript/pnpm/vitest project with its own build, tests, and lint; work in that directory follows its own toolchain (below), not the framework's.
 
 ## Commands
 
@@ -19,6 +21,21 @@ python3 tools/hive.py bump    skills/<category>/<name> [major|minor|patch]   # t
 ```
 
 Verifying a change to `tools/hive.py`: run `lint` and `compile` (and `parity` where applicable) against **every** skill under `skills/authored/`, `skills/converted/`, and `skills/meta/` and confirm no regression; PRs must paste that output.
+
+### Installer package (`packages/hive-installer/`)
+
+A pnpm workspace (Node ≥ 18, TypeScript strict, ESM). Run from that directory:
+
+```bash
+pnpm install
+pnpm test          # vitest — the full suite must stay green
+pnpm run typecheck # tsc --noEmit, strict
+pnpm run build     # tsup → dist/ + bundles the 13 skills, tools/hive.py, and licenses into assets/
+npm pack           # produce the npx-runnable tarball
+node scripts/bundle-assets.mjs   # regenerate assets/ + assets/manifest.json standalone
+```
+
+The published CLI is `hive-skills` (interactive wizard on `npx hive-skills`, or subcommands `scan`/`list`/`install`/`propose`/`doctor`/`backup`/`restore`). `assets/` is generated (gitignored) — never hand-edit it; it is rebuilt from the repo's `skills/` and `tools/hive.py` at build time. The packed tarball's file list is asserted against the asset manifest by `test/pack-e2e.test.ts`, so adding files to the package requires updating the bundle script, not just `package.json`.
 
 ## Architecture
 
@@ -42,4 +59,5 @@ The runtime loading policy (spec §10) is the core idea: estimate what fraction 
 - Never hand-edit `BUNDLE.md`, `presets/*.md`, or `VERSION`.
 - Any skill content change requires a `bump` (patch = fixes/wording, minor = new minis/coverage, major = restructuring/removals) and a `CHANGELOG.md` entry (Keep-a-Changelog format). New skills ship at `1.0.0`.
 - Benchmark protocol (if adding evidence): freeze tasks before the skill exists, judge blind with committed blinding maps, count tokens as chars÷4 of files actually loaded, treat score gaps ≤3/40 as noise, commit all raw materials under `benchmarks/`, and report losses as well as wins.
+- Installer safety (when editing `packages/hive-installer/`): all filesystem writes go through `src/core/fsops.ts` under a `PathGuard` allowlist — never call raw `node:fs` writes elsewhere. Mutations pre-back-up via `src/core/backup.ts` and stage atomically; pointer writes into user rules files are consent-gated. The client registry (`src/core/registry.ts`) carries per-entry `provenance` + `confidence` — new/changed client paths need a source URL or a real-machine observation, not a guess.
 - Precedence on conflicts: `docs/SPEC.md` and the `docs/*.md` guides win over `CONTRIBUTING.md` and this file.
