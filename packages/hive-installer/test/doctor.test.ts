@@ -135,6 +135,26 @@ describe('doctor: per-client readable/writable', () => {
     expect(find(result.checks, 'client-readable:continue')?.status).toBe('ok');
     expect(find(result.checks, 'client-writable:continue')).toBeUndefined();
   });
+
+  it('warns (never fails) when a detection-evidence path is unreadable but the client is otherwise usable', async () => {
+    // cline detects via EITHER Documents/Cline/Rules OR the VS Code extension
+    // dir; make one matched path unreadable (macOS-TCC-like) while the other
+    // stays fine — the client remains installable, so this must be warn.
+    const rulesDir = path.join(homeDir, 'Documents', 'Cline', 'Rules');
+    await mkdir(rulesDir, { recursive: true });
+    await mkdir(path.join(homeDir, '.cline', 'skills'), { recursive: true });
+    await chmod(rulesDir, 0o000);
+    try {
+      const result = await doctor(ctx(), { python: false });
+      const check = find(result.checks, 'client-readable:cline');
+      expect(check?.status).toBe('warn');
+      expect(check?.detail).toContain('Rules'); // names only the failing path
+      expect(check?.detail).not.toContain('.cline'); // readable paths not listed
+      expect(result.exitCode).toBe(0); // warn never sets failure exit
+    } finally {
+      await chmod(rulesDir, 0o700);
+    }
+  });
 });
 
 describe('doctor: installed skills', () => {

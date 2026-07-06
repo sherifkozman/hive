@@ -209,14 +209,28 @@ async function checkClients(ctx: HomeContext, registry: readonly ClientRegistryE
     const entry = registry.find((candidate) => candidate.id === d.id);
     if (!entry) continue;
 
-    const readable = (await Promise.all(d.matchedPaths.map(pathReadable))).every(Boolean);
+    // Unreadable *detection evidence* is a warn, not a fail: the client stays
+    // fully installable as long as its skill location works (checked below).
+    // macOS TCC routinely blocks headless reads of ~/Documents-based evidence
+    // paths even though they exist and detection matched on a sibling path.
+    const readability = await Promise.all(
+      d.matchedPaths.map(async (p) => ({ p, readable: await pathReadable(p) })),
+    );
+    const unreadable = readability.filter((r) => !r.readable).map((r) => r.p);
     checks.push({
       id: `client-readable:${entry.id}`,
-      status: readable ? 'ok' : 'fail',
-      detail: readable
-        ? `${entry.name}: config dir(s) readable`
-        : `${entry.name}: one or more config paths are not readable (${d.matchedPaths.join(', ')})`,
-      ...(readable ? {} : { fix: `Check permissions on ${d.matchedPaths.join(', ')}` }),
+      status: unreadable.length === 0 ? 'ok' : 'warn',
+      detail:
+        unreadable.length === 0
+          ? `${entry.name}: config dir(s) readable`
+          : `${entry.name}: detection-evidence path(s) not readable (${unreadable.join(', ')})`,
+      ...(unreadable.length === 0
+        ? {}
+        : {
+            fix:
+              `Not blocking: the client was detected via its other paths. If this is macOS privacy ` +
+              `protection (e.g. ~/Documents), grant your terminal Files access or ignore.`,
+          }),
     });
 
     if (entry.strategy === 'scan-only') continue;
