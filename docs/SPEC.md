@@ -49,7 +49,8 @@ skills/<domain>/
     │   ├── 00-core.md    # optional: always-load cross-cutting mini
     │   └── NN-*.md       # required: the authored modules (source of truth)
     ├── BUNDLE.md         # required: compiled concatenation of all minis
-    └── presets/          # optional: named compiled subsets
+    ├── presets.json      # optional: preset definitions {"name": ["<id>", ...]}
+    └── presets/          # optional: named compiled subsets (from presets.json)
         └── <name>.md
 ```
 
@@ -291,6 +292,21 @@ combinatorial family of presets **SHOULD NOT** be generated speculatively.
 nobody consumes" failure and DITA's conditional-profiling sprawl both warn
 against speculative compiled variants; "the BUNDLE only pays off if the runtime
 actually loads it."
+
+**7.8** A skill **MAY** declare its presets in a `presets.json` build-input
+(`{"<name>": ["<mini-id>", ...]}`), the single source from which `compile`
+regenerates every `presets/*.md`. Tooling recompiles `BUNDLE.md` and each
+declared preset from `mini/` and reports any on-disk artifact that no longer
+matches — or a declared preset whose file is missing — as stale. Two cases
+cannot be recomputed and are flagged (not failed) instead: a `presets/`
+directory with **no** `presets.json`, and a `presets/*.md` file present on disk
+with no matching entry in `presets.json` (an orphan `compile` never regenerates).
+
+*Evidence: convention* (the source/artifact discipline of §7.4: the same
+regenerate-and-compare staleness check that guards `BUNDLE.md` extends to
+presets, so a `compile` that refreshes the bundle cannot silently leave a
+preset behind. Declaring presets in `presets.json` — rather than only as a
+one-off `compile --presets` argument — is what makes that check possible.)
 
 ---
 

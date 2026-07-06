@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/) for the
 spec version and the CLI, with the understanding that a v0.x release makes no
 stability promises on either.
 
+## [Unreleased]
+
+### Added
+
+- `hive.py lint` now checks `presets/*.md` staleness (recomputes each declared
+  preset from `mini/` + `presets.json` and fails on drift), closing a gap where
+  BUNDLE.md staleness was checked but presets were not. `presets.json` build-inputs
+  added for `claude-api`, `mcp-builder`, and `pptx` so `compile` is self-sufficient;
+  `docs/SPEC.md` §7.8 documents the convention.
+
+### Fixed
+
+- Regenerated stale preset headers in `mcp-builder` and `pptx` (old generated-marker
+  format; mini content unchanged) surfaced by the new lint check.
+
 ## [0.2.0] (2026-07-06)
 
 ### Added
