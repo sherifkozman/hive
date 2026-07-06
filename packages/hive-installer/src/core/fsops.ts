@@ -8,6 +8,10 @@ import type { PathGuard } from './guard.js';
  * choke point for safety invariant #1 (spec §9). Reads are unrestricted;
  * only the destination of a write/copy/delete is guarded — `cp`'s source
  * may legitimately live outside every allowed root (e.g. bundled assets).
+ *
+ * PathGuard#assertWritable is async (it canonicalizes via realpath), so
+ * every function here MUST `await` it before touching disk — calling it
+ * without awaiting would let the write race ahead of the guard decision.
  */
 
 export interface WriteFileOptions {
@@ -20,7 +24,7 @@ export async function writeFile(
   data: string | Uint8Array,
   options: WriteFileOptions = {},
 ): Promise<void> {
-  guard.assertWritable(absPath);
+  await guard.assertWritable(absPath);
   await fs.mkdir(path.dirname(absPath), { recursive: true });
   await fs.writeFile(absPath, data, options.mode !== undefined ? { mode: options.mode } : undefined);
 }
@@ -34,7 +38,7 @@ export async function mkdir(
   absPath: string,
   options: MkdirOptions = { recursive: true },
 ): Promise<void> {
-  guard.assertWritable(absPath);
+  await guard.assertWritable(absPath);
   await fs.mkdir(absPath, { recursive: options.recursive ?? true });
 }
 
@@ -53,12 +57,15 @@ export async function cp(
   destAbsPath: string,
   options: CpOptions = {},
 ): Promise<void> {
-  guard.assertWritable(destAbsPath);
+  await guard.assertWritable(destAbsPath);
   await fs.mkdir(path.dirname(destAbsPath), { recursive: true });
   await fs.cp(srcAbsPath, destAbsPath, {
     recursive: options.recursive ?? true,
     force: true,
     errorOnExist: false,
+    // Symlinks are copied as symlinks (not dereferenced) — this is
+    // fs.cp's default, spelled out here since backup.ts relies on it.
+    dereference: false,
   });
 }
 
@@ -72,7 +79,7 @@ export async function rm(
   absPath: string,
   options: RmOptions = {},
 ): Promise<void> {
-  guard.assertWritable(absPath);
+  await guard.assertWritable(absPath);
   await fs.rm(absPath, {
     recursive: options.recursive ?? true,
     force: options.force ?? true,
@@ -84,6 +91,24 @@ export async function chmod(
   absPath: string,
   mode: number,
 ): Promise<void> {
-  guard.assertWritable(absPath);
+  await guard.assertWritable(absPath);
   await fs.chmod(absPath, mode);
+}
+
+/**
+ * Create (or replace) a symlink at `destAbsPath` pointing at `target`.
+ * Any existing file/symlink at destAbsPath is removed first (fs.symlink
+ * refuses to overwrite). `target` is stored verbatim (relative or
+ * absolute, whatever the caller supplies) — see backup.ts's symlink
+ * manifest entries.
+ */
+export async function symlink(
+  guard: PathGuard,
+  target: string,
+  destAbsPath: string,
+): Promise<void> {
+  await guard.assertWritable(destAbsPath);
+  await fs.mkdir(path.dirname(destAbsPath), { recursive: true });
+  await fs.rm(destAbsPath, { force: true });
+  await fs.symlink(target, destAbsPath);
 }

@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { resolveHomeContext } from '../src/core/paths.js';
-import { getClientById } from '../src/core/registry.js';
+import { CLIENT_REGISTRY, getClientById } from '../src/core/registry.js';
 import { detectClients, scanSkills } from '../src/core/scanner.js';
 
 let tmp: string;
@@ -34,7 +34,7 @@ describe('detectClients', () => {
   it('returns one DetectedClient per registry entry (detection matrix, all absent)', async () => {
     const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
     const detected = await detectClients(ctx);
-    expect(detected.length).toBe(12);
+    expect(detected.length).toBe(CLIENT_REGISTRY.length);
     expect(detected.every((d) => d.detected === false)).toBe(true);
   });
 

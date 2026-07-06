@@ -4,22 +4,27 @@ import { resolveHomeContext } from '../src/core/paths.js';
 import {
   CLIENT_REGISTRY,
   getClientById,
+  mergeRegistry,
   resolveGlobalSkillLocation,
   resolvePayloadLocation,
   resolvePointerFile,
   rulesForPlatform,
+  type ClientRegistryEntry,
+  type Confidence,
   type Strategy,
 } from '../src/core/registry.js';
 
+// spec §4 corrected table (registry restructure, 2026-07-05 dual review).
 const EXPECTED_IDS = [
   'claude-code',
   'codex',
-  'cursor',
-  'gemini',
-  'windsurf',
   'opencode',
   'vscode-copilot',
   'cline',
+  'agents-dir',
+  'gemini',
+  'windsurf',
+  'cursor',
   'roo',
   'zed',
   'continue',
@@ -29,19 +34,24 @@ const EXPECTED_IDS = [
 const VALID_STRATEGIES: Strategy[] = [
   'native-skills',
   'payload-pointer',
+  'payload-project-pointer',
   'scan-only',
 ];
 
+const VALID_CONFIDENCE: Confidence[] = ['verified', 'docs', 'assumed'];
+
 describe('CLIENT_REGISTRY', () => {
-  it('has exactly the 12 ids from spec §4, in order', () => {
+  it('has exactly the 13 ids from spec §4 (corrected table), in order', () => {
     expect(CLIENT_REGISTRY.map((e) => e.id)).toEqual(EXPECTED_IDS);
   });
 
-  it('every entry has a name, valid strategy, and at least one detect rule', () => {
+  it('every entry has a name, valid strategy, at least one detect rule, provenance, and confidence', () => {
     for (const entry of CLIENT_REGISTRY) {
       expect(entry.name.length).toBeGreaterThan(0);
       expect(VALID_STRATEGIES).toContain(entry.strategy);
       expect(entry.detect.length).toBeGreaterThan(0);
+      expect(entry.provenance.length).toBeGreaterThan(0);
+      expect(VALID_CONFIDENCE).toContain(entry.confidence);
     }
   });
 
@@ -50,17 +60,96 @@ describe('CLIENT_REGISTRY', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('claude-code is native-skills with skillLocations.global set', () => {
+  it('claude-code is native-skills with skillLocations.global set, observed-local/verified', () => {
     const entry = getClientById('claude-code');
     expect(entry?.strategy).toBe('native-skills');
     expect(entry?.skillLocations.global).toBe('.claude/skills');
+    expect(entry?.provenance).toBe('observed-local');
+    expect(entry?.confidence).toBe('verified');
   });
 
-  it('vscode-copilot is scan-only with no home-relative global skill location', () => {
-    const entry = getClientById('vscode-copilot');
-    expect(entry?.strategy).toBe('scan-only');
-    expect(entry?.skillLocations.global).toBeUndefined();
-    expect(entry?.skillLocations.project).toBeTruthy();
+  it('codex is native-skills with a payload-pointer fallback (AGENTS.md payload only if the skills dir is uncreatable)', () => {
+    const entry = getClientById('codex')!;
+    expect(entry.strategy).toBe('native-skills');
+    expect(entry.skillLocations.global).toBe('.codex/skills');
+    expect(entry.fallback?.strategy).toBe('payload-pointer');
+    expect(entry.fallback?.payloadPath).toBe('.codex/hive-skills');
+    expect(entry.pointerFile).toBe('.codex/AGENTS.md');
+  });
+
+  it('opencode is native-skills with skillLocations.global under .config/opencode/skills', () => {
+    const entry = getClientById('opencode')!;
+    expect(entry.strategy).toBe('native-skills');
+    expect(entry.skillLocations.global).toBe('.config/opencode/skills');
+  });
+
+  it('vscode-copilot flips to native-skills with a personal skill dir and a --project location', () => {
+    const entry = getClientById('vscode-copilot')!;
+    expect(entry.strategy).toBe('native-skills');
+    expect(entry.skillLocations.global).toBe('.copilot/skills');
+    expect(entry.skillLocations.project).toBe('.github/skills');
+  });
+
+  it('vscode-copilot detection covers .copilot, .vscode/extensions, and .vscode-insiders/extensions', () => {
+    const entry = getClientById('vscode-copilot')!;
+    const rules = rulesForPlatform(entry, 'darwin');
+    expect(rules.some((r) => r.type === 'exists' && r.relPath === '.copilot')).toBe(true);
+    expect(
+      rules.some((r) => r.type === 'glob' && r.relDir === '.vscode/extensions' && r.prefix === 'github.copilot'),
+    ).toBe(true);
+    expect(
+      rules.some(
+        (r) => r.type === 'glob' && r.relDir === '.vscode-insiders/extensions' && r.prefix === 'github.copilot',
+      ),
+    ).toBe(true);
+  });
+
+  it('cline is native-skills with skillLocations.global under .cline/skills', () => {
+    const entry = getClientById('cline')!;
+    expect(entry.strategy).toBe('native-skills');
+    expect(entry.skillLocations.global).toBe('.cline/skills');
+  });
+
+  it('cline detect rules include Documents/Cline/Rules as evidence only — never an install target', () => {
+    const entry = getClientById('cline')!;
+    const rules = rulesForPlatform(entry, 'darwin');
+    expect(rules.some((r) => r.type === 'exists' && r.relPath === 'Documents/Cline/Rules')).toBe(true);
+    expect(entry.skillLocations.global).not.toContain('Documents');
+    expect(entry.payloadPath ?? '').not.toContain('Documents');
+  });
+
+  it('agents-dir is a new native-skills entry for the shared ~/.agents dir, observed-local/verified', () => {
+    const entry = getClientById('agents-dir')!;
+    expect(entry).toBeTruthy();
+    expect(entry.strategy).toBe('native-skills');
+    expect(entry.detect.some((r) => r.type === 'exists' && r.relPath === '.agents')).toBe(true);
+    expect(entry.skillLocations.global).toBe('.agents/skills');
+    expect(entry.provenance).toBe('observed-local');
+    expect(entry.confidence).toBe('verified');
+  });
+
+  it('gemini and windsurf keep strategy payload-pointer', () => {
+    expect(getClientById('gemini')?.strategy).toBe('payload-pointer');
+    expect(getClientById('windsurf')?.strategy).toBe('payload-pointer');
+  });
+
+  it('cursor is payload-project-pointer with a payload dir, no global pointer file, and a project pointer filename', () => {
+    const entry = getClientById('cursor')!;
+    expect(entry.strategy).toBe('payload-project-pointer');
+    expect(entry.payloadPath).toBe('.cursor/hive-skills');
+    expect(entry.pointerFile).toBeUndefined();
+    expect(entry.skillLocations.project).toBe('.cursor/rules');
+    expect(entry.projectPointerFile).toBe('hive-skills.mdc');
+  });
+
+  it('roo, zed, continue, claude-desktop are scan-only', () => {
+    for (const id of ['roo', 'zed', 'continue', 'claude-desktop']) {
+      expect(getClientById(id)?.strategy).toBe('scan-only');
+    }
+  });
+
+  it('zed notes cite zed.dev/docs/ai/skills', () => {
+    expect(getClientById('zed')?.notes ?? '').toMatch(/zed\.dev\/docs\/ai\/skills/);
   });
 
   it('claude-desktop detect rule is darwin-only', () => {
@@ -95,18 +184,18 @@ describe('resolveGlobalSkillLocation', () => {
     );
   });
 
-  it('returns undefined for entries with no global skill location (vscode-copilot)', () => {
+  it('returns undefined for entries with no global skill location (zed)', () => {
     const ctx = resolveHomeContext({ homeFlag: '/fixture/home', platform: 'linux' });
-    const entry = getClientById('vscode-copilot')!;
+    const entry = getClientById('zed')!;
     expect(resolveGlobalSkillLocation(ctx, entry)).toBeUndefined();
   });
 });
 
 describe('resolvePayloadLocation', () => {
-  it('resolves a payload-pointer client payload dir under ctx.home', () => {
+  it('resolves a payload-project-pointer client payload dir under ctx.home (cursor)', () => {
     const ctx = resolveHomeContext({ homeFlag: '/fixture/home', platform: 'linux' });
     const entry = getClientById('cursor')!;
-    expect(entry.strategy).toBe('payload-pointer');
+    expect(entry.strategy).toBe('payload-project-pointer');
     expect(resolvePayloadLocation(ctx, entry)).toBe(
       path.join('/fixture/home', '.cursor', 'hive-skills'),
     );
@@ -127,18 +216,48 @@ describe('resolvePointerFile', () => {
     expect(pointer).toBe(path.join('/fixture/home', '.gemini', 'GEMINI.md'));
   });
 
-  it('returns undefined for clients without a pointer file (claude-code)', () => {
+  it('returns undefined for clients without a pointer file (claude-code, cursor)', () => {
     const ctx = resolveHomeContext({ homeFlag: '/fixture/home', platform: 'linux' });
-    const entry = getClientById('claude-code')!;
-    expect(resolvePointerFile(ctx, entry)).toBeUndefined();
+    expect(resolvePointerFile(ctx, getClientById('claude-code')!)).toBeUndefined();
+    expect(resolvePointerFile(ctx, getClientById('cursor')!)).toBeUndefined();
   });
 });
 
-describe('codex fallback strategy', () => {
-  it('codex records a native-skills primary strategy with a payload-pointer fallback', () => {
-    const entry = getClientById('codex')!;
-    expect(entry.strategy).toBe('native-skills');
-    expect(entry.fallback?.strategy).toBe('payload-pointer');
-    expect(entry.fallback?.payloadPath).toBe('.codex/hive-skills');
+describe('mergeRegistry', () => {
+  it('overrides a single field on an existing entry, leaving the rest untouched', () => {
+    const merged = mergeRegistry(CLIENT_REGISTRY, {
+      codex: { skillLocations: { global: '.codex/custom-skills' } },
+    });
+    const codex = merged.find((e) => e.id === 'codex')!;
+    expect(codex.skillLocations.global).toBe('.codex/custom-skills');
+    expect(codex.strategy).toBe('native-skills'); // untouched
+    expect(codex.name).toBe(getClientById('codex')!.name); // untouched
+
+    // Every other entry is unaffected.
+    const others = merged.filter((e) => e.id !== 'codex');
+    const originalOthers = CLIENT_REGISTRY.filter((e) => e.id !== 'codex');
+    expect(others).toEqual(originalOthers);
+  });
+
+  it('appends a new client id not present in the builtins', () => {
+    const newClient: ClientRegistryEntry = {
+      id: 'my-custom-client',
+      name: 'My Custom Client',
+      detect: [{ type: 'exists', relPath: '.my-client' }],
+      skillLocations: { global: '.my-client/skills' },
+      globalLocationKind: 'skill-dirs',
+      strategy: 'native-skills',
+      provenance: 'observed-local',
+      confidence: 'assumed',
+    };
+    const merged = mergeRegistry(CLIENT_REGISTRY, { 'my-custom-client': newClient });
+    expect(merged.length).toBe(CLIENT_REGISTRY.length + 1);
+    expect(merged.find((e) => e.id === 'my-custom-client')).toEqual(newClient);
+  });
+
+  it('does not mutate the builtins array passed in', () => {
+    const before = JSON.parse(JSON.stringify(CLIENT_REGISTRY));
+    mergeRegistry(CLIENT_REGISTRY, { codex: { skillLocations: { global: '.codex/other' } } });
+    expect(JSON.parse(JSON.stringify(CLIENT_REGISTRY))).toEqual(before);
   });
 });

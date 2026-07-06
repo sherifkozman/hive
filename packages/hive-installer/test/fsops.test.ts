@@ -1,10 +1,10 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm as nodeRm, readFile, stat } from 'node:fs/promises';
+import { mkdtemp, readlink, rm as nodeRm, readFile, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { GuardViolation } from '../src/core/guard.js';
 import { PathGuard } from '../src/core/guard.js';
-import { cp, mkdir, rm, writeFile, chmod } from '../src/core/fsops.js';
+import { cp, mkdir, rm, writeFile, chmod, symlink } from '../src/core/fsops.js';
 
 let tmp: string;
 
@@ -109,5 +109,27 @@ describe('fsops', () => {
     await expect(chmod(otherGuard, path.join(tmp, 'x'), 0o600)).rejects.toThrow(
       GuardViolation,
     );
+  });
+
+  it('symlink creates a symlink with the given target inside an allowed root', async () => {
+    const guard = new PathGuard([tmp]);
+    const dest = path.join(tmp, 'link');
+    await symlink(guard, '../elsewhere/target.txt', dest);
+    expect(await readlink(dest)).toBe('../elsewhere/target.txt');
+  });
+
+  it('symlink replaces an existing file/symlink at the destination', async () => {
+    const guard = new PathGuard([tmp]);
+    const dest = path.join(tmp, 'link');
+    await writeFile(guard, dest, 'not a symlink yet');
+    await symlink(guard, 'new-target', dest);
+    expect(await readlink(dest)).toBe('new-target');
+  });
+
+  it('symlink throws GuardViolation outside the allowlist', async () => {
+    const otherGuard = new PathGuard([path.join(tmp, 'allowed-only')]);
+    await expect(
+      symlink(otherGuard, 'target', path.join(tmp, 'link')),
+    ).rejects.toThrow(GuardViolation);
   });
 });
