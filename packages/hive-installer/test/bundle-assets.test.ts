@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { main as bundleAssets, assetsDir, packageRoot } from '../scripts/bundle-assets.mjs';
+import { main as bundleAssets, assetsDir, packageRoot, repoRoot } from '../scripts/bundle-assets.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -16,6 +16,7 @@ interface ManifestSkill {
   bundleTokens: number;
   description: string;
   path: string;
+  assetDirs?: string[];
 }
 
 interface ManifestFile {
@@ -116,6 +117,42 @@ describe('bundle-assets: manifest', () => {
 
   it('does not list manifest.json among its own files entries', () => {
     expect(manifest.files.map((f) => f.relPath)).not.toContain('manifest.json');
+  });
+
+  it('pdf skill entry records assetDirs: ["scripts"], mirroring its vendored source scripts/ dir', () => {
+    const pdf = manifest.skills.find((s) => s.name === 'pdf');
+    expect(pdf).toBeDefined();
+    expect(pdf?.assetDirs).toEqual(['scripts']);
+  });
+
+  it('bundles pdf scripts/ as assets-src, one file per vendored script (8 files), byte-identical to the source', async () => {
+    const relPaths = manifest.files.map((f) => f.relPath).filter((p) => p.startsWith('skills/converted/pdf/assets-src/scripts/'));
+    expect(relPaths.length).toBe(8);
+    expect(relPaths).toContain('skills/converted/pdf/assets-src/scripts/check_fillable_fields.py');
+
+    const bundled = await fs.readFile(
+      path.join(assetsDir, 'skills/converted/pdf/assets-src/scripts/check_fillable_fields.py'),
+      'utf8',
+    );
+    const source = await fs.readFile(
+      path.join(repoRoot, 'skills/sources/anthropic/pdf/scripts/check_fillable_fields.py'),
+      'utf8',
+    );
+    expect(bundled).toBe(source);
+  });
+
+  it('a skill with no matching vendored source (financial-analysis) has no assetDirs', () => {
+    const fa = manifest.skills.find((s) => s.name === 'financial-analysis');
+    expect(fa).toBeDefined();
+    expect(fa?.assetDirs ?? []).toEqual([]);
+  });
+
+  it('claude-api (converted, vendored source has per-language sample dirs, none hidden) records every non-hidden top-level source dir', () => {
+    const claudeApi = manifest.skills.find((s) => s.name === 'claude-api');
+    expect(claudeApi).toBeDefined();
+    expect(claudeApi?.assetDirs?.sort()).toEqual(
+      ['csharp', 'curl', 'go', 'java', 'php', 'python', 'ruby', 'shared', 'typescript'].sort(),
+    );
   });
 
   it('every manifest file entry exists on disk with a matching sha256 and size', async () => {

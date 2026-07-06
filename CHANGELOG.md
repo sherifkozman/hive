@@ -25,6 +25,25 @@ stability promises on either.
   extracted-tarball end-to-end test. Node ≥ 18; interactive wizard via
   `npx hive-skills`, non-interactive via subcommands with `--yes`/`--dry-run`.
 
+### Fixed
+
+- **Dead non-knowledge-asset script paths in installed converted skills**
+  (found via Experiment 10 dogfooding). Converted skills' minis reference
+  vendored non-`.md` assets by relative path per spec §9 (e.g. pdf's
+  `scripts/check_fillable_fields.py`, docx/pptx's `scripts/office/*`,
+  mcp-builder's `scripts/`/`reference/`, skill-creator's `scripts/`/
+  `assets/`/`references/`/`agents/`/`eval-viewer/`), but neither the asset
+  bundle nor the installer materialized those directories, so an installed
+  skill's script references pointed at nothing. `scripts/bundle-assets.mjs`
+  now detects each converted/authored skill's matching vendored source root
+  and bundles every non-hidden top-level directory there (mechanical rule,
+  no per-skill hardcoding) under `assets/skills/<category>/<name>/assets-src/`,
+  recording the dir names on the skill's `manifest.json` entry; the installer
+  materializes them into the installed skill dir's root (e.g.
+  `<installed-skill>/scripts/`) alongside `composable/` and `SKILL.md`, and
+  the tree-hash used for install-plan skip/upgrade decisions now accounts
+  for them.
+
 ## [0.1.0] (2026-07-05)
 
 Initial public release of Hive: the CCS (Compiled Composable Skills) framework

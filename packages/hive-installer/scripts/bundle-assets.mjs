@@ -116,10 +116,65 @@ async function copySkillTrees() {
       const dest = path.join(destSkillDir, 'composable');
       await fs.mkdir(destSkillDir, { recursive: true });
       await fs.cp(src, dest, { recursive: true });
-      copied.push({ category, name, composableDir: dest });
+      copied.push({ category, name, destSkillDir, composableDir: dest });
     }
   }
   return copied;
+}
+
+/**
+ * Find a converted/authored skill's vendored source root under
+ * skills/sources, if one exists: either skills/sources/<name>/ directly
+ * (a single-skill origin, e.g. financial-analyst) or
+ * skills/sources/<origin>/<name>/ (a multi-skill origin, e.g. anthropic).
+ * A SKILL.md at that candidate root is the marker of "this is a vendored
+ * skill root", not just a coincidentally-named directory. Never hardcodes
+ * an origin name — walks whatever origins actually exist.
+ */
+async function findVendoredSourceRoot(sourcesDir, name) {
+  const direct = path.join(sourcesDir, name);
+  if (await pathExists(path.join(direct, 'SKILL.md'))) return direct;
+
+  for (const origin of await listDirs(sourcesDir)) {
+    const candidate = path.join(sourcesDir, origin, name);
+    if (await pathExists(path.join(candidate, 'SKILL.md'))) return candidate;
+  }
+  return null;
+}
+
+/**
+ * Non-knowledge assets (spec §9): a converted/authored skill's minis may
+ * reference sibling files by relative path (e.g. `scripts/foo.py`) that
+ * live in the vendored source, not in the CCS composable/ tree — those
+ * paths must ship or the reference is dead once installed. Mechanical
+ * rule, no per-skill hardcoding: every non-hidden top-level directory in
+ * the matching vendored source root (LICENSE-prefixed and PROVENANCE.md
+ * are files, not dirs — already handled by copyVendoredSourceLicenses)
+ * is bundled under
+ * assets/skills/<category>/<name>/assets-src/<dirName>/, and its name
+ * recorded on the skill's manifest entry so the installer knows what to
+ * materialize at install time.
+ */
+async function copyAssetDirs(copiedSkills) {
+  const sourcesDir = path.join(repoRoot, 'skills', 'sources');
+  const assetDirsBySkill = new Map();
+
+  for (const { category, name, destSkillDir } of copiedSkills) {
+    const sourceRoot = await findVendoredSourceRoot(sourcesDir, name);
+    if (!sourceRoot) continue;
+
+    const dirNames = await listDirs(sourceRoot);
+    if (dirNames.length === 0) continue;
+
+    for (const dirName of dirNames) {
+      const src = path.join(sourceRoot, dirName);
+      const dest = path.join(destSkillDir, 'assets-src', dirName);
+      await fs.mkdir(path.dirname(dest), { recursive: true });
+      await fs.cp(src, dest, { recursive: true });
+    }
+    assetDirsBySkill.set(`${category}/${name}`, dirNames);
+  }
+  return assetDirsBySkill;
 }
 
 /** tools/hive.py + top-level license/provenance files (spec §3). */
@@ -151,7 +206,7 @@ async function copyVendoredSourceLicenses() {
   }
 }
 
-async function buildSkillMetadata(copiedSkills) {
+async function buildSkillMetadata(copiedSkills, assetDirsBySkill) {
   const out = [];
   for (const { category, name, composableDir } of copiedSkills) {
     const [description, bundleRaw, versionRaw, miniEntries] = await Promise.all([
@@ -161,6 +216,8 @@ async function buildSkillMetadata(copiedSkills) {
       fs.readdir(path.join(composableDir, 'mini')).catch(() => []),
     ]);
 
+    const assetDirs = assetDirsBySkill.get(`${category}/${name}`);
+
     out.push({
       name,
       category,
@@ -169,6 +226,7 @@ async function buildSkillMetadata(copiedSkills) {
       bundleTokens: Math.round(bundleRaw.length / 4),
       description,
       path: `skills/${category}/${name}`,
+      ...(assetDirs ? { assetDirs } : {}),
     });
   }
   out.sort((a, b) => (a.category === b.category ? a.name.localeCompare(b.name) : a.category.localeCompare(b.category)));
@@ -203,10 +261,14 @@ async function main() {
   await fs.mkdir(assetsDir, { recursive: true });
 
   const copiedSkills = await copySkillTrees();
+  const assetDirsBySkill = await copyAssetDirs(copiedSkills);
   await copyToolingAndLicenses();
   await copyVendoredSourceLicenses();
 
-  const [skills, hiveCommit] = await Promise.all([buildSkillMetadata(copiedSkills), getHiveCommit()]);
+  const [skills, hiveCommit] = await Promise.all([
+    buildSkillMetadata(copiedSkills, assetDirsBySkill),
+    getHiveCommit(),
+  ]);
   const files = await computeFilesManifest();
 
   const manifest = {

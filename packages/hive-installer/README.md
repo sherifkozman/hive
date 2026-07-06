@@ -9,7 +9,12 @@ state.
 
 All 13 bundled Hive skills, the `tools/hive.py` CLI, and their
 licenses/provenance ship inside this package — installs work fully offline, no
-network calls at runtime.
+network calls at runtime. Where a converted skill's minis reference a
+non-knowledge asset by relative path (CCS spec §9 — e.g. pdf's
+`scripts/check_fillable_fields.py`), that asset directory ships in the
+package too and is materialized at the installed skill's root (e.g.
+`<installed-skill>/scripts/`) alongside `composable/` and `SKILL.md`, so the
+path resolves for real.
 
 ## Quickstart
 

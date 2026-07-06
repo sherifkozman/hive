@@ -125,6 +125,14 @@ describe('packed tarball: install --client claude-code --all --yes', () => {
       expect(await pathExists(path.join(abs, 'SKILL.md'))).toBe(true);
       expect(await pathExists(path.join(abs, 'composable', 'INDEX.md'))).toBe(true);
     }
+
+    // Regression test for the dead-script-path bug: hive-pdf's minis reference
+    // `scripts/check_fillable_fields.py` (and siblings) by relative path (CCS
+    // spec §9, non-knowledge assets referenced by path). Prove the installed
+    // artifact actually carries the referenced script, not just the .md tree.
+    const pdfDir = path.join(skillsDir, 'hive-pdf');
+    expect(await pathExists(pdfDir)).toBe(true);
+    expect(await pathExists(path.join(pdfDir, 'scripts', 'check_fillable_fields.py'))).toBe(true);
   });
 });
 

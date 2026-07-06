@@ -9,7 +9,13 @@ import {
   resolveProjectPointerFile,
   type ClientRegistryEntry,
 } from './registry.js';
-import { type Catalog, type CatalogSkill, getCatalogSkill, resolveSkillComposableDir } from './catalog.js';
+import {
+  type Catalog,
+  type CatalogSkill,
+  getCatalogSkill,
+  resolveSkillAssetSrcDir,
+  resolveSkillComposableDir,
+} from './catalog.js';
 import { collectTreeEntries, hashEntries } from './hashTree.js';
 import {
   computeInstalledTreeHash,
@@ -77,12 +83,20 @@ export class ForeignSkillDirError extends Error {
 
 // --- Plan types ---------------------------------------------------------
 
+/** A bundled non-knowledge asset dir (spec §9) to materialize at the installed skill dir's root, e.g. { name: 'scripts', srcDir: '.../assets-src/scripts' } -> `<destSkillDir>/scripts`. */
+export interface AssetSrcDir {
+  name: string;
+  srcDir: string;
+}
+
 export interface CopyTreeAction {
   kind: 'copy-tree' | 'upgrade';
   clientId: string;
   skillName: string;
   srcComposableDir: string;
   destSkillDir: string;
+  /** Non-knowledge asset dirs to copy into destSkillDir's root alongside composable/ and SKILL.md. Empty for skills with no bundled assets. */
+  assetSrcDirs: AssetSrcDir[];
 }
 
 export interface WriteSkillShimAction {
@@ -168,17 +182,25 @@ export function renderSkillShim(skill: CatalogSkill): string {
 
 /**
  * The tree hash a skill install WOULD have once written: the bundled
- * composable/ source tree (read-only — nothing written here) plus the
- * to-be-generated SKILL.md shim, hashed exactly as computeInstalledTreeHash
- * would hash the real destSkillDir afterward (same algorithm, same
- * relative paths, same manifest-file exclusion — there's nothing to
- * exclude here since the manifest itself isn't part of the virtual set).
- * This is what lets planInstall decide skip-identical/upgrade/copy-tree
- * up front, with zero filesystem writes (dry-run correctness).
+ * composable/ source tree, any bundled non-knowledge asset dirs (read-only
+ * — nothing written here), plus the to-be-generated SKILL.md shim, hashed
+ * exactly as computeInstalledTreeHash would hash the real destSkillDir
+ * afterward (same algorithm, same relative paths — each assetSrcDirs entry
+ * is prefixed with its own `name` the same way executeInstall copies it to
+ * `<destSkillDir>/<name>`; same manifest-file exclusion — there's nothing
+ * to exclude here since the manifest itself isn't part of the virtual
+ * set). This is what lets planInstall decide skip-identical/upgrade/
+ * copy-tree up front, with zero filesystem writes (dry-run correctness) —
+ * and, critically, what keeps that decision correct once a skill has
+ * bundled assets: omitting them here would make every such skill look
+ * permanently "upgraded" (asset content never factored into the
+ * comparison) or, worse, permanently "skip-identical" after an asset-only
+ * change actually shipped.
  */
 async function computeVirtualInstalledTreeHash(
   srcComposableDir: string,
   shimContent: string,
+  assetSrcDirs: AssetSrcDir[],
 ): Promise<string> {
   const composableEntries = await collectTreeEntries(srcComposableDir);
   const prefixed = composableEntries.map((entry) => ({
@@ -186,7 +208,16 @@ async function computeVirtualInstalledTreeHash(
     content: entry.content,
   }));
   const shimEntry = { relPath: 'SKILL.md', content: Buffer.from(shimContent, 'utf8') };
-  return hashEntries([...prefixed, shimEntry]);
+
+  const assetEntries = [];
+  for (const { name, srcDir } of assetSrcDirs) {
+    const entries = await collectTreeEntries(srcDir);
+    for (const entry of entries) {
+      assetEntries.push({ relPath: path.join(name, entry.relPath), content: entry.content });
+    }
+  }
+
+  return hashEntries([...prefixed, shimEntry, ...assetEntries]);
 }
 
 // --- planInstall ----------------------------------------------------------
@@ -225,8 +256,12 @@ export async function planInstall(ctx: HomeContext, opts: PlanInstallOptions): P
     for (const skill of skills) {
       const destSkillDir = path.join(baseDir, `hive-${skill.name}`);
       const srcComposableDir = resolveSkillComposableDir(opts.catalog, skill);
+      const assetSrcDirs: AssetSrcDir[] = (skill.assetDirs ?? []).map((name) => ({
+        name,
+        srcDir: resolveSkillAssetSrcDir(opts.catalog, skill, name),
+      }));
       const shimContent = renderSkillShim(skill);
-      const newTreeHash = await computeVirtualInstalledTreeHash(srcComposableDir, shimContent);
+      const newTreeHash = await computeVirtualInstalledTreeHash(srcComposableDir, shimContent, assetSrcDirs);
       const existingManifest = await readInstallManifest(destSkillDir);
 
       if (existingManifest && existingManifest.treeSha256 === newTreeHash) {
@@ -241,6 +276,7 @@ export async function planInstall(ctx: HomeContext, opts: PlanInstallOptions): P
         skillName: skill.name,
         srcComposableDir,
         destSkillDir,
+        assetSrcDirs,
       });
       actions.push({
         kind: 'write-skill-shim',
@@ -457,12 +493,15 @@ export async function executeInstall(
 
       for (const unit of skillUnits) {
         if (!unit.tree) continue;
-        const { destSkillDir, srcComposableDir } = unit.tree;
+        const { destSkillDir, srcComposableDir, assetSrcDirs } = unit.tree;
         const shimContent = unit.shim?.content ?? '';
 
         await atomicReplaceDir(guard, destSkillDir, async (stagingDir) => {
           await fs.cp(srcComposableDir, path.join(stagingDir, 'composable'), { recursive: true });
           await fs.writeFile(path.join(stagingDir, 'SKILL.md'), shimContent, 'utf8');
+          for (const { name, srcDir } of assetSrcDirs) {
+            await fs.cp(srcDir, path.join(stagingDir, name), { recursive: true });
+          }
         });
         performed.push(unit.tree);
         if (unit.shim) performed.push(unit.shim);

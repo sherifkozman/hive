@@ -28,6 +28,13 @@ export interface CatalogSkill {
   description: string;
   /** Forward-slash path relative to assetsRoot, e.g. "skills/converted/claude-api". */
   path: string;
+  /**
+   * Names of bundled non-knowledge asset dirs (spec §9) this skill's minis
+   * reference by relative path — e.g. ["scripts"] for pdf, whose vendored
+   * source scripts/ helper files live under this skill's assets-src/ in
+   * the bundle. Absent (not just empty) for skills with no such assets.
+   */
+  assetDirs?: string[];
 }
 
 export interface CatalogFileEntry {
@@ -90,4 +97,18 @@ export function getCatalogSkill(catalog: Catalog, name: string): CatalogSkill | 
 /** Absolute path to a catalog skill's bundled composable/ directory. */
 export function resolveSkillComposableDir(catalog: Catalog, skill: CatalogSkill): string {
   return path.join(catalog.assetsRoot, ...skill.path.split('/'), 'composable');
+}
+
+/**
+ * Absolute path to one of a catalog skill's bundled non-knowledge asset
+ * dirs (see CatalogSkill.assetDirs), e.g. `resolveSkillAssetSrcDir(cat,
+ * pdfSkill, 'scripts')` -> ".../assets/skills/converted/pdf/assets-src/scripts".
+ * The installer copies this directory's contents into the installed
+ * skill's root (`<dest>/scripts`) so relative `scripts/...` references in
+ * the skill's minis resolve. Callers are expected to only pass a
+ * `dirName` present in `skill.assetDirs` — this function does no
+ * existence check, mirroring resolveSkillComposableDir.
+ */
+export function resolveSkillAssetSrcDir(catalog: Catalog, skill: CatalogSkill, dirName: string): string {
+  return path.join(catalog.assetsRoot, ...skill.path.split('/'), 'assets-src', dirName);
 }
