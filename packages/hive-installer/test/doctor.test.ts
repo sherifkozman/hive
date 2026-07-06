@@ -515,9 +515,9 @@ describe('doctor: packing-differs-from-current-default upgrade hint', () => {
     const result = await doctor(ctx(), { python: false, catalog });
     const check = find(result.checks, 'skill:claude-code:hive-foo');
     expect(check?.status).toBe('warn');
-    expect(check?.detail).toContain('packing mode differs from current default');
-    expect(check?.detail).toContain('installed tree');
-    expect(check?.detail).toContain('default is now bundle-inline');
+    expect(check?.detail).toContain("the CLI's auto rule would now choose");
+    expect(check?.detail).toContain('installed as tree');
+    expect(check?.detail).toContain('choose bundle-inline');
     expect(check?.fix).toContain('switch to bundle-inline packing');
   });
 

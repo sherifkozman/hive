@@ -345,16 +345,23 @@ async function checkOneInstalledSkill(
 
       // packing-modes.md v2 item 5: the "differs from current default"
       // hint fires ONLY on auto installs — an explicit `--packing` force
-      // is a deliberate choice, not staleness. Pre-0.2.0 manifests have no
-      // packingForced field; treat that as "not forced" (forcing wasn't a
-      // concept yet), so old tree-only installs still get the hint once a
-      // smaller-skill default would now apply.
+      // is a deliberate choice, not staleness. "Current default" here means
+      // the CLI/wizard auto rule; programmatic planInstall callers that omit
+      // opts.packing get legacy tree behavior on purpose, so their receipts
+      // (packing recorded, forced false) and pre-0.2.0 receipts (no packing
+      // field) both receive an ADVISORY hint phrased to make that explicit
+      // rather than implying misconfiguration (council review 9b914712,
+      // med #2).
       const packingForced = manifest.packingForced ?? false;
       if (!packingForced) {
         const currentDefault = selectPackingMode(catalogSkill, {}).mode;
         if (currentDefault !== packingMode) {
-          issues.push(`packing mode differs from current default: installed ${packingMode}, default is now ${currentDefault}`);
-          fix = fix ?? `Re-run install for "${manifest.skillName}" to switch to ${currentDefault} packing.`;
+          const legacy = manifest.packing === undefined;
+          issues.push(
+            `packing: installed as ${packingMode}${legacy ? ' (pre-0.2.0 install)' : ''}; ` +
+              `the CLI's auto rule would now choose ${currentDefault} for this skill`,
+          );
+          fix = fix ?? `Re-run install for "${manifest.skillName}" to switch to ${currentDefault} packing (optional).`;
         }
       }
     }

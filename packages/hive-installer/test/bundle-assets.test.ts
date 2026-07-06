@@ -406,3 +406,33 @@ describe('bundle-assets: referencesDir dotted-module signal', () => {
     expect(referencesDir('The widgets.aggregate concept is described above.', 'widgets')).toBe(false);
   });
 });
+
+describe('bundle-assets: asset-copy confinement (council 9b914712)', () => {
+  it('parseSkillMdDescription accepts a closing delimiter with trailing whitespace and the YAML "..." terminator', async () => {
+    const { parseSkillMdDescription } = await import('../scripts/bundle-assets.mjs');
+    expect(parseSkillMdDescription('---\ndescription: hello world\n---   \nbody')).toBe('hello world');
+    expect(parseSkillMdDescription('---\ndescription: hello world\n...\nbody')).toBe('hello world');
+  });
+
+  it('copyTreeNoSymlinks copies files, skips symlinks, and reports the skip count', async () => {
+    const os = await import('node:os');
+    const { mkdtemp, mkdir, writeFile, symlink, readdir, rm } = await import('node:fs/promises');
+    const path = (await import('node:path')).default;
+    const { copyTreeNoSymlinks } = await import('../scripts/bundle-assets.mjs');
+    const tmp = await mkdtemp(path.join(os.tmpdir(), 'hive-confine-'));
+    try {
+      const src = path.join(tmp, 'src');
+      await mkdir(path.join(src, 'sub'), { recursive: true });
+      await writeFile(path.join(src, 'ok.py'), 'print(1)');
+      await writeFile(path.join(src, 'sub', 'ok2.txt'), 'x');
+      await writeFile(path.join(tmp, 'outside-secret.txt'), 'SECRET');
+      await symlink(path.join(tmp, 'outside-secret.txt'), path.join(src, 'escape'));
+      const dest = path.join(tmp, 'dest');
+      const skipped = await copyTreeNoSymlinks(src, dest);
+      expect(skipped).toBe(1);
+      expect((await readdir(dest)).sort()).toEqual(['ok.py', 'sub']);
+    } finally {
+      await rm(tmp, { recursive: true, force: true });
+    }
+  });
+});

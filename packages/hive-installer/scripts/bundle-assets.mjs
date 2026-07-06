@@ -202,6 +202,29 @@ function referencesDir(content, dirName) {
  * assets/skills/<category>/<name>/assets-src/<dirName>/, name recorded on
  * the skill's manifest entry so the installer knows what to materialize.
  */
+/**
+ * Recursively copy regular files and directories only — every symlink is
+ * skipped (counted, warned by the caller). Returns the number of symlinks
+ * skipped. Confinement measure for third-party vendored trees.
+ */
+async function copyTreeNoSymlinks(src, dest) {
+  let skipped = 0;
+  await fs.mkdir(dest, { recursive: true });
+  const entries = await fs.readdir(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isSymbolicLink()) {
+      skipped += 1;
+    } else if (entry.isDirectory()) {
+      skipped += await copyTreeNoSymlinks(s, d);
+    } else if (entry.isFile()) {
+      await fs.copyFile(s, d);
+    }
+  }
+  return skipped;
+}
+
 async function copyAssetDirs(copiedSkills) {
   const sourcesDir = path.join(repoRoot, 'skills', 'sources');
   const assetDirsBySkill = new Map();
@@ -217,13 +240,26 @@ async function copyAssetDirs(copiedSkills) {
     const referenced = dirNames.filter((dirName) => referencesDir(composableContent, dirName));
     if (referenced.length === 0) continue;
 
+    const shipped = [];
     for (const dirName of referenced) {
+      // Confinement (council review 9b914712): vendored trees are third-party
+      // content. Refuse dir names that aren't plain path segments, and copy
+      // via a walk that skips symlinks entirely — a link pointing outside the
+      // source tree could otherwise pull maintainer files into the public
+      // tarball at build time.
+      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(dirName)) {
+        console.warn(`[bundle-assets] SKIP asset dir with unsafe name: ${category}/${name}/${dirName}`);
+        continue;
+      }
       const src = path.join(sourceRoot, dirName);
       const dest = path.join(destSkillDir, 'assets-src', dirName);
-      await fs.mkdir(path.dirname(dest), { recursive: true });
-      await fs.cp(src, dest, { recursive: true });
+      const skippedLinks = await copyTreeNoSymlinks(src, dest);
+      if (skippedLinks > 0) {
+        console.warn(`[bundle-assets] skipped ${skippedLinks} symlink(s) in ${category}/${name}/${dirName}`);
+      }
+      shipped.push(dirName);
     }
-    assetDirsBySkill.set(`${category}/${name}`, referenced);
+    if (shipped.length > 0) assetDirsBySkill.set(`${category}/${name}`, shipped);
   }
   return assetDirsBySkill;
 }
@@ -242,7 +278,11 @@ async function copyAssetDirs(copiedSkills) {
 function parseSkillMdDescription(raw) {
   const lines = raw.split('\n');
   if (lines[0]?.trim() !== '---') return undefined;
-  const endIdx = lines.indexOf('---', 1);
+  // Closing delimiter may carry trailing whitespace, and YAML also permits
+  // '...' as a document terminator (council review 9b914712, med #3).
+  const endIdx = lines.findIndex(
+    (line, i) => i >= 1 && (/^---\s*$/.test(line) || /^\.\.\.\s*$/.test(line)),
+  );
   if (endIdx === -1) return undefined;
   const frontmatter = lines.slice(1, endIdx);
 
@@ -432,4 +472,4 @@ if (isMain) {
   });
 }
 
-export { main, packageRoot, repoRoot, assetsDir, referencesDir, parseSkillMdDescription, stripGeneratedMarker };
+export { main, packageRoot, repoRoot, assetsDir, referencesDir, parseSkillMdDescription, stripGeneratedMarker, copyTreeNoSymlinks };
