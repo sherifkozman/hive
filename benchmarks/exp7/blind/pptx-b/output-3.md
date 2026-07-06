@@ -575,7 +575,7 @@ async function main() {
       });
     });
 
-    slide.addText("sherif@naya.finance  ·  investors.meridiansoftware.com", {
+    slide.addText("investor-relations@example.com  ·  investors.meridiansoftware.com", {
       x: MARGIN, y: PAGE.h - 0.45, w: CONTENT_W, h: 0.3,
       fontFace: FONT.body, fontSize: 10, color: COLOR.ice, margin: 0,
     });
