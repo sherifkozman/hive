@@ -24,6 +24,37 @@ stability promises on either.
   bundled into the tarball; the packed artifact is validated by an
   extracted-tarball end-to-end test. Node ≥ 18; interactive wizard via
   `npx hive-skills`, non-interactive via subcommands with `--yes`/`--dry-run`.
+- **`hive-skills` v0.2.0 packing modes** (`packages/hive-installer/docs/packing-modes.md`,
+  evidence base `benchmarks/exp10-harness-econ/PRODUCT-DECISION.md`): installs
+  now default to `--packing auto`, which chooses per skill between
+  `bundle-inline` (a single `SKILL.md` — upstream-verbatim frontmatter
+  description plus the compiled `BUNDLE.md` body, marker stripped; no
+  `composable/` tree) and `tree` (the v0.1.0 shim + full composable tree
+  shape, retained for large skills) by a 25,000-marker-stripped-bundle-token
+  threshold, overridable per install (`--packing tree|bundle-inline`,
+  `--inline-threshold <n>`). Non-knowledge assets (`scripts/` etc.) still
+  materialize in both modes. `.hive-install.json` gains additive
+  `packing`/`packingForced`/`inlineThreshold`/`catalogHash` fields
+  (pre-0.2.0 manifests, with none of these, are treated as `tree`,
+  unforced); `doctor` branches its per-skill integrity checks on the
+  installed mode and warns when an auto (non-forced) install's mode now
+  differs from the current default. The payload-client pointer block
+  wording is mode-generic ("read the skill's SKILL.md; larger skills carry
+  a composable/INDEX.md menu") rather than assuming tree shape. Upgrading
+  between modes (either direction) is a normal hash-diff upgrade — no new
+  uninstall/reinstall step. A `preset-skills` mode (installing each compiled
+  preset as its own sibling skill) is spec'd but explicitly **descoped**
+  from 0.2.0 pending Exp 11's native-selection probes.
+  `scripts/bundle-assets.mjs` additionally records each skill's upstream
+  `sourceDescription` (verbatim from its vendored `SKILL.md` frontmatter,
+  falling back to the existing INDEX-first-sentence `description` with a
+  `descriptionSource` flag) for the inline `SKILL.md` generator to use.
+  Evidence for the default rule: measured PARITY between inline and tree at
+  mid-size on Claude Code (mcp-builder, ~23.5k tokens, 3/4 both), a
+  reproducible Codex quality win for single-file delivery at small/mid size
+  (4/4 vs 3/4), and −34%/−38% conversation-token deltas on engaged small-skill
+  (pdf) cases — the 10–25k inline default is called out as **provisional**
+  in the spec pending Experiment 11, not a settled mid-size win.
 
 ### Fixed
 

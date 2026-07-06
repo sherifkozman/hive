@@ -2,6 +2,7 @@ import { CatalogLoadError } from '../core/catalog.js';
 import { GuardViolation } from '../core/guard.js';
 import {
   ForeignSkillDirError,
+  MissingBundleError,
   UnknownClientError,
   UnknownSkillError,
   UnsupportedClientError,
@@ -68,6 +69,13 @@ export function mapCoreError(err: unknown): MappedError {
   }
   if (err instanceof ForeignSkillDirError) {
     return { message: err.message, hint: 'Pass --force to overwrite, if you are sure it is safe to.', exitCode: 1 };
+  }
+  if (err instanceof MissingBundleError) {
+    return {
+      message: err.message,
+      hint: 'Regenerate the skill with `hive.py compile`, or re-run with `--packing tree`.',
+      exitCode: 1,
+    };
   }
   if (err instanceof RestoreVerificationError) {
     return { message: err.message, hint: 'Pass --force to restore anyway.', exitCode: 1 };

@@ -38,10 +38,9 @@ mode = bundle-inline   if bundleTokens <= 25_000
   tokens at parity). Above 25k is unmeasured for inline; claude-api (195k)
   cannot inline. Threshold is a constant, overridable per install
   (`--packing <mode>` forces; `--inline-threshold <tokens>` adjusts).
-- Registry gains `injectsSkillBody: 'observed' | 'assumed' | 'no' | 'unknown'`
-  per client (Claude Code: observed; Codex: unknown-but-single-file-favored,
-  evidence quality-side). v0.2.0 behavior does NOT branch on it (both observed
-  clients favor single-file ≤25k); recorded for transparency + future rules.
+- (DEFERRED with preset-skills, post-Exp-11) Registry `injectsSkillBody` field:
+  since v0.2.0 behavior never branches on it, recording it adds registry churn
+  without effect — it ships when a rule actually consumes it.
 - Applies to native-skills AND payload clients (the payload tree becomes a
   payload single file; pointer blocks unchanged).
 

@@ -3,6 +3,7 @@ import { CatalogLoadError } from '../src/core/catalog.js';
 import { GuardViolation } from '../src/core/guard.js';
 import {
   ForeignSkillDirError,
+  MissingBundleError,
   UnknownClientError,
   UnknownSkillError,
   UnsupportedClientError,
@@ -38,6 +39,14 @@ describe('mapCoreError', () => {
   it('maps ForeignSkillDirError with a --force hint', () => {
     const mapped = mapCoreError(new ForeignSkillDirError('/tmp/x'));
     expect(mapped.hint).toContain('--force');
+  });
+
+  it('maps MissingBundleError with a compile/--packing tree hint', () => {
+    const mapped = mapCoreError(new MissingBundleError('foo', '/tmp/x/BUNDLE.md'));
+    expect(mapped.message).toContain('foo');
+    expect(mapped.message).toContain('BUNDLE.md');
+    expect(mapped.hint).toContain('--packing tree');
+    expect(mapped.exitCode).toBe(1);
   });
 
   it('maps RestoreVerificationError with a --force hint', () => {

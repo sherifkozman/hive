@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, InvalidArgumentError } from 'commander';
 import pc from 'picocolors';
 import { INSTALLER_VERSION } from './version.js';
 import { resolveContext, type GlobalCliOptions } from './context.js';
@@ -18,6 +18,24 @@ import { createClackPorts, runWizard } from './wizard.js';
 /** Repeatable-option accumulator (`--client foo --client bar` -> ['foo','bar']). */
 function collect(value: string, previous: string[]): string[] {
   return previous.concat([value]);
+}
+
+const PACKING_MODES = ['auto', 'tree', 'bundle-inline'] as const;
+type PackingFlagValue = (typeof PACKING_MODES)[number];
+
+/** commander custom parser for `--packing` (docs/packing-modes.md): rejects anything outside auto|tree|bundle-inline — notably 'preset-skills', which is spec'd but DESCOPED for 0.2.0. */
+function parsePackingFlag(value: string): PackingFlagValue {
+  if ((PACKING_MODES as readonly string[]).includes(value)) return value as PackingFlagValue;
+  throw new InvalidArgumentError(`must be one of: ${PACKING_MODES.join(', ')}`);
+}
+
+/** commander custom parser for `--inline-threshold`: a positive integer token count. */
+function parseInlineThreshold(value: string): number {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) {
+    throw new InvalidArgumentError('must be a positive number');
+  }
+  return n;
 }
 
 /**
@@ -103,24 +121,46 @@ export function buildProgram(): Command {
       'fill in whichever of --client/--skill was omitted with every detected+installable client / every bundled skill',
     )
     .option('--write-pointers', 'non-interactive consent to write pointer-file managed blocks (requires --yes)')
-    .action(async (cmdOpts: { client: string[]; skill: string[]; all?: boolean; writePointers?: boolean }) => {
-      await runAction(async () => {
-        const opts = globalOpts();
-        const resolved = await resolveContext(opts);
-        const result = await runInstall(resolved.ctx, resolved.registry, resolved.catalog, {
-          clients: cmdOpts.client,
-          skills: cmdOpts.skill,
-          all: cmdOpts.all,
-          project: opts.project,
-          writePointers: cmdOpts.writePointers,
-          yes: opts.yes,
-          dryRun: opts.dryRun,
-          noBackup: opts.backup === false,
-          force: opts.force,
+    .option(
+      '--packing <mode>',
+      'packing mode: auto (default) | tree | bundle-inline — see docs/packing-modes.md',
+      parsePackingFlag,
+      'auto',
+    )
+    .option(
+      '--inline-threshold <tokens>',
+      'override the bundle-inline size threshold (tokens; default 25000)',
+      parseInlineThreshold,
+    )
+    .action(
+      async (cmdOpts: {
+        client: string[];
+        skill: string[];
+        all?: boolean;
+        writePointers?: boolean;
+        packing: PackingFlagValue;
+        inlineThreshold?: number;
+      }) => {
+        await runAction(async () => {
+          const opts = globalOpts();
+          const resolved = await resolveContext(opts);
+          const result = await runInstall(resolved.ctx, resolved.registry, resolved.catalog, {
+            clients: cmdOpts.client,
+            skills: cmdOpts.skill,
+            all: cmdOpts.all,
+            project: opts.project,
+            writePointers: cmdOpts.writePointers,
+            yes: opts.yes,
+            dryRun: opts.dryRun,
+            noBackup: opts.backup === false,
+            force: opts.force,
+            packing: cmdOpts.packing,
+            inlineThreshold: cmdOpts.inlineThreshold,
+          });
+          console.log(opts.json ? JSON.stringify(result, null, 2) : formatInstallResult(result));
         });
-        console.log(opts.json ? JSON.stringify(result, null, 2) : formatInstallResult(result));
-      });
-    });
+      },
+    );
 
   program
     .command('propose')

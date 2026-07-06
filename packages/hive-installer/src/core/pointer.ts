@@ -15,15 +15,23 @@ export const MANAGED_BLOCK_END = '# <<< hive-skills <<<';
  * which skills are installed under `payloadDir` — that would force a
  * pointer rewrite (and a fresh confirmation prompt) every time the
  * installed skill set changes, even though the pointer's job (say where
- * the catalog lives and how to read it) never changes.
+ * the catalog lives and how to read it) never changes. Wording is
+ * mode-generic (packing-modes.md v2 item 3): a payload skill may be
+ * installed bundle-inline (its SKILL.md carries the whole content) or
+ * tree (a thin SKILL.md plus a composable/INDEX.md menu) — this block
+ * doesn't know or care which, per skill, so it tells the reader to
+ * check for itself. Changing this wording changes the block's content,
+ * which re-triggers the existing upsert-diff consent gate on the next
+ * install for anyone with an already-written pointer block (expected,
+ * documented — see installer.test.ts's re-prompt-on-wording-change test).
  */
 export function renderPointerBlock(payloadDir: string): string {
   return [
     MANAGED_BLOCK_START,
     `Hive CCS skills are installed at: ${payloadDir}`,
-    "Read a skill's composable/INDEX.md first (knowledge-free loading menu), then apply",
-    'the coverage rule from its SKILL.md/SPEC excerpt (<0.6 coverage -> 00-core + selected',
-    'minis; >=0.6 -> BUNDLE.md or a matching preset).',
+    "Read a skill's SKILL.md first. Small/mid skills carry their full content there;",
+    'larger skills instead carry a composable/INDEX.md loading menu — read that next,',
+    'then apply its coverage rule (<0.6 coverage -> 00-core + selected minis; >=0.6 -> BUNDLE.md/preset).',
     MANAGED_BLOCK_END,
   ].join('\n');
 }

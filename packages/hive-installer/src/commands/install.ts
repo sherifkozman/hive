@@ -11,6 +11,7 @@ import {
   type WouldWriteEntry,
 } from '../core/installer.js';
 import { ConfirmationRequiredError, NothingToInstallError } from './errors.js';
+import type { PackingMode } from '../core/packing.js';
 
 export interface InstallCommandOptions {
   clients?: string[];
@@ -22,6 +23,16 @@ export interface InstallCommandOptions {
   dryRun?: boolean;
   noBackup?: boolean;
   force?: boolean;
+  /**
+   * Passed straight through to planInstall (no default applied here —
+   * see installer.ts's PlanInstallOptions.packing doc comment). The
+   * CLI's `--packing` option default ('auto') is what actually makes
+   * real end-user installs packing-aware; this adapter stays a neutral
+   * pass-through so its own tests (and any other caller) keep the
+   * pre-0.2.0 always-tree behavior when they don't ask for otherwise.
+   */
+  packing?: 'auto' | PackingMode;
+  inlineThreshold?: number;
 }
 
 export interface InstallSelection {
@@ -92,6 +103,8 @@ export async function runInstall(
     catalog,
     registry,
     projectDir: opts.project,
+    packing: opts.packing,
+    inlineThreshold: opts.inlineThreshold,
   });
 
   const rejectAllPorts: ExecutePorts = { confirmPointerWrite: async () => false };
@@ -121,7 +134,8 @@ export function formatInstallResult(result: InstallCommandResult): string {
   if (result.dryRun) {
     const lines = ['Dry run — no files were written. Planned writes:', ''];
     for (const entry of result.wouldWrite) {
-      lines.push(`  [${entry.kind}] ${entry.destPath}`);
+      const packingSuffix = entry.packing ? ` (${entry.packing})` : '';
+      lines.push(`  [${entry.kind}]${packingSuffix} ${entry.destPath}`);
     }
     if (result.wouldWrite.length === 0) lines.push('  (nothing to write — already up to date)');
     return lines.join('\n');

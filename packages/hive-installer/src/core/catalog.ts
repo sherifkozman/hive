@@ -35,6 +35,20 @@ export interface CatalogSkill {
    * the bundle. Absent (not just empty) for skills with no such assets.
    */
   assetDirs?: string[];
+  /**
+   * Packing-modes.md v2 item 2: the upstream vendored SKILL.md
+   * frontmatter `description`, verbatim, when this skill has a matching
+   * vendored source root (see bundle-assets.mjs's findVendoredSourceRoot).
+   * Falls back to the same INDEX-first-sentence text as `description`
+   * above when there's no vendored source or its frontmatter has no
+   * parseable description — `descriptionSource` says which happened.
+   * Optional (additive field; absent on manifests written before this
+   * field existed) — inline SKILL.md generation falls back to
+   * `description` when it's missing.
+   */
+  sourceDescription?: string;
+  /** Which branch produced `sourceDescription` — see its doc comment. */
+  descriptionSource?: 'upstream' | 'index-fallback';
 }
 
 export interface CatalogFileEntry {

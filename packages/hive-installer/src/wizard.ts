@@ -239,6 +239,11 @@ async function runInstallAction(
     catalog: deps.catalog,
     registry: deps.registry,
     projectDir: deps.projectDir,
+    // The wizard has no --packing flag of its own (it's fully
+    // interactive) — 'auto' is its hardcoded default, matching the CLI's
+    // own commander default, so installs made through either entry point
+    // get the same size-aware packing behavior (docs/packing-modes.md).
+    packing: 'auto',
   });
 
   // A plan can be non-empty yet carry only `skip-identical` actions (every
