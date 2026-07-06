@@ -110,6 +110,17 @@ Quality bands (component scoring, 4 cases): gaps of ≤1 case = noise (n is smal
   deliberately — production-realistic behavior is the object of study — and
   reported (tool usage audited per rollout from transcripts).
 
+- **A3 (r1, before any scoring):** `error_max_turns` on a SCORED cell is a
+  legitimate task failure (reward 0), consistent with Exp 9's timeout-as-failure
+  precedent — not a block-invalidating infra error (v2.4 stays reserved for rate
+  limits / auth / harness crashes). Because this ruling was made after observing
+  which condition it affected (C1-upstream/pdf-broad-03), results additionally
+  report a sensitivity row excluding that cell. Turn cap stays 12 for all repeats.
+- **A4 (r1):** canary prompt scoped to the project's own `.claude/skills` (the
+  original wording made agents enumerate the constant user-level skills and blow
+  the turn cap; canaries are unscored diagnostics). r1 canary verification is done
+  from transcripts instead.
+
 ## What this is not
 
 Single-skill (pdf), small-n, two harnesses, one machine. It selects among E1–E4
