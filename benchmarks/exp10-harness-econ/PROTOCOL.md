@@ -96,6 +96,20 @@ Quality bands (component scoring, 4 cases): gaps of ≤1 case = noise (n is smal
    tokenizer/accounting, model. Output tokens are part of the E1 neutral sum;
    output-only comparisons are secondary.
 
+## Amendments during execution (documented, condition-neutral)
+
+- **A1 (r1, pre-scoring):** the model-pin assertion (v2.7) initially required every
+  model in `modelUsage` to match the pin; Claude Code legitimately uses auxiliary
+  helper models (observed: a Haiku call for websearch summarization) alongside the
+  pinned dominant model. Corrected definition: the DOMINANT model (max output
+  tokens) must match the pin; auxiliary models are recorded in the manifest.
+  Rollouts flagged under the old rule are revalidated post-hoc under this
+  definition; token accounting sums across ALL models in `modelUsage`.
+- **A2 (observation):** real-harness agents have live web tools; baseline (and any)
+  conditions may search the web instead of/alongside reading skills. Retained
+  deliberately — production-realistic behavior is the object of study — and
+  reported (tool usage audited per rollout from transcripts).
+
 ## What this is not
 
 Single-skill (pdf), small-n, two harnesses, one machine. It selects among E1–E4
