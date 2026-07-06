@@ -1,4 +1,4 @@
-import { promises as fs } from 'node:fs';
+import { constants as fsConstants, promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { PathGuard } from './guard.js';
 
@@ -12,7 +12,26 @@ import type { PathGuard } from './guard.js';
  * PathGuard#assertWritable is async (it canonicalizes via realpath), so
  * every function here MUST `await` it before touching disk — calling it
  * without awaiting would let the write race ahead of the guard decision.
+ *
+ * TOCTOU hardening (council review, run aa810191): when the target's parent
+ * chain does not exist yet, the initial check canonicalizes only the nearest
+ * existing ancestor — a parent created as an outside-pointing symlink AFTER
+ * that check would go unnoticed. So the write helpers create parents first
+ * and then RE-ASSERT the guard (parents now exist, so realpath resolves the
+ * full chain), and writeFile opens with O_NOFOLLOW so the final component
+ * cannot be a symlink. Residual risk, accepted and documented: a same-user
+ * process swapping a parent directory for a symlink in the window between
+ * the re-check and the syscall can still redirect the write; closing that
+ * needs per-component openat() semantics Node does not expose. The attacker
+ * in that scenario already runs as the user and owns every target this tool
+ * could write to.
  */
+
+/** Create missing parents, then re-run the guard now that realpath can resolve the full chain. */
+async function ensureParentsAndRecheck(guard: PathGuard, absPath: string): Promise<void> {
+  await fs.mkdir(path.dirname(absPath), { recursive: true });
+  await guard.assertWritable(absPath);
+}
 
 export interface WriteFileOptions {
   mode?: number;
@@ -24,9 +43,17 @@ export async function writeFile(
   data: string | Uint8Array,
   options: WriteFileOptions = {},
 ): Promise<void> {
-  await guard.assertWritable(absPath);
-  await fs.mkdir(path.dirname(absPath), { recursive: true });
-  await fs.writeFile(absPath, data, options.mode !== undefined ? { mode: options.mode } : undefined);
+  await guard.assertWritable(absPath); // fail fast before creating any dirs
+  await ensureParentsAndRecheck(guard, absPath);
+  // O_NOFOLLOW: refuse to write through a symlink at the final component.
+  const flags = fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_TRUNC | fsConstants.O_NOFOLLOW;
+  const handle = await fs.open(absPath, flags, options.mode ?? 0o644);
+  try {
+    await handle.writeFile(data);
+    if (options.mode !== undefined) await handle.chmod(options.mode);
+  } finally {
+    await handle.close();
+  }
 }
 
 export interface MkdirOptions {
@@ -40,6 +67,14 @@ export async function mkdir(
 ): Promise<void> {
   await guard.assertWritable(absPath);
   await fs.mkdir(absPath, { recursive: options.recursive ?? true });
+  // Re-verify now that the full chain exists; if a raced-in symlink parent
+  // redirected the creation, undo it rather than leave an escaped dir.
+  try {
+    await guard.assertWritable(absPath);
+  } catch (err) {
+    await fs.rm(absPath, { recursive: true, force: true }).catch(() => {});
+    throw err;
+  }
 }
 
 export interface CpOptions {
@@ -58,7 +93,7 @@ export async function cp(
   options: CpOptions = {},
 ): Promise<void> {
   await guard.assertWritable(destAbsPath);
-  await fs.mkdir(path.dirname(destAbsPath), { recursive: true });
+  await ensureParentsAndRecheck(guard, destAbsPath);
   await fs.cp(srcAbsPath, destAbsPath, {
     recursive: options.recursive ?? true,
     force: true,
@@ -108,7 +143,7 @@ export async function symlink(
   destAbsPath: string,
 ): Promise<void> {
   await guard.assertWritable(destAbsPath);
-  await fs.mkdir(path.dirname(destAbsPath), { recursive: true });
+  await ensureParentsAndRecheck(guard, destAbsPath);
   await fs.rm(destAbsPath, { force: true });
   await fs.symlink(target, destAbsPath);
 }

@@ -241,6 +241,30 @@ describe('restore', () => {
     expect(await readlink(path.join(skillDir, 'alias.md'))).toBe('real.md');
   });
 
+  it('restore does not delete a symlink that escapes the snapshot root (snapshot never captured it)', async () => {
+    const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
+    const skillDir = path.join(tmp, '.claude', 'skills', 'hive-foo');
+    await mkdir(skillDir, { recursive: true });
+    await writeFile(path.join(skillDir, 'SKILL.md'), 'body');
+
+    // A symlink inside the skill dir pointing OUTSIDE the snapshot root, and
+    // a real file it targets. snapshotDir skips this link (containment rule),
+    // so it is absent from the manifest — restore must not treat it as a
+    // stray post-snapshot file and delete it.
+    const outsideTarget = path.join(tmp, 'external', 'user-data.txt');
+    await mkdir(path.dirname(outsideTarget), { recursive: true });
+    await writeFile(outsideTarget, 'precious user data');
+    await nodeSymlink(outsideTarget, path.join(skillDir, 'escape-link'));
+
+    const backup = await snapshot(ctx, 'preinstall', [skillDir]);
+    await writeFile(path.join(skillDir, 'SKILL.md'), 'MUTATED');
+    await restore(ctx, backup.id, {});
+
+    // The escaping symlink and its out-of-root target both survive.
+    expect(await readlink(path.join(skillDir, 'escape-link'))).toBe(outsideTarget);
+    expect(await readFile(outsideTarget, 'utf8')).toBe('precious user data');
+  });
+
   it('restoring a pre-install (absent) backup deletes the tree when its install manifest hash matches', async () => {
     const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
     const skillDir = path.join(tmp, '.claude', 'skills', 'hive-new');

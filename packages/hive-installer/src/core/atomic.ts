@@ -58,6 +58,23 @@ export async function atomicReplaceDir(
     throw err;
   }
 
-  await fs.rm(destAbsPath, { recursive: true, force: true });
-  await fs.rename(stagingDir, destAbsPath);
+  // Never delete the old tree before the new one is in place (council review,
+  // run aa810191): move it aside with a rename (atomic), swap the staging dir
+  // in, then discard the old tree. A crash mid-sequence leaves either the old
+  // tree at destAbsPath, or the old tree in the .hive-trash- sibling — never
+  // "both gone".
+  const destExists = await fs.lstat(destAbsPath).then(
+    () => true,
+    () => false,
+  );
+  const trashDir = path.join(parent, `.hive-trash-${stagingSuffix()}`);
+  if (destExists) await fs.rename(destAbsPath, trashDir);
+  try {
+    await fs.rename(stagingDir, destAbsPath);
+  } catch (err) {
+    if (destExists) await fs.rename(trashDir, destAbsPath).catch(() => {}); // roll back
+    await fs.rm(stagingDir, { recursive: true, force: true }).catch(() => {});
+    throw err;
+  }
+  if (destExists) await fs.rm(trashDir, { recursive: true, force: true }).catch(() => {});
 }

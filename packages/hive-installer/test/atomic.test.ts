@@ -92,4 +92,25 @@ describe('atomicReplaceDir', () => {
     ).rejects.toThrow(GuardViolation);
     expect(called).toBe(false);
   });
+
+  it('preserves the existing destination if the final swap fails (no delete-before-replace data loss)', async () => {
+    const guard = new PathGuard([tmp]);
+    const dest = path.join(tmp, 'skill');
+    await mkdir(dest, { recursive: true });
+    await writeFile(path.join(dest, 'important.md'), 'original');
+
+    // Force the rename-into-place to fail by having populate remove the
+    // staging dir it was given — the swap then cannot succeed.
+    await expect(
+      atomicReplaceDir(guard, dest, async (staging) => {
+        await writeFile(path.join(staging, 'new.md'), 'replacement');
+        await rm(staging, { recursive: true, force: true });
+      }),
+    ).rejects.toThrow();
+
+    // The original tree must survive intact — never "both gone".
+    expect(await readFile(path.join(dest, 'important.md'), 'utf8')).toBe('original');
+    const siblings = await readdir(tmp);
+    expect(siblings.filter((n) => n.includes('trash') || n.includes('staging'))).toEqual([]);
+  });
 });

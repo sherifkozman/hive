@@ -1,5 +1,14 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, readlink, rm as nodeRm, readFile, stat } from 'node:fs/promises';
+import {
+  mkdtemp,
+  readlink,
+  rm as nodeRm,
+  readFile,
+  stat,
+  mkdir as nodeMkdir,
+  writeFile as nodeWriteFile,
+  symlink as nodeSymlink,
+} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { GuardViolation } from '../src/core/guard.js';
@@ -31,6 +40,34 @@ describe('fsops', () => {
       GuardViolation,
     );
     await expect(stat(target)).rejects.toThrow();
+  });
+
+  it('writeFile refuses to follow a symlink at the final path component (O_NOFOLLOW)', async () => {
+    const guard = new PathGuard([tmp]);
+    const outside = path.join(tmp, 'outside.txt');
+    await nodeWriteFile(outside, 'victim');
+    // A symlink inside the allowed root pointing at a file outside it: the
+    // guard canonicalizes and would already block this target, but O_NOFOLLOW
+    // is the belt-and-suspenders that stops the write reaching the target
+    // even if the link were swapped in after the check.
+    const link = path.join(tmp, 'link.txt');
+    await nodeSymlink(outside, link);
+    await expect(writeFile(guard, link, 'overwrite')).rejects.toThrow();
+    expect(await readFile(outside, 'utf8')).toBe('victim'); // target untouched
+  });
+
+  it('mkdir undoes a directory created through a raced-in escaping symlink parent', async () => {
+    // Allowed root is <tm>/root; an attacker pre-creates <tmp>/root/esc as a
+    // symlink to <tmp>/outside. mkdir of <tmp>/root/esc/child must not leave a
+    // real dir at <tmp>/outside/child.
+    const root = path.join(tmp, 'root');
+    const outside = path.join(tmp, 'outside');
+    await nodeMkdir(root, { recursive: true });
+    await nodeMkdir(outside, { recursive: true });
+    await nodeSymlink(outside, path.join(root, 'esc'));
+    const guard = new PathGuard([root]);
+    await expect(mkdir(guard, path.join(root, 'esc', 'child'))).rejects.toThrow(GuardViolation);
+    await expect(stat(path.join(outside, 'child'))).rejects.toThrow(); // nothing escaped
   });
 
   it('mkdir creates a directory inside an allowed root', async () => {

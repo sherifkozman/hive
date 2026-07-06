@@ -476,7 +476,16 @@ export async function restore(
     }
     if (!st.isDirectory()) continue;
     for (const currentFile of await listCurrentFiles(root)) {
-      if (!entryAbsSet.has(currentFile)) extraDeletes.push(currentFile);
+      if (entryAbsSet.has(currentFile)) continue;
+      // A symlink whose target escapes the snapshot root was intentionally
+      // NOT captured by snapshotDir (containment rule), so it is not an
+      // "extra" post-snapshot file — deleting it would destroy user data the
+      // backup never owned (council review, run aa810191).
+      const linkStat = await fs.lstat(currentFile).catch(() => undefined);
+      if (linkStat?.isSymbolicLink() && !(await symlinkResolvesInsideRoot(currentFile, root))) {
+        continue;
+      }
+      extraDeletes.push(currentFile);
     }
   }
 
@@ -488,6 +497,20 @@ export async function restore(
   }
 
   const guard = options.guard ?? defaultGuard(ctx);
+
+  // Defense-in-depth (council review, run aa810191): manifest.json is an
+  // on-disk file that could be hand-edited or crafted. Every mutation below
+  // already flows through `guard`, but validate the *entire* target set up
+  // front so a rogue path fails before any partial mutation is applied,
+  // rather than mid-way through the write loop.
+  const allTargets = [
+    ...(manifest.emptyDirs ?? []).map((d) => joinHome(ctx, ...d.split(path.sep))),
+    ...manifest.entries.map((e) => e.absPath),
+    ...deletes,
+  ];
+  for (const target of allTargets) {
+    await guard.assertWritable(target);
+  }
 
   // --- 3. Writes. ---
   for (const relDir of manifest.emptyDirs ?? []) {
