@@ -142,37 +142,65 @@ async function findVendoredSourceRoot(sourcesDir, name) {
   return null;
 }
 
+/** Every .md file bundled for a skill (INDEX.md, BUNDLE.md, mini/*.md, presets/*.md), concatenated. */
+async function readComposableContent(composableDir) {
+  const files = [];
+  await walkFiles(composableDir, files);
+  const mdFiles = files.filter((f) => f.endsWith('.md'));
+  const contents = await Promise.all(mdFiles.map((f) => fs.readFile(f, 'utf8')));
+  return contents.join('\n');
+}
+
+/**
+ * True iff `content` references `dirName` as a relative path — e.g.
+ * `scripts/foo.py`, `` `scripts/` ``, or a markdown link target
+ * `(../../shared/y.md)`. Word-boundary before the name (so `scripts`
+ * doesn't match inside `test-scripts/`), then a literal `/`.
+ */
+function referencesDir(content, dirName) {
+  const escaped = dirName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?<![A-Za-z0-9_])${escaped}/`);
+  return re.test(content);
+}
+
 /**
  * Non-knowledge assets (spec §9): a converted/authored skill's minis may
  * reference sibling files by relative path (e.g. `scripts/foo.py`) that
  * live in the vendored source, not in the CCS composable/ tree — those
- * paths must ship or the reference is dead once installed. Mechanical
- * rule, no per-skill hardcoding: every non-hidden top-level directory in
- * the matching vendored source root (LICENSE-prefixed and PROVENANCE.md
- * are files, not dirs — already handled by copyVendoredSourceLicenses)
- * is bundled under
- * assets/skills/<category>/<name>/assets-src/<dirName>/, and its name
- * recorded on the skill's manifest entry so the installer knows what to
- * materialize at install time.
+ * paths must ship or the reference is dead once installed. Reference-based
+ * rule, no per-skill hardcoding: a top-level directory in the matching
+ * vendored source root ships iff the skill's own compiled composable
+ * content (INDEX.md/BUNDLE.md/mini/*.md/presets/*.md) references it by
+ * relative path (see referencesDir above) — NOT merely "every dir exists",
+ * which would also sweep in a source's already-converted knowledge dirs
+ * (e.g. claude-api's per-language `.md` folders, whose content is already
+ * losslessly carried by this skill's own minis) that happen to sit next to
+ * genuine non-knowledge assets. Shipped dirs land under
+ * assets/skills/<category>/<name>/assets-src/<dirName>/, name recorded on
+ * the skill's manifest entry so the installer knows what to materialize.
  */
 async function copyAssetDirs(copiedSkills) {
   const sourcesDir = path.join(repoRoot, 'skills', 'sources');
   const assetDirsBySkill = new Map();
 
-  for (const { category, name, destSkillDir } of copiedSkills) {
+  for (const { category, name, destSkillDir, composableDir } of copiedSkills) {
     const sourceRoot = await findVendoredSourceRoot(sourcesDir, name);
     if (!sourceRoot) continue;
 
     const dirNames = await listDirs(sourceRoot);
     if (dirNames.length === 0) continue;
 
-    for (const dirName of dirNames) {
+    const composableContent = await readComposableContent(composableDir);
+    const referenced = dirNames.filter((dirName) => referencesDir(composableContent, dirName));
+    if (referenced.length === 0) continue;
+
+    for (const dirName of referenced) {
       const src = path.join(sourceRoot, dirName);
       const dest = path.join(destSkillDir, 'assets-src', dirName);
       await fs.mkdir(path.dirname(dest), { recursive: true });
       await fs.cp(src, dest, { recursive: true });
     }
-    assetDirsBySkill.set(`${category}/${name}`, dirNames);
+    assetDirsBySkill.set(`${category}/${name}`, referenced);
   }
   return assetDirsBySkill;
 }

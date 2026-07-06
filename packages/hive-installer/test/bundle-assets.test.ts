@@ -147,11 +147,42 @@ describe('bundle-assets: manifest', () => {
     expect(fa?.assetDirs ?? []).toEqual([]);
   });
 
-  it('claude-api (converted, vendored source has per-language sample dirs, none hidden) records every non-hidden top-level source dir', () => {
+  it('claude-api (converted, vendored source has per-language dirs, each referenced by relative path somewhere in its composable text) records every one of them', () => {
+    // Reference-based, not "ship every non-hidden dir": every one of claude-api's
+    // per-language dirs genuinely appears as a `<dir>/` path token in its own
+    // composable content (e.g. "read from `csharp/`", "see `shared/tool-use-concepts.md`"),
+    // so the reference-based rule ships all 9 — same result the old "ship every
+    // dir" rule would have produced, but for the correct reason (verified per-dir,
+    // not assumed). mcp-builder below is the discriminating case: it has an
+    // UNreferenced source dir that this rule correctly excludes.
     const claudeApi = manifest.skills.find((s) => s.name === 'claude-api');
     expect(claudeApi).toBeDefined();
     expect(claudeApi?.assetDirs?.sort()).toEqual(
       ['csharp', 'curl', 'go', 'java', 'php', 'python', 'ruby', 'shared', 'typescript'].sort(),
+    );
+  });
+
+  it('mcp-builder ships only scripts/ (referenced), NOT reference/ (present in the vendored source, but never mentioned by path in the composable content)', () => {
+    const mcpBuilder = manifest.skills.find((s) => s.name === 'mcp-builder');
+    expect(mcpBuilder).toBeDefined();
+    expect(mcpBuilder?.assetDirs).toEqual(['scripts']);
+
+    const relPaths = manifest.files.map((f) => f.relPath);
+    expect(relPaths.some((p) => p.startsWith('skills/converted/mcp-builder/assets-src/scripts/'))).toBe(true);
+    expect(relPaths.some((p) => p.startsWith('skills/converted/mcp-builder/assets-src/reference/'))).toBe(false);
+  });
+
+  it('internal-comms has a vendored examples/ dir that is never referenced by path, so it ships no assets', () => {
+    const internalComms = manifest.skills.find((s) => s.name === 'internal-comms');
+    expect(internalComms).toBeDefined();
+    expect(internalComms?.assetDirs ?? []).toEqual([]);
+  });
+
+  it("skill-creator's all-markdown agents/ and references/ dirs still ship: they ARE referenced by path (skill-creator's own conversion documents them as intentionally-vendored subagent-spawn dependencies, not stale links) — proves the rule isn't a disguised file-extension filter", () => {
+    const skillCreator = manifest.skills.find((s) => s.name === 'skill-creator');
+    expect(skillCreator).toBeDefined();
+    expect(skillCreator?.assetDirs?.sort()).toEqual(
+      ['agents', 'assets', 'eval-viewer', 'references', 'scripts'].sort(),
     );
   });
 
