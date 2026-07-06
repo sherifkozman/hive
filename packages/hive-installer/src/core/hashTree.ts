@@ -7,10 +7,12 @@ export interface HashTreeOptions {
   exclude?: string[];
 }
 
-interface CollectedEntry {
+export interface TreeEntry {
   relPath: string;
   content: Buffer;
 }
+
+type CollectedEntry = TreeEntry;
 
 async function collect(
   root: string,
@@ -42,6 +44,44 @@ async function collect(
 }
 
 /**
+ * Walk `rootDir` and return its (relPath, content) entries, sorted by
+ * relPath. Exported (beyond hashTree's own use) so callers that need to
+ * fingerprint a tree that doesn't exist on disk *yet* in its final shape
+ * — e.g. installer.ts computing "what would this skill's tree hash be
+ * once installed" from a source dir plus a to-be-generated SKILL.md —
+ * can collect real entries from disk and splice in synthetic ones before
+ * hashing, via hashEntries(), without duplicating the walk/hash logic.
+ */
+export async function collectTreeEntries(
+  rootDir: string,
+  options: HashTreeOptions = {},
+): Promise<TreeEntry[]> {
+  const exclude = new Set(options.exclude ?? []);
+  const entries: CollectedEntry[] = [];
+  await collect(rootDir, rootDir, exclude, entries);
+  entries.sort((a, b) => (a.relPath < b.relPath ? -1 : a.relPath > b.relPath ? 1 : 0));
+  return entries;
+}
+
+/**
+ * sha256 over the sorted (relPath, sha256(content)) pairs of `entries`.
+ * The core of hashTree()'s fingerprint, factored out so it can be reused
+ * with a synthetic entry list (see collectTreeEntries's doc comment).
+ * Sorts defensively — callers may pass entries in any order.
+ */
+export function hashEntries(entries: TreeEntry[]): string {
+  const sorted = [...entries].sort((a, b) => (a.relPath < b.relPath ? -1 : a.relPath > b.relPath ? 1 : 0));
+  const hash = createHash('sha256');
+  for (const entry of sorted) {
+    hash.update(entry.relPath);
+    hash.update('\0');
+    hash.update(createHash('sha256').update(entry.content).digest('hex'));
+    hash.update('\n');
+  }
+  return hash.digest('hex');
+}
+
+/**
  * Deterministic content fingerprint of a directory tree: sha256 over the
  * sorted (relPath, sha256(content)) pairs of every file (symlinks are
  * fingerprinted by their target string, not followed). Used by
@@ -50,17 +90,5 @@ async function collect(
  * "has this tree changed since we last looked at it".
  */
 export async function hashTree(rootDir: string, options: HashTreeOptions = {}): Promise<string> {
-  const exclude = new Set(options.exclude ?? []);
-  const entries: CollectedEntry[] = [];
-  await collect(rootDir, rootDir, exclude, entries);
-  entries.sort((a, b) => (a.relPath < b.relPath ? -1 : a.relPath > b.relPath ? 1 : 0));
-
-  const hash = createHash('sha256');
-  for (const entry of entries) {
-    hash.update(entry.relPath);
-    hash.update('\0');
-    hash.update(createHash('sha256').update(entry.content).digest('hex'));
-    hash.update('\n');
-  }
-  return hash.digest('hex');
+  return hashEntries(await collectTreeEntries(rootDir, options));
 }
