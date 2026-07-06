@@ -385,19 +385,22 @@ async function checkPointerBlocks(
       if (!content.includes(MANAGED_BLOCK_START) || !content.includes(MANAGED_BLOCK_END)) continue; // no block -> check not emitted
 
       const payloadDir = resolvePayloadLocation(ctx, entry);
-      const payloadExists = payloadDir
-        ? await fs.stat(payloadDir).then(
-            () => true,
+      // "Populated" not just "exists": restore-uninstall of the last skill leaves an
+      // empty payload root behind (restore never removes the parent dir it didn't
+      // record), so an empty payload is just as dangling as an absent one.
+      const payloadPopulated = payloadDir
+        ? await fs.readdir(payloadDir).then(
+            (names) => names.some((n) => n.startsWith('hive-')),
             () => false,
           )
         : false;
 
       const id = `dangling-pointer-block:${entry.id}`;
-      if (payloadExists) {
+      if (payloadPopulated) {
         checks.push({
           id,
           status: 'ok',
-          detail: `${entry.name}: managed block in ${pointerFile} matches an existing payload dir (${payloadDir})`,
+          detail: `${entry.name}: managed block in ${pointerFile} matches a populated payload dir (${payloadDir})`,
         });
       } else {
         checks.push({
@@ -405,7 +408,7 @@ async function checkPointerBlocks(
           status: 'warn',
           detail:
             `${entry.name}: ${pointerFile} contains the hive-skills managed block, but its payload dir ` +
-            `(${payloadDir ?? 'unknown'}) does not exist`,
+            `(${payloadDir ?? 'unknown'}) is missing or contains no hive-* skills`,
           fix:
             `Remove the block between \`${MANAGED_BLOCK_START}\` and \`${MANAGED_BLOCK_END}\` in ${pointerFile}, ` +
             `or re-run install to recreate ${payloadDir ?? 'the payload dir'}.`,

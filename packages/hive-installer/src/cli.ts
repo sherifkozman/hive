@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import path from 'node:path';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Command, CommanderError } from 'commander';
 import pc from 'picocolors';
@@ -235,8 +235,27 @@ async function main(): Promise<void> {
   }
 }
 
-const isMain =
-  process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+/**
+ * True when this module is the process entry point (vs. imported by a
+ * test). Node resolves the entry script's `import.meta.url` through
+ * `fs.realpath` by default (no `--preserve-symlinks`), but leaves
+ * `process.argv[1]` as the literal invoked path — so a plain
+ * `path.resolve` comparison silently mismatches (and this whole branch
+ * silently never runs) whenever the invocation path involves a symlink.
+ * That is NOT an edge case for this CLI: an npm/pnpm `bin` entry is
+ * itself a symlink, and macOS's own `/tmp` is a symlink to `/private/tmp`
+ * — both hit this exact mismatch. `realpathSync` on both sides fixes it.
+ */
+function resolveEntryPath(argvPath: string): string | undefined {
+  try {
+    return realpathSync(argvPath);
+  } catch {
+    return undefined;
+  }
+}
+
+const invokedPath = process.argv[1];
+const isMain = invokedPath !== undefined && resolveEntryPath(invokedPath) === fileURLToPath(import.meta.url);
 
 if (isMain) {
   main().catch((err) => {
