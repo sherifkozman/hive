@@ -5,6 +5,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "types": ["node"],
+    "allowJs": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": false,
@@ -18,5 +19,5 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "*.config.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "*.config.ts", "scripts/**/*.mjs"]
 }

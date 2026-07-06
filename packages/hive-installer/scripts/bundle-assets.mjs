@@ -1,19 +1,240 @@
 #!/usr/bin/env node
-// Placeholder for T5 (asset bundling script per spec §3): copying
-// skills/{authored,converted,meta}/**/composable/**, tools/hive.py, and
-// license/provenance files into assets/. For now this only ensures the
-// `assets/` directory exists so `pnpm build` and `files` packaging don't
-// fail before T5 implements the real copy logic.
-import { mkdir, writeFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+// Asset bundling (T2.5, spec §3): copies everything an offline install needs
+// into assets/ at build/prepack time, plus assets/manifest.json describing
+// what was bundled. Read-only on the repo side (git query only); all writes
+// land under this package's assets/ directory.
+import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const packageRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const repoRoot = path.resolve(packageRoot, '..', '..');
 const assetsDir = path.join(packageRoot, 'assets');
 
-await mkdir(assetsDir, { recursive: true });
-await writeFile(
-  path.join(assetsDir, '.placeholder'),
-  'Real asset bundling (skills/, tools/hive.py, licenses) lands in T5.\n',
-  'utf8',
-);
+const SKILL_CATEGORIES = ['authored', 'converted', 'meta'];
+
+async function pathExists(p) {
+  try {
+    await fs.access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function listDirs(dir) {
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
+async function walkFiles(dir, out) {
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await walkFiles(abs, out);
+    } else if (entry.isFile()) {
+      out.push(abs);
+    }
+  }
+}
+
+async function copyFile(src, dest) {
+  await fs.mkdir(path.dirname(dest), { recursive: true });
+  await fs.copyFile(src, dest);
+}
+
+/** Strip the light markdown this repo's INDEX.md prose uses: `code`, **bold**, *italic*, [text](url). */
+function stripMarkdownInline(text) {
+  return text
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/\*\*([^*]*)\*\*/g, '$1')
+    .replace(/\*([^*]*)\*/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .trim();
+}
+
+/** First `.`/`!`/`?`-terminated sentence of a (whitespace-collapsed) paragraph. */
+function firstSentence(paragraph) {
+  const collapsed = stripMarkdownInline(paragraph.replace(/\s+/g, ' ').trim());
+  const match = collapsed.match(/^.*?[.!?](?=\s|$)/);
+  return (match ? match[0] : collapsed).trim();
+}
+
+/**
+ * Description = first sentence of the INDEX.md body (everything after the
+ * H1 title line), stripped of markdown. Every INDEX.md in this repo opens
+ * with `# Title` then a blank line then either a skill-specific summary
+ * paragraph or (for skills without one) the standard "Loading policy: ..."
+ * paragraph — either way, "first sentence of the body" is well-defined.
+ */
+async function extractDescription(indexPath) {
+  const raw = await fs.readFile(indexPath, 'utf8');
+  const lines = raw.split('\n');
+
+  let i = 0;
+  while (i < lines.length && !/^#\s/.test(lines[i])) i++;
+  i++; // past the title line
+  while (i < lines.length && lines[i].trim() === '') i++;
+
+  const paragraphLines = [];
+  while (i < lines.length && lines[i].trim() !== '') {
+    paragraphLines.push(lines[i]);
+    i++;
+  }
+
+  return firstSentence(paragraphLines.join(' '));
+}
+
+/** Copy skills/{authored,converted,meta}/*\/composable into assets/skills/... */
+async function copySkillTrees() {
+  const copied = [];
+  for (const category of SKILL_CATEGORIES) {
+    const categoryDir = path.join(repoRoot, 'skills', category);
+    for (const name of await listDirs(categoryDir)) {
+      const src = path.join(categoryDir, name, 'composable');
+      if (!(await pathExists(src))) continue;
+      const destSkillDir = path.join(assetsDir, 'skills', category, name);
+      const dest = path.join(destSkillDir, 'composable');
+      await fs.mkdir(destSkillDir, { recursive: true });
+      await fs.cp(src, dest, { recursive: true });
+      copied.push({ category, name, composableDir: dest });
+    }
+  }
+  return copied;
+}
+
+/** tools/hive.py + top-level license/provenance files (spec §3). */
+async function copyToolingAndLicenses() {
+  await copyFile(path.join(repoRoot, 'tools', 'hive.py'), path.join(assetsDir, 'tools', 'hive.py'));
+  await copyFile(path.join(repoRoot, 'LICENSE'), path.join(assetsDir, 'LICENSE'));
+  await copyFile(
+    path.join(repoRoot, 'THIRD_PARTY_NOTICES.md'),
+    path.join(assetsDir, 'THIRD_PARTY_NOTICES.md'),
+  );
+}
+
+/**
+ * Every skills/sources/**\/PROVENANCE.md and vendored LICENSE* file:
+ * licenses travel with what they license (spec §3), preserving the
+ * relative path so they land alongside the vendored material they cover.
+ */
+async function copyVendoredSourceLicenses() {
+  const sourcesDir = path.join(repoRoot, 'skills', 'sources');
+  const allFiles = [];
+  await walkFiles(sourcesDir, allFiles);
+  const matches = allFiles.filter((abs) => {
+    const base = path.basename(abs);
+    return base === 'PROVENANCE.md' || /^LICENSE/i.test(base);
+  });
+  for (const src of matches) {
+    const rel = path.relative(repoRoot, src);
+    await copyFile(src, path.join(assetsDir, rel));
+  }
+}
+
+async function buildSkillMetadata(copiedSkills) {
+  const out = [];
+  for (const { category, name, composableDir } of copiedSkills) {
+    const [description, bundleRaw, versionRaw, miniEntries] = await Promise.all([
+      extractDescription(path.join(composableDir, 'INDEX.md')),
+      fs.readFile(path.join(composableDir, 'BUNDLE.md'), 'utf8').catch(() => ''),
+      fs.readFile(path.join(composableDir, 'VERSION'), 'utf8').catch(() => ''),
+      fs.readdir(path.join(composableDir, 'mini')).catch(() => []),
+    ]);
+
+    out.push({
+      name,
+      category,
+      version: versionRaw.trim(),
+      minis: miniEntries.filter((f) => f.endsWith('.md')).length,
+      bundleTokens: Math.round(bundleRaw.length / 4),
+      description,
+      path: `skills/${category}/${name}`,
+    });
+  }
+  out.sort((a, b) => (a.category === b.category ? a.name.localeCompare(b.name) : a.category.localeCompare(b.category)));
+  return out;
+}
+
+async function computeFilesManifest() {
+  const all = [];
+  await walkFiles(assetsDir, all);
+  const out = [];
+  for (const abs of all) {
+    const rel = path.relative(assetsDir, abs).split(path.sep).join('/');
+    const buf = await fs.readFile(abs);
+    out.push({ relPath: rel, sha256: createHash('sha256').update(buf).digest('hex'), size: buf.length });
+  }
+  out.sort((a, b) => a.relPath.localeCompare(b.relPath));
+  return out;
+}
+
+async function getHiveCommit() {
+  try {
+    const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot });
+    return stdout.trim();
+  } catch (err) {
+    console.warn('[bundle-assets] warning: could not determine git commit:', err.message);
+    return 'unknown';
+  }
+}
+
+async function main() {
+  await fs.rm(assetsDir, { recursive: true, force: true });
+  await fs.mkdir(assetsDir, { recursive: true });
+
+  const copiedSkills = await copySkillTrees();
+  await copyToolingAndLicenses();
+  await copyVendoredSourceLicenses();
+
+  const [skills, hiveCommit] = await Promise.all([buildSkillMetadata(copiedSkills), getHiveCommit()]);
+  const files = await computeFilesManifest();
+
+  const manifest = {
+    generatedAt: new Date().toISOString(),
+    hiveCommit,
+    skills,
+    files,
+  };
+
+  await fs.writeFile(
+    path.join(assetsDir, 'manifest.json'),
+    JSON.stringify(manifest, null, 2) + '\n',
+    'utf8',
+  );
+
+  console.log(
+    `[bundle-assets] wrote assets/manifest.json: ${skills.length} skills, ${files.length} files`,
+  );
+}
+
+const isMain =
+  process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMain) {
+  main().catch((err) => {
+    console.error('[bundle-assets] failed:', err);
+    process.exitCode = 1;
+  });
+}
+
+export { main, packageRoot, repoRoot, assetsDir };
