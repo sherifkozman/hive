@@ -1,0 +1,8 @@
+date: 2026-07-06T12:08:35Z
+repeat: 1  condition: C1-upstream  order: C1-upstream C2-hive-full
+agent: claude-agent-acp  model: claude-sonnet-5  sandbox: docker  concurrency: 1
+benchflow: benchflow 0.6.4
+benchflow_commit: 2048096ab4c7dd286d7a584687b7045a4bdf6124
+evals_sha256: ff15c09b9bb6249acbdfd977c309a82f19defef60aeba4b219dd04e3d596dca0
+skill_dir_sha256: 6bda1747f835ac2625c3283eca4ef7321ba6a93eec4991e44a230e4ce6b3a594
+baseline_flag: with-baseline
