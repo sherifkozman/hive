@@ -52,6 +52,50 @@ Quality bands (component scoring, 4 cases): gaps of ≤1 case = noise (n is smal
   removed; skills dir sha256-verified against its frozen hash before every
   rollout); one rollout at a time; raw JSON outputs archived per cell.
 
+## v2 — review reconciliation (codex delta-review, all 9 issues adopted; frozen before any scored run)
+
+1. **Outcome resolution is ordered; primary + secondary.** Precedence for the PRIMARY
+   outcome: E2 → E1 → E3 → E4 (a navigation defect invalidates interpreting C2's
+   token economics, so E2 outranks E1). Any other rule that also fires is recorded
+   as a SECONDARY finding. Indeterminate zone (e.g. parity with 15–19% token delta,
+   or median vs direction-consistency contradiction) → E4-with-flag, naming the
+   near-miss rule and the exact numbers.
+2. **E1's metric is cache-neutral tokens**: input + cache_read + cache_write +
+   output, all at full weight (billable cost reported separately, never used for
+   E1). Serial-run cache warming then only shifts the input/cache_read split, which
+   the neutral sum absorbs. Runs keep ≥20s spacing; cold-start gaps not required.
+3. **Aggregation defined**: per case, take the MEDIAN score across repeats; count
+   case wins/losses over the 4 cases. "Gap ≤1 case" always refers to this
+   median-per-case count. Same definition in E1/E2/E3. Narrow cases are, by frozen
+   ID: pdf-narrow-01, pdf-narrow-02.
+4. **Degraded cells**: if any rollout in a repeat block is rate-limited/errored,
+   discard that ENTIRE repeat block for that harness and retry once after cooldown;
+   never keep partial-by-condition data.
+5. **Wrong-mini events are mechanical**: a frozen case→expected-mini map (generated
+   by deterministic grep of each case's scoring components across mini files,
+   committed alongside this protocol) defines the allowlist; an event = C2 opening
+   zero expected minis or >2 non-expected minis for a case; max one event counted
+   per case×repeat; transcript evidence archived.
+6. **Per-rollout isolation**: each rollout runs in a FRESH COPY of its condition
+   fixture (no resume, no prior transcripts/state); the copy is archived with the
+   outputs. HOME limitation, documented: full HOME isolation breaks subscription
+   auth (verified: "Not logged in" under fresh HOME), and credential relocation is
+   deliberately out of bounds. Runs therefore inherit the real user HOME: user-level
+   CLAUDE.md/skills are a CONSTANT context across all conditions (verified: no
+   pdf-relevant user skills). Differential comparisons remain valid; the constant
+   preamble inflates token denominators, making the ≥20% E1 threshold conservative.
+7. **Model pin asserted per rollout** from output JSON (modelUsage keys must be
+   exactly the pinned model); mismatch invalidates the rollout (rule 4 applies).
+8. **Discovery canary** (unscored), once per condition×repeat: "list the skill
+   files available to you and quote the first heading of each" — verifies the
+   harness actually discovered the expected frozen SKILL.md (hash-matched fixture).
+9. **E3 meaning**: E1_signal is computed per harness on that harness's OWN paired
+   metrics (never pooling token counts across families); held constant across
+   waves: cases, prompts, scoring, skill-tree hashes, repeat structure,
+   invalid-run rules, turn-cap semantics; allowed to differ: discovery mechanism,
+   tokenizer/accounting, model. Output tokens are part of the E1 neutral sum;
+   output-only comparisons are secondary.
+
 ## What this is not
 
 Single-skill (pdf), small-n, two harnesses, one machine. It selects among E1–E4

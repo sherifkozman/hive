@@ -1,0 +1,21 @@
+{
+  "rule": "mini expected iff it contains >=1 scoring component (grep, lowercase)",
+  "map": {
+    "pdf-narrow-01": [
+      "00-core.md"
+    ],
+    "pdf-narrow-02": [
+      "04-images-ocr.md",
+      "07-libraries-reference.md"
+    ],
+    "pdf-broad-03": [
+      "03-merge-split-manipulate.md"
+    ],
+    "pdf-broad-04": [
+      "00-core.md",
+      "04-images-ocr.md",
+      "06-forms.md",
+      "07-libraries-reference.md"
+    ]
+  }
+}
