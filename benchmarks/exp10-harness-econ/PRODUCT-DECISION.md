@@ -63,3 +63,50 @@ skill lift vs sandbox numbers. broad-03 exceeded the 12-turn budget for ALL
 conditions in r3 and for C1 in 3/3 repeats (A3 failures; sensitivity: excluding
 broad-03 changes no outcome selection). Wave 2 (Codex, cross-family) not run —
 auth probing blocked; requires explicit approval to proceed.
+
+---
+
+# Confirmation waves (final, 2 skills × 2 harnesses × n=3)
+
+## Median-per-case totals
+
+| wave | C0 | C1 upstream | C2 CCS-shim | C3 bundle-inline | C4 preset-policy |
+|---|---|---|---|---|---|
+| pdf / Claude Code | 1/4 | 3/4 | 3/4 | 3/4 | — |
+| pdf / Codex | 2/4 | 4/4 | 3/4 | **4/4** | — |
+| mcp / Claude Code | 2/4 | **4/4** | 3/4 | 3/4 | **4/4** |
+
+Median neutral tokens (mcp wave): C1 2.05M ≈ C4 2.11M < C3 2.65M ≈ C2 2.67M < C0 3.76M.
+pdf/Claude Code engaged-case deltas: C3 −34%/−38% vs C2. pdf/Codex: C2 failed
+narrow-01 in 3/3 repeats (consistent shim under-navigation on Codex).
+
+## Frozen-rule outcome (v2.1 precedence)
+
+- E2: does NOT fire (no wave has C2 trailing C1 by ≥2 median cases; corrected audit
+  shows accurate mini selection when engaged).
+- E1: fires in the pdf/Claude-Code band only (indeterminate 15.5% aggregate, −34/−38%
+  per engaged case); NOT at mcp size (C3 ≈ C2 tokens, no advantage).
+- **E3 fires — PRIMARY OUTCOME: per-client, per-size packing.** E1_signal holds in
+  exactly one harness (and only at small skill size), and Codex adds an independent
+  QUALITY dimension (single-file deliveries 4/4 vs shim 3/4, deficit reproducible
+  3/3 on the same case).
+
+## The single most important product fact
+
+**C2 — the shape `npx hive-skills` installs today — was never the best condition in
+any of the twelve measured wave×condition cells**: quality 3/4 everywhere, and
+always the (co-)most-expensive skill condition. Every measured client×size band has
+a better delivery shape available from artifacts Hive ALREADY compiles:
+
+| skill size | Claude Code | Codex |
+|---|---|---|
+| small (≲10k tok) | BUNDLE inline in SKILL.md (parity, −34/−38% tokens) | BUNDLE inline (4/4 vs 3/4) |
+| mid (~10–50k) | preset-policy: preset if covered, else bundle (4/4 at C1-level cost) | single-file (upstream-style or bundle) |
+| large (50k+) | composable tree (only option; routing accurate) | composable tree + engagement wording TBD |
+
+Secondary finding: the C4 preset POLICY (mechanical preset-else-bundle fallback)
+matched the best condition (4/4) at near-best cost on its first outing, including
+surviving a natural cross-track preset-gap case via fallback.
+
+Baseline was worst in every wave — the cases discriminate; skills carry real lift
+on both model families.

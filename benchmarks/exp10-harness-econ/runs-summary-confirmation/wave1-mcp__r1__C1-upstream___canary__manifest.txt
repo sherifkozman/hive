@@ -1,0 +1,5 @@
+date: 2026-07-06T15:57:50Z  rc: 0
+repeat: 1 condition: C1-upstream label: canary model: claude-sonnet-5 max_turns: 12
+cases_sha: 139ea32220676ed48ba3870af55d3232d4ded74398ff4913ca15a8a3c71e138e  fixture_tree_sha: c1b5743275e3f0418526413fdaf60adf807aef695b8bcb02649addfe2c671673
+order: C0-baseline C1-upstream C2-ccs-full C3-bundle-only C4-preset  cache_policy: serial+20s-spacing (cache-neutral metric per protocol v2.2)
+MODEL_OK dominant=claude-sonnet-5 aux=[]

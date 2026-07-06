@@ -1,0 +1,5 @@
+date: 2026-07-06T15:59:19Z  rc: 0
+repeat: 1 condition: C1-upstream label: mcp-narrow-01 model: claude-sonnet-5 max_turns: 12
+cases_sha: 139ea32220676ed48ba3870af55d3232d4ded74398ff4913ca15a8a3c71e138e  fixture_tree_sha: 44f6c34e42c8137333d66a9f651a4bbb964fd234b407907509c7812fce932e3c
+order: C0-baseline C1-upstream C2-ccs-full C3-bundle-only C4-preset  cache_policy: serial+20s-spacing (cache-neutral metric per protocol v2.2)
+MODEL_OK dominant=claude-sonnet-5 aux=[]
