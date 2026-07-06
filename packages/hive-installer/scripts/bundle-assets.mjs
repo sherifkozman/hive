@@ -159,10 +159,18 @@ async function readComposableContent(composableDir) {
  */
 function referencesDir(content, dirName) {
   const escaped = dirName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  // Lookbehind includes '-' and '.' so `widgets` never matches inside
-  // `test-widgets/` or `foo.widgets/` (hyphen/dot are path-name chars).
-  const re = new RegExp(`(?<![A-Za-z0-9_.-])${escaped}/`);
-  return re.test(content);
+  // Signal 1 — slash path. Deliberately LOOSE about what follows the slash:
+  // a bare "read from `go/`" routing instruction is a genuine runtime
+  // reference (claude-api's language-routing table), and excluding it would
+  // reintroduce the dead-path bug this rule exists to fix. Lookbehind
+  // includes '-' and '.' so `widgets` never matches inside `test-widgets/`
+  // or `foo.widgets/` (hyphen/dot are path-name chars).
+  const slashRef = new RegExp(`(?<![A-Za-z0-9_.-])${escaped}/`);
+  // Signal 2 — Python dotted-module invocation (`python -m scripts.foo`):
+  // no slash appears at all, yet the dir is a hard runtime dependency
+  // (skill-creator's scripts/ package uses exactly this form).
+  const dottedModule = new RegExp(`-m\\s+${escaped}\\.`);
+  return slashRef.test(content) || dottedModule.test(content);
 }
 
 /**

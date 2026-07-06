@@ -285,3 +285,13 @@ describe('bundle-assets: referencesDir (synthetic, repo-independent)', () => {
     expect(referencesDir('See foo.widgets/ for fixtures.', 'widgets')).toBe(false);
   });
 });
+
+describe('bundle-assets: referencesDir dotted-module signal', () => {
+  it('includes a dir invoked only as a Python dotted module (python -m name.tool)', () => {
+    expect(referencesDir('Run `python -m widgets.aggregate` after edits.', 'widgets')).toBe(true);
+  });
+
+  it('does not match a dotted word without the -m invocation context', () => {
+    expect(referencesDir('The widgets.aggregate concept is described above.', 'widgets')).toBe(false);
+  });
+});
