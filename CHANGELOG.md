@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/) for the
 spec version and the CLI, with the understanding that a v0.x release makes no
 stability promises on either.
 
+## [Unreleased]
+
+### Added
+
+- **`hive-skills` npm package v0.1.0** (`packages/hive-installer/`), the first
+  distributable for Hive: an npx-runnable installer that detects installed AI
+  coding clients (13-client registry with per-entry provenance and confidence,
+  user-overridable via `--registry`), installs the bundled CCS skills into
+  native skill directories or consent-gated payload+pointer locations, proposes
+  conversions of a machine's existing skills against the CCS scope rule
+  (thresholds per README "When to use it"; lossless-conversion recipe cites
+  Experiment 3 in `docs/BENCHMARKS.md`), and ships `doctor` diagnostics plus
+  sha256-manifested backup/restore with tamper-refusing deletion safety. All
+  13 skills, `tools/hive.py`, and third-party license/provenance files are
+  bundled into the tarball; the packed artifact is validated by an
+  extracted-tarball end-to-end test. Node ≥ 18; interactive wizard via
+  `npx hive-skills`, non-interactive via subcommands with `--yes`/`--dry-run`.
+
 ## [0.1.0] (2026-07-05)
 
 Initial public release of Hive: the CCS (Compiled Composable Skills) framework
