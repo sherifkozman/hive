@@ -1,7 +1,9 @@
 # Hive: a framework for building composable skills for AI agents
 
 Hive is a framework for building composable skills for AI agents: a spec, a
-CLI, a runtime loading policy, and a library of skills built on it. It packages
+CLI, a runtime loading policy, a library of skills built on it, and an
+`npx` installer ([`hive-skills`](packages/hive-installer/)) that distributes
+those skills into the AI coding clients you already use. It packages
 an agent skill as many small, self-contained **minis** behind one
 knowledge-free **INDEX**, plus a deterministic build step that compiles the
 minis into a single **BUNDLE** or into task-shaped subsets (**presets**). At
@@ -223,6 +225,25 @@ Do **not** use Hive when:
 
 ## Quick start
 
+**Install the skills into your AI tools (no clone needed):** run the installer
+with `npx`. It scans for installed AI coding clients (Claude Code, Codex,
+OpenCode, VS Code Copilot, Cline, Gemini, Windsurf, Cursor, and more), installs
+the bundled CCS skills into the ones you pick, and can propose converting your
+*existing* skills to CCS form. It backs up before every change, never edits a
+client's rules file without explicit consent, and supports a zero-write
+`--dry-run`.
+
+```bash
+npx hive-skills            # interactive wizard: scan → pick clients → pick skills → install
+npx hive-skills scan       # just report detected clients and their current skills
+npx hive-skills doctor     # diagnose install health and toolchain
+npx hive-skills propose    # list conversion candidates with ready-to-run recipes
+```
+
+The installer's source lives in [`packages/hive-installer/`](packages/hive-installer/)
+(published as `hive-skills`); see its [README](packages/hive-installer/README.md)
+for the full command reference, client-support table, and safety model.
+
 **The fast path (agentic; how most adopters should start):** point your AI
 coding agent (Claude Code, Codex, anything that reads files) at
 [`skills/meta/ccs-skill-creator/composable/INDEX.md`](skills/meta/ccs-skill-creator/composable/INDEX.md)
@@ -259,6 +280,11 @@ way to change a skill's `composable/VERSION`.
   methodology, reproduction pointers, and limitations.
 - **[`tools/hive.py`](tools/hive.py)**: the `compile` / `lint` / `parity` /
   `report` / `bump` CLI (stdlib only).
+- **[`packages/hive-installer/`](packages/hive-installer/)**: the `hive-skills`
+  npm package — an `npx`-runnable installer that detects AI coding clients,
+  installs the bundled skills into them, proposes conversions, and provides
+  doctor/backup/restore. TypeScript, Node ≥ 18; bundles the skills and
+  `tools/hive.py` into a self-contained tarball.
 - **`skills/`**: thirteen skills in a categorized layout, cataloged in
   [`skills/README.md`](skills/README.md). `skills/authored/` (code-review,
   data-analysis, financial-analysis, python-api, tech-writing) are written
