@@ -99,6 +99,37 @@ describe('scanSkills', () => {
     expect(await scanSkills(ctx, client)).toEqual([]);
   });
 
+  it('never lists OS junk files (.DS_Store) as skills or rules', async () => {
+    const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
+    const skillsDir = path.join(tmp, '.claude', 'skills');
+    await mkdir(path.join(skillsDir, 'hive-foo'), { recursive: true });
+    await writeFile(path.join(skillsDir, '.DS_Store'), 'junk'.repeat(400));
+    await writeFile(path.join(skillsDir, 'hive-foo', 'SKILL.md'), 'a'.repeat(40));
+    await writeFile(path.join(skillsDir, 'hive-foo', '.DS_Store'), 'junk'.repeat(400));
+
+    const skills = await scanSkills(ctx, getClientById('claude-code')!);
+    expect(skills.map((s) => s.name)).toEqual(['hive-foo']);
+    // the nested .DS_Store contributes neither files, bytes, nor tokens
+    expect(skills[0]?.files).toBe(1);
+    expect(skills[0]?.bytes).toBe(40);
+    expect(skills[0]?.tokensEst).toBe(10);
+  });
+
+  it('counts binary/media files in bytes but never in the token estimate', async () => {
+    const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
+    const skillDir = path.join(tmp, '.claude', 'skills', 'media-heavy');
+    await mkdir(skillDir, { recursive: true });
+    await writeFile(path.join(skillDir, 'SKILL.md'), 'a'.repeat(400));
+    await writeFile(path.join(skillDir, 'demo.mp4'), Buffer.alloc(1_000_000));
+    await writeFile(path.join(skillDir, 'logo.png'), Buffer.alloc(50_000));
+
+    const skills = await scanSkills(ctx, getClientById('claude-code')!);
+    const skill = skills.find((s) => s.name === 'media-heavy')!;
+    expect(skill.files).toBe(3);
+    expect(skill.bytes).toBe(1_050_400);
+    expect(skill.tokensEst).toBe(100); // only SKILL.md's 400 chars / 4
+  });
+
   it('scans rule-files for a rule-files client (continue) — one InstalledSkill per file', async () => {
     const ctx = resolveHomeContext({ homeFlag: tmp, platform: 'linux' });
     const rulesDir = path.join(tmp, '.continue', 'rules');

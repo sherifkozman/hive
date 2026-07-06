@@ -36,6 +36,22 @@ export interface InstalledSkill {
 
 const SKIPPED_DIR_NAMES = new Set(['node_modules', '.git']);
 const MAX_DEPTH = 6;
+/** OS junk that is neither a skill nor a rules file — never listed, never counted. */
+const JUNK_FILE_NAMES = new Set(['.DS_Store', 'Thumbs.db', 'desktop.ini']);
+/**
+ * Extensions whose content counts toward the chars/4 token estimate. The
+ * estimate approximates *loadable knowledge text*; binary/media assets in a
+ * skill dir (images, video, archives) still count toward `bytes`/`files` but
+ * would wildly inflate a token figure that informs conversion proposals.
+ */
+const TEXT_EXTENSIONS = new Set([
+  '.md', '.markdown', '.txt', '.rst', '.py', '.js', '.mjs', '.cjs', '.ts',
+  '.json', '.yaml', '.yml', '.toml', '.sh', '.html', '.css', '.csv', '.xml',
+]);
+
+function isTextFile(name: string): boolean {
+  return TEXT_EXTENSIONS.has(path.extname(name).toLowerCase());
+}
 const MONOLITH_NAME_RE = /^(AGENTS|GEMINI)\.md$/i;
 
 async function pathExists(absPath: string): Promise<boolean> {
@@ -62,21 +78,23 @@ async function walkDir(
   root: string,
   dir: string,
   depth: number,
-): Promise<{ files: number; bytes: number }> {
-  if (depth > MAX_DEPTH) return { files: 0, bytes: 0 };
+): Promise<{ files: number; bytes: number; textBytes: number }> {
+  if (depth > MAX_DEPTH) return { files: 0, bytes: 0, textBytes: 0 };
 
   let entries;
   try {
     entries = await fs.readdir(dir, { withFileTypes: true });
   } catch {
-    return { files: 0, bytes: 0 };
+    return { files: 0, bytes: 0, textBytes: 0 };
   }
 
   let files = 0;
   let bytes = 0;
+  let textBytes = 0;
 
   for (const entry of entries) {
     if (SKIPPED_DIR_NAMES.has(entry.name)) continue;
+    if (JUNK_FILE_NAMES.has(entry.name)) continue;
     const abs = path.join(dir, entry.name);
 
     if (entry.isSymbolicLink()) {
@@ -99,9 +117,11 @@ async function walkDir(
         const sub = await walkDir(root, abs, depth + 1);
         files += sub.files;
         bytes += sub.bytes;
+        textBytes += sub.textBytes;
       } else if (st.isFile()) {
         files += 1;
         bytes += st.size;
+        if (isTextFile(entry.name)) textBytes += st.size;
       }
       continue;
     }
@@ -110,18 +130,20 @@ async function walkDir(
       const sub = await walkDir(root, abs, depth + 1);
       files += sub.files;
       bytes += sub.bytes;
+      textBytes += sub.textBytes;
     } else if (entry.isFile()) {
       const st = await fs.stat(abs);
       files += 1;
       bytes += st.size;
+      if (isTextFile(entry.name)) textBytes += st.size;
     }
   }
 
-  return { files, bytes };
+  return { files, bytes, textBytes };
 }
 
-function tokensEstOf(bytes: number): number {
-  return Math.round(bytes / 4);
+function tokensEstOf(textBytes: number): number {
+  return Math.round(textBytes / 4);
 }
 
 /**
@@ -145,6 +167,7 @@ export async function scanPath(
 
   if (stat.isFile()) {
     const name = path.basename(absPath);
+    if (JUNK_FILE_NAMES.has(name)) return [];
     const fileKind: InstalledSkillKind = MONOLITH_NAME_RE.test(name)
       ? 'agents-md'
       : 'rules-file';
@@ -155,7 +178,7 @@ export async function scanPath(
         kind: fileKind,
         files: 1,
         bytes: stat.size,
-        tokensEst: tokensEstOf(stat.size),
+        tokensEst: isTextFile(name) || MONOLITH_NAME_RE.test(name) ? tokensEstOf(stat.size) : 0,
       },
     ];
   }
@@ -172,17 +195,18 @@ export async function scanPath(
   const results: InstalledSkill[] = [];
   for (const entry of entries) {
     if (SKIPPED_DIR_NAMES.has(entry.name)) continue;
+    if (JUNK_FILE_NAMES.has(entry.name)) continue;
     const childAbs = path.join(absPath, entry.name);
 
     if (entry.isDirectory()) {
-      const { files, bytes } = await walkDir(childAbs, childAbs, 0);
+      const { files, bytes, textBytes } = await walkDir(childAbs, childAbs, 0);
       results.push({
         name: entry.name,
         path: childAbs,
         kind: kind === 'skill-dirs' ? 'skill-dir' : 'rules-file',
         files,
         bytes,
-        tokensEst: tokensEstOf(bytes),
+        tokensEst: tokensEstOf(textBytes),
       });
     } else if (entry.isFile()) {
       const st = await fs.stat(childAbs);
@@ -192,7 +216,7 @@ export async function scanPath(
         kind: 'rules-file',
         files: 1,
         bytes: st.size,
-        tokensEst: tokensEstOf(st.size),
+        tokensEst: isTextFile(entry.name) ? tokensEstOf(st.size) : 0,
       });
     }
   }
