@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/) for the
 spec version and the CLI, with the understanding that a v0.x release makes no
 stability promises on either.
 
-## [Unreleased]
+## [0.2.0] (2026-07-06)
 
 ### Added
 
