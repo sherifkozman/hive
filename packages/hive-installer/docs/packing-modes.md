@@ -57,6 +57,36 @@ mode = bundle-inline   if bundleTokens <= 25_000
 - Wizard + `install`: `--packing auto|tree|bundle-inline|preset-skills`
   (default `auto` = the rule above); mode shown in the plan preview.
 
+## v2 — review reconciliation (codex gate, all issues adopted)
+
+1. **Evidence honesty on the 10–25k band**: on Claude Code, inline at mcp size
+   measured PARITY with tree (3/4 both; ~2.65M ≈ 2.67M tokens) — no advantage.
+   The inline default for 10–25k rests on (i) Codex's quality-side win for
+   single-file deliveries (4/4 vs 3/4, deficit reproducible 3/3) and (ii) one
+   mode simplicity across clients. It is PROVISIONAL pending Exp 11; the
+   measured mid-size winner (preset-policy) returns via the Exp 11 track.
+2. **Description pipeline**: bundle-assets gains a `sourceDescription` manifest
+   field = the UPSTREAM SKILL.md frontmatter description verbatim (fallback:
+   current INDEX first-sentence, flagged in manifest). Inline SKILL.md
+   generation serializes frontmatter YAML-safely (quoted/escaped) and
+   HARD-FAILS if the skill has no BUNDLE.md.
+3. **Mode-aware doctor + pointers**: doctor's per-skill integrity checks branch
+   on the receipt's packing mode (inline installs have no composable/INDEX.md
+   — check SKILL.md body presence + tree hash instead); payload pointer block
+   wording becomes mode-generic ("read the skill's SKILL.md; larger skills
+   carry a composable/INDEX.md menu"). Pointer wording change re-prompts via
+   the existing consent gate on upgrade (expected, documented).
+4. **preset-skills mode: DESCOPED from 0.2.0** — the receipt/uninstall model
+   for N+1 sibling skills is unsettled, and Exp 11 Phase 1 (native-selection
+   probes) directly informs its design. Follow-up spec after Probe 1.
+5. **Repro receipts**: `.hive-install.json` gains `packing`, `packingForced`
+   (explicit --packing vs auto), `inlineThreshold`, `catalogHash`,
+   `installerVersion` (already present) — doctor's differs-from-default hint
+   fires ONLY on auto installs. Benchmark reproduction pins a repo commit, not
+   just "tree mode exists".
+6. Threshold is computed on marker-stripped BUNDLE.md chars÷4 (same accounting
+   as the catalog's bundleTokens). Codex `injectsSkillBody` stays `unknown`.
+
 ## Non-goals (0.2.0)
 
 - No runtime/coverage-rule changes to the CCS spec itself (docs get a §10
