@@ -747,3 +747,45 @@ rationale and amendments spanning all experiments are folded into each rule's
   found no degradation (section 9), but did not re-test edge-annotated
   indexes at that scale, so whether edges help specifically at stack scale
   remains open.
+
+## Experiment 9 — external community harness (SkillsBench/BenchFlow)
+
+**Question.** Does a Hive conversion hold quality against its original packaging
+on independent infrastructure? **Setup.** BenchFlow `bench skills eval` (docker
+sandbox, agent claude-agent-acp, model pinned claude-sonnet-5), pdf skill, 4
+exact-match cases authored sources-only under a pre-registered sampling rule and
+frozen by commit before any run; two documented amendments (a packaging-referential
+answer rejected at QA; harness scoring mechanics required answer-file formats).
+**Result (n=1, budget-truncated).** Component scoring: baseline 2/4, original 3/4,
+Hive CCS 3/4 — parity; the one strict-verbatim-metric gap was a phrasing artifact
+("Apache/BSD" vs "Apache/BSD License"). Tokens: CCS −14% total, but +62% on one
+narrow case — the first observation of turn-overhead inverting file-level savings.
+**Losses/limits.** Single run, single skill; two harness defects found (verbatim
+file-scan scoring; a regex that cannot match ground truths ending in `)`), both
+documented for upstream report. Raw materials: `benchmarks/exp9-skillsbench/`.
+
+## Experiment 10 — delivery-shape economics in installed harnesses
+
+**Question.** Which compiled artifact should an installer *deliver*, per client?
+**Setup.** Real installed harnesses (Claude Code headless, subscription-auth,
+sonnet-5 pinned; Codex CLI as a second model family), project-scoped fixtures,
+conditions C0 no-skill / C1 upstream original / C2 CCS shim+tree (the v0.1
+install shape) / C3 bundle-inline / C4 preset-policy; pdf (≈10k tokens) and
+mcp-builder (≈23.5k) skills; frozen Exp 9 cases reused verbatim plus a new
+sources-only-authored mcp set; n=3; pre-registered outcome rules with ordered
+precedence and five documented amendments (incl. a corrected mini-selection
+audit based on Read-tool calls after a transcript-grep detector false-positived).
+**Result (median-per-case, 2 skills × 2 harnesses × n=3).** Quality: C1/C3
+4/4-3/4, C2 3/4 everywhere, C4 4/4 (mcp), C0 worst in every wave. Tokens (cache-
+neutral): C3 −34–38% vs C2 at pdf size on Claude Code; C1 ≈ C4 < C3 ≈ C2 at mcp
+size; Codex: C2 failed the same case 3/3 (shim under-navigation) while
+single-file deliveries went 4/4. Mechanism: Claude Code injects the activated
+SKILL.md body without tool calls; each additional file read is a turn that
+re-sends context. **Outcome (frozen rules): E3 — packing is per-client and
+per-size**; the v0.1 shape was never the best-measured condition; INDEX routing
+was accurate whenever engaged; skill *bypass* (agent answers from web + own
+knowledge) occurred in all conditions — every cell used live web tools.
+**Losses/limits.** Two skills, 4 cases each, one machine, real-HOME constant
+environmental context; the 10–25k inline default rests on Codex quality evidence
+(Claude Code measured parity there) and is provisional pending Experiment 11.
+Raw materials: `benchmarks/exp10-harness-econ/`.

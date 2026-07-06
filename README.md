@@ -141,6 +141,8 @@ cells only, the ones selective loading is built for; see
 | 6 | Two official Anthropic Agent Skills, converted losslessly | Large skill, narrow task: Hive best quality **and** −11% tokens | Broad task: the bundle over-loaded (24k tok incl. irrelevant Node ref) vs pruned manual disclosure (16k) and lost 36→32.5; small (~2.8k tok) skill got no benefit at all |
 | 7 | Three of Hive's own converted skills (claude-api, pdf, pptx) head-to-head with their original Anthropic packaging | Skills beat no-skill by the suite's widest margins (+5 to +7 mean points); Hive took the hardest cell (claude-api broad, a 195k-token skill) **38 vs 34** at −4% tokens, and cut pdf-narrow **−72%** tokens | Original hand-tuned packaging won overall **4–1** (mean 36.17 vs 34.50, within noise); Hive reaches quality *parity*, not a quality gain, on skills already built for progressive disclosure |
 | 8 | Cherry-picked measured results (presets, stack-scale routing) | Preset loads −53% tokens vs bundle at parity quality; flat index routes 6/6 correctly across a 13-skill catalog | Preset does not beat a hand-tuned original on quality (37 vs 34); routing a premium model to a hard shard still showed no quality gain |
+| 9 | External community harness (BenchFlow `bench skills eval`), Hive conversion vs original packaging | Quality parity confirmed on independent infrastructure (component scoring 3/4 = 3/4); two harness bugs found and reported upstream | Single skill, n=1 pilot, budget-truncated; the harness's verbatim scorer needed a documented amendment |
+| 10 | Real installed harnesses (Claude Code + Codex, 2 skills, n=3): which compiled artifact to *deliver* | Delivery shape is decisive and per-client: bundle-inline wins ≤~25k tokens (−34–38% conversation tokens at parity on Claude Code; 4/4 vs 3/4 quality on Codex); preset-policy tied best at mid-size; INDEX routing measured accurate at scale | The v0.1 install shape (thin shim + tree) was never the best-measured condition; runtime mini-navigation costs extra turns in turn-based agents — file-level token accounting does not transfer to conversation-level costs |
 
 In summary: **Hive wins where there is a large body of trap-dense
 knowledge and a task needs only part of it.** It is neutral-to-negative on small
@@ -152,7 +154,13 @@ quality parity, not a quality gain (Experiment 7: the original packaging held a
 within-noise edge and won the head-to-head 4–1, mean 36.17 vs 34.50); Hive's
 advantage there is economics, scale navigation, and one uniform loading policy
 with versioning and lint/parity tooling, not higher scores. Edge metadata and
-model-routing quality gains are explicitly **not** proven.
+model-routing quality gains are explicitly **not** proven. Experiments 9–10
+added the delivery dimension: quality parity was independently confirmed on a
+community harness, and because turn-based agents re-send context every turn,
+the token win in *installed* skills comes from compiling the right-sized
+artifact ahead of time (inline bundle, preset, or tree — now chosen
+automatically by the installer per skill size and client) rather than from
+runtime file navigation, which only pays at scale.
 
 ## The options
 
@@ -161,7 +169,8 @@ evidence status. An author picks the ones a skill warrants; a loading agent
 picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
 
 - **Selective mini loading (narrow path).** Read the INDEX, load `00-core` plus
-  only the minis a task needs. *Evidence: strong.* 41–64% token savings (mean
+  only the minis a task needs. *Evidence: strong at scale; conditional below it.*
+  41–64% file-level token savings (mean
   ~51%) at equal-or-better quality on narrow tasks; selection was expert-grade in
   all but 1 of 8 round-1 runs.
 - **Compiled bundle (broad path).** When most of a skill's content is relevant,
@@ -195,6 +204,18 @@ picks the one a task warrants at runtime (the coverage rule, §10 of the spec).
   the mid-tier model matching the premium model exactly, so the quality-gain case
   remains unproven. See [`docs/MODEL-ROUTING.md`](docs/MODEL-ROUTING.md) for the
   full guide.
+- **Measured delivery shapes (the installer's edge).** The same compiled
+  artifacts can be *delivered* differently per client, and Experiment 10
+  measured which shape wins where in real installed harnesses: bundle-inline
+  for skills ≤~25k tokens (−34–38% conversation tokens at quality parity on
+  Claude Code; outscored the thin-shim tree 4/4 vs 3/4 on Codex), the
+  composable tree for large skills (where selective loading is the only
+  physically possible path — and its INDEX routing measured accurate),
+  presets for recurring tracks. `npx hive-skills` applies these defaults
+  automatically since 0.2.0. *Evidence: measured (Exp 10, 2 skills × 2
+  harnesses × n=3); the 10–25k inline band is provisional pending Exp 11.*
+  No monolithic skill can make this choice at all — there is only one shape
+  to deliver.
 - **Per-mini and per-skill versioning (new).** A mini MAY carry a `version:`
   frontmatter key and a skill MAY carry a `composable/VERSION` file, both bare
   semver (`X.Y.Z`); `hive.py bump` is the supported mutator for the skill-level

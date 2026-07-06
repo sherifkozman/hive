@@ -328,6 +328,20 @@ converts its prose to minis and leaves its `scripts/`, `assets/`, etc. untouched
 
 ## 10. Runtime loading policy (the coverage rule)
 
+> **Turn-economics note (Experiment 10, `benchmarks/exp10-harness-econ/`):**
+> this section's token accounting is file-level (bytes loaded into context).
+> In turn-based harnesses, every file read is a conversation turn and each
+> turn re-sends accumulated context, so selective loading carries a per-hop
+> overhead that file-level accounting does not capture. Measured consequence:
+> for skills whose whole compiled BUNDLE fits comfortably in one delivery
+> (≲25k tokens), loading the bundle in one shot met or beat selective mini
+> loading on both cost and quality in real installed harnesses; the coverage
+> rule's selective path earns its keep at scale — where it is also the only
+> feasible path — and its routing accuracy there is measured-good. Installers
+> SHOULD deliver small skills as a single artifact (see
+> `packages/hive-installer/docs/packing-modes.md`); this section governs the
+> agent-facing policy wherever a composable tree is what is present.
+
 **10.1** A loading agent **MUST** read `INDEX.md` first, then load `00-core` if
 the index marks one, then estimate coverage `k/N` = (minis relevant to the task)
 / (total minis).
