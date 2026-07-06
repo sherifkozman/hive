@@ -121,6 +121,12 @@ Quality bands (component scoring, 4 cases): gaps of ≤1 case = noise (n is smal
   the turn cap; canaries are unscored diagnostics). r1 canary verification is done
   from transcripts instead.
 
+- **A5 (post-run, pre-decision):** the wrong-mini detector initially counted mini
+  FILENAMES in transcripts — INDEX.md itself lists every mini, so all C2 cells
+  false-positived. Corrected to count actual Read tool-call file_paths. The
+  corrected audit is the one used for outcome selection; both raw tables are
+  committed.
+
 ## What this is not
 
 Single-skill (pdf), small-n, two harnesses, one machine. It selects among E1–E4
