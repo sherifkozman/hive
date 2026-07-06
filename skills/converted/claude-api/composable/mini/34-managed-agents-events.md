@@ -12,7 +12,7 @@ Send events to a session via `POST /v1/sessions/{id}/events`.
 | `user.interrupt`          | Interrupt the agent while it's running |
 | `user.tool_confirmation`  | Approve/deny a tool call (when `always_ask` policy) |
 | `user.custom_tool_result` | Provide result for a custom tool call |
-| `user.define_outcome`     | Start a rubric-graded iterate loop — see `shared/managed-agents-outcomes.md` |
+| `user.define_outcome`     | Start a rubric-graded iterate loop — see `mini/35-managed-agents-outcomes.md` |
 | `system.message`          | Update the agent's system prompt between turns — **Claude Opus 4.8 only**; see § Updating the system prompt mid-session |
 
 #### Updating the system prompt mid-session (`system.message`)
@@ -45,7 +45,7 @@ Three methods:
 
 1. **Streaming (SSE)**: `GET /v1/sessions/{id}/events/stream` — real-time Server-Sent Events. **Long-lived** — the server sends periodic heartbeats to keep the connection alive.
 2. **Polling**: `GET /v1/sessions/{id}/events` — paginated event list (query params: `limit` default 1000, `page`). **Returns immediately** — this is a plain paginated GET, not a long-poll.
-3. **Webhooks**: Anthropic POSTs session state transitions to your HTTPS endpoint — thin payloads (IDs only), HMAC-signed, Console-registered. See `shared/managed-agents-webhooks.md`.
+3. **Webhooks**: Anthropic POSTs session state transitions to your HTTPS endpoint — thin payloads (IDs only), HMAC-signed, Console-registered. See `mini/37-managed-agents-webhooks.md`.
 
 All **persisted** events carry `id`, `type`, and `processed_at` (ISO 8601; `null` if not yet processed by the agent). The stream-only `event_start` / `event_delta` preview events (see § Live previews) carry only the `id` of the event they preview.
 
@@ -74,8 +74,8 @@ Event types use dot notation, grouped by namespace:
 | `session.error` | Error occurred during processing |
 | `span.model_request_start` | Model inference started |
 | `span.model_request_end` | Model inference completed |
-| `span.outcome_evaluation_start` / `_ongoing` / `_end` | Grader progress for outcome-oriented sessions — see `shared/managed-agents-outcomes.md` |
-| `session.thread_created` | Subagent thread spawned (multiagent) — see `shared/managed-agents-multiagent.md` |
+| `span.outcome_evaluation_start` / `_ongoing` / `_end` | Grader progress for outcome-oriented sessions — see `mini/35-managed-agents-outcomes.md` |
+| `session.thread_created` | Subagent thread spawned (multiagent) — see `mini/36-managed-agents-multiagent.md` |
 | `session.thread_status_running` / `_idle` / `_rescheduled` / `_terminated` | Subagent thread status transitions (multiagent). `_idle` carries `stop_reason`. |
 | `agent.thread_message_sent` / `_received` | Cross-thread message, carries `to_session_thread_id` / `from_session_thread_id` (multiagent) |
 
@@ -190,7 +190,7 @@ await client.beta.sessions.events.send(sessionId, {
 });
 ```
 
-The agent stops mid-task. It does not see the interrupt as a message — it just halts. Send a follow-up `user` event to explain what to do instead. If an outcome is active, the interrupt also marks `span.outcome_evaluation_end.result: "interrupted"` (see `shared/managed-agents-outcomes.md`).
+The agent stops mid-task. It does not see the interrupt as a message — it just halts. Send a follow-up `user` event to explain what to do instead. If an outcome is active, the interrupt also marks `span.outcome_evaluation_end.result: "interrupted"` (see `mini/35-managed-agents-outcomes.md`).
 
 > **Note**: Interrupt events may have empty IDs in the current implementation. When troubleshooting, use the `processed_at` timestamp along with surrounding event IDs.
 
@@ -249,4 +249,4 @@ When done with a session, archive it to free resources:
 await client.beta.sessions.archive(sessionId);
 ```
 
-> Archiving a **session** is routine cleanup — sessions are per-run and disposable. **Do not generalize this to agents or environments**: those are persistent, reusable resources, and archiving them is permanent (no unarchive; new sessions cannot reference them). See `shared/managed-agents-overview.md` → Common Pitfalls.
+> Archiving a **session** is routine cleanup — sessions are per-run and disposable. **Do not generalize this to agents or environments**: those are persistent, reusable resources, and archiving them is permanent (no unarchive; new sessions cannot reference them). See `mini/30-managed-agents-overview.md` → Common Pitfalls.

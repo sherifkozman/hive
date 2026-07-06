@@ -1,6 +1,6 @@
 # Tool Use Concepts
 
-This file covers the conceptual foundations of tool use with the Claude API. For language-specific code examples, see the `python/`, `typescript/`, or other language folders. For decision heuristics on which tools to expose, how to manage context in long-running agents, and caching strategy, see `agent-design.md`.
+This file covers the conceptual foundations of tool use with the Claude API. For language-specific code examples, see your language's tool-use mini (00-core.md's Reading Guide table, e.g. `mini/51-python-tool-use.md`, `mini/56-typescript-tool-use.md`). For decision heuristics on which tools to expose, how to manage context in long-running agents, and caching strategy, see `mini/18-agent-design.md`.
 
 ## User-Defined Tools
 
@@ -59,7 +59,7 @@ Any `tool_choice` value can also include `"disable_parallel_tool_use": true` to 
 
 ### Tool Runner vs Manual Loop
 
-**Tool Runner (Recommended):** The SDK's tool runner handles the agentic loop automatically — it calls the API, detects tool use requests, executes your tool functions, feeds results back to Claude, and repeats until Claude stops calling tools. Available in Python, TypeScript, Java, Go, Ruby, and PHP SDKs (beta). The Python SDK also provides MCP conversion helpers (`anthropic.lib.tools.mcp`) to convert MCP tools, prompts, and resources for use with the tool runner — see `python/claude-api/tool-use.md` for details.
+**Tool Runner (Recommended):** The SDK's tool runner handles the agentic loop automatically — it calls the API, detects tool use requests, executes your tool functions, feeds results back to Claude, and repeats until Claude stops calling tools. Available in Python, TypeScript, Java, Go, Ruby, and PHP SDKs (beta). The Python SDK also provides MCP conversion helpers (`anthropic.lib.tools.mcp`) to convert MCP tools, prompts, and resources for use with the tool runner — see `mini/51-python-tool-use.md` for details.
 
 **Manual Agentic Loop:** Use when you need fine-grained control over the loop (e.g., custom logging, conditional tool execution, human-in-the-loop approval). Loop until `stop_reason == "end_turn"`, always append the full `response.content` to preserve tool_use blocks, and ensure each `tool_result` includes the matching `tool_use_id`.
 
@@ -214,7 +214,7 @@ For full documentation, use WebFetch:
 
 ## Agent Skills (Messages API)
 
-Agent Skills package task-specific instructions and files that Claude loads when relevant (e.g., the Anthropic pre-built `pptx`, `xlsx`, `pdf`, `docx` skills). On the **Messages API**, skills are enabled via the `container` parameter alongside the code-execution tool — this is **not** the Managed Agents surface and does **not** use `client.beta.agents` / `sessions` / `environments`. Availability: see `shared/platform-availability.md`.
+Agent Skills package task-specific instructions and files that Claude loads when relevant (e.g., the Anthropic pre-built `pptx`, `xlsx`, `pdf`, `docx` skills). On the **Messages API**, skills are enabled via the `container` parameter alongside the code-execution tool — this is **not** the Managed Agents surface and does **not** use `client.beta.agents` / `sessions` / `environments`. Availability: see `mini/11-platform-availability.md`.
 
 Required on each request:
 
@@ -240,7 +240,7 @@ List available skills via `GET /v1/skills` (requires `anthropic-beta: skills-202
 
 ## MCP Connector (Beta)
 
-The MCP connector lets Claude call tools hosted on a remote MCP server directly from the Messages API — Anthropic makes the MCP connection server-side. Requires beta flag `mcp-client-2025-11-20` on `client.beta.messages.create(...)`. Availability: see `shared/platform-availability.md`.
+The MCP connector lets Claude call tools hosted on a remote MCP server directly from the Messages API — Anthropic makes the MCP connection server-side. Requires beta flag `mcp-client-2025-11-20` on `client.beta.messages.create(...)`. Availability: see `mini/11-platform-availability.md`.
 
 **Two parameters are required together:**
 
@@ -299,7 +299,7 @@ For full documentation, use WebFetch:
 
 ## Server-Side Tools: Advisor (Beta)
 
-The advisor tool pairs a faster, lower-cost **executor** model (the top-level `model` on the request) with a higher-intelligence **advisor** model (the `model` field inside the tool definition) that provides strategic guidance mid-generation. The executor does most of the token generation; the advisor is consulted for planning. Availability: see `shared/platform-availability.md`.
+The advisor tool pairs a faster, lower-cost **executor** model (the top-level `model` on the request) with a higher-intelligence **advisor** model (the `model` field inside the tool definition) that provides strategic guidance mid-generation. The executor does most of the token generation; the advisor is consulted for planning. Availability: see `mini/11-platform-availability.md`.
 
 ### Tool Definition
 
@@ -371,7 +371,7 @@ Claude's `tool_use.input` contains either `{"command": "<string>"}` or `{"restar
 {"type": "text_editor_20250728", "name": "str_replace_based_edit_tool"}
 ```
 
-Optional field: `max_characters` to cap `view` output. Java exposes a typed `ToolTextEditor20250728` builder (`com.anthropic.models.messages`); other statically-typed SDKs follow the same naming pattern — see the Anthropic-Defined Tools section in `{lang}/claude-api/tool-use.md` for the exact class.
+Optional field: `max_characters` to cap `view` output. Java exposes a typed `ToolTextEditor20250728` builder (`com.anthropic.models.messages`); other statically-typed SDKs follow the same naming pattern — see the Anthropic-Defined Tools section in your language's tool-use mini (00-core.md's Reading Guide table) for the exact class.
 
 > **Security — `path` is untrusted model output. Confine every file operation to a fixed project root.** Before executing any command, resolve the model-supplied `path` to its canonical form and verify it remains within your project root; reject the request if it escapes (`..`, symlinks, absolute paths outside the root, URL-encoded traversal like `%2e%2e%2f`). Use your language's built-in path utilities (e.g., Python `pathlib.Path.resolve()` then check `.is_relative_to(root)`). Never call `open()` / `writeFile` / `unlink` directly on the raw `path` value.
 

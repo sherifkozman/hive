@@ -21,13 +21,13 @@ All resources are under the `beta` namespace. Python and TypeScript share identi
 | Agents | `agents.create` / `retrieve` / `update` / `list` / `archive` | `Agents.New` / `Get` / `Update` / `List` / `Archive` |
 | Agent Versions | `agents.versions.list` | `Agents.Versions.List` |
 | Environments | `environments.create` / `retrieve` / `update` / `list` / `delete` / `archive` | `Environments.New` / `Get` / `Update` / `List` / `Delete` / `Archive` |
-| Environment Work (self-hosted) | `environments.work.poller` / `stats` / `stop` | See `shared/managed-agents-self-hosted-sandboxes.md` |
+| Environment Work (self-hosted) | `environments.work.poller` / `stats` / `stop` | See `mini/43-managed-agents-self-hosted-sandboxes.md` |
 | Sessions | `sessions.create` / `retrieve` / `update` / `list` / `delete` / `archive` | `Sessions.New` / `Get` / `Update` / `List` / `Delete` / `Archive` |
 | Session Events | `sessions.events.list` / `send` / `stream` | `Sessions.Events.List` / `Send` / `StreamEvents` |
 | Session Threads | `sessions.threads.list` / `retrieve` / `archive`; `sessions.threads.events.list` / `stream` | `Sessions.Threads.List` / `Get` / `Archive`; `Sessions.Threads.Events.List` / `StreamEvents` |
 | Session Resources | `sessions.resources.add` / `retrieve` / `update` / `list` / `delete` | `Sessions.Resources.Add` / `Get` / `Update` / `List` / `Delete` |
-| Deployments | `deployments.create` / `pause` / `unpause` / `archive` / `run` | Not yet documented — WebFetch the SDK repo (`shared/live-sources.md`) |
-| Deployment Runs | `deployment_runs.list` / `retrieve` (TS: `deploymentRuns.*`) | Not yet documented — WebFetch the SDK repo (`shared/live-sources.md`) |
+| Deployments | `deployments.create` / `pause` / `unpause` / `archive` / `run` | Not yet documented — WebFetch the SDK repo (`mini/13-live-sources.md`) |
+| Deployment Runs | `deployment_runs.list` / `retrieve` (TS: `deploymentRuns.*`) | Not yet documented — WebFetch the SDK repo (`mini/13-live-sources.md`) |
 | Vaults | `vaults.create` / `retrieve` / `update` / `list` / `delete` / `archive` | `Vaults.New` / `Get` / `Update` / `List` / `Delete` / `Archive` |
 | Credentials | `vaults.credentials.create` / `retrieve` / `update` / `list` / `delete` / `archive` / `mcp_oauth_validate` | `Vaults.Credentials.New` / `Get` / `Update` / `List` / `Delete` / `Archive` / `McpOauthValidate` |
 | Memory Stores | `memory_stores.create` / `retrieve` / `update` / `list` / `delete` / `archive` | `MemoryStores.New` / `Get` / `Update` / `List` / `Delete` / `Archive` |
@@ -40,7 +40,7 @@ All resources are under the `beta` namespace. Python and TypeScript share identi
 - Go's event stream is `StreamEvents` (not `Stream`).
 - The self-hosted worker is **not** under `client.beta.*` — it's `EnvironmentWorker` from `anthropic.lib.environments` / `@anthropic-ai/sdk/helpers/beta/environments`; only `environments.work.poller/stats/stop` are client methods.
 
-**Agent shorthand:** `agent` on session create accepts three forms — a bare string (`agent="agent_abc123"`, latest version), a pinned reference `{type: "agent", id, version}`, or `{type: "agent_with_overrides", id, version?, model?, system?, tools?, mcp_servers?, skills?}` to override those fields for this session only (see `shared/managed-agents-core.md` → Override agent configuration for a session).
+**Agent shorthand:** `agent` on session create accepts three forms — a bare string (`agent="agent_abc123"`, latest version), a pinned reference `{type: "agent", id, version}`, or `{type: "agent_with_overrides", id, version?, model?, system?, tools?, mcp_servers?, skills?}` to override those fields for this session only (see `mini/31-managed-agents-core.md` → Override agent configuration for a session).
 
 **Model shorthand:** `model` on agent create accepts either a bare string (`model="claude-opus-4-8"` — uses `standard` speed) or the full config object (`{id: "claude-opus-4-8", speed: "fast"}`). Note: `speed: "fast"` is supported only on Opus 4.8 and Opus 4.7. Opus 4.7 fast mode is deprecated; after removal, `speed: "fast"` on Opus 4.7 returns an error. Opus 4.8 is the durable fast-capable tier.
 
@@ -66,7 +66,7 @@ All resources are under the `beta` namespace. Python and TypeScript share identi
 | `GET` | `/v1/sessions` | ListSessions | List sessions (paginated) |
 | `POST` | `/v1/sessions` | CreateSession | Create a new session |
 | `GET` | `/v1/sessions/{session_id}` | GetSession | Get session details |
-| `POST` | `/v1/sessions/{session_id}` | UpdateSession | Update session `metadata`/`title`, or `agent.tools`/`agent.mcp_servers`/`vault_ids` (session-local override; session must be `idle`). See `shared/managed-agents-core.md` → Updating the agent configuration mid-session. |
+| `POST` | `/v1/sessions/{session_id}` | UpdateSession | Update session `metadata`/`title`, or `agent.tools`/`agent.mcp_servers`/`vault_ids` (session-local override; session must be `idle`). See `mini/31-managed-agents-core.md` → Updating the agent configuration mid-session. |
 | `DELETE` | `/v1/sessions/{session_id}` | DeleteSession | Delete a session |
 | `POST` | `/v1/sessions/{session_id}/archive` | ArchiveSession | Archive a session |
 
@@ -76,11 +76,11 @@ All resources are under the `beta` namespace. Python and TypeScript share identi
 | -------- | ------------------------------------------------ | ---------------- | ---------------------------------------- |
 | `GET` | `/v1/sessions/{session_id}/events` | ListEvents | List events (polling, paginated) |
 | `POST` | `/v1/sessions/{session_id}/events` | SendEvents | Send events (user message, tool result) |
-| `GET` | `/v1/sessions/{session_id}/events/stream` | StreamEvents | Stream events via SSE. Optional `event_deltas[]=agent.message` / `agent.thinking` opts in to live-preview `event_start`/`event_delta` events — see `shared/managed-agents-events.md` § Live previews. |
+| `GET` | `/v1/sessions/{session_id}/events/stream` | StreamEvents | Stream events via SSE. Optional `event_deltas[]=agent.message` / `agent.thinking` opts in to live-preview `event_start`/`event_delta` events — see `mini/34-managed-agents-events.md` § Live previews. |
 
 ## Session Threads
 
-Per-subagent event streams in multiagent sessions. See `shared/managed-agents-multiagent.md`.
+Per-subagent event streams in multiagent sessions. See `mini/36-managed-agents-multiagent.md`.
 
 | Method   | Path                                             | Operation        | Description                              |
 | -------- | ------------------------------------------------ | ---------------- | ---------------------------------------- |
@@ -110,14 +110,14 @@ Per-subagent event streams in multiagent sessions. See `shared/managed-agents-mu
 | `POST`   | `/v1/environments/{environment_id}`                    | UpdateEnvironment    | Update environment                  |
 | `DELETE` | `/v1/environments/{environment_id}`                    | DeleteEnvironment    | Delete environment. Returns 204. |
 | `POST`   | `/v1/environments/{environment_id}/archive`            | ArchiveEnvironment   | Archive environment. Makes it **read-only**; existing sessions continue, new sessions cannot reference it. No unarchive — this is the terminal state. |
-| `GET`    | `/v1/environments/{environment_id}/work/stats`         | WorkQueueStats       | Self-hosted work-queue depth/pending/workers. `x-api-key` auth. See `shared/managed-agents-self-hosted-sandboxes.md`. |
+| `GET`    | `/v1/environments/{environment_id}/work/stats`         | WorkQueueStats       | Self-hosted work-queue depth/pending/workers. `x-api-key` auth. See `mini/43-managed-agents-self-hosted-sandboxes.md`. |
 | `POST`   | `/v1/environments/{environment_id}/work/{work_id}/stop` | StopWork            | Self-hosted: stop a claimed work item. `x-api-key` auth. |
 
 For `type: "self_hosted"`, `config` is the bare `{"type": "self_hosted"}` — `networking` and `packages` do not apply.
 
 ## Deployments
 
-Scheduled deployments (`depl_` IDs) run an agent on a recurring cron schedule — each firing creates a session. See `shared/managed-agents-scheduled-deployments.md` for the conceptual guide (cron/DST semantics, failure behavior, lifecycle).
+Scheduled deployments (`depl_` IDs) run an agent on a recurring cron schedule — each firing creates a session. See `mini/39-managed-agents-scheduled-deployments.md` for the conceptual guide (cron/DST semantics, failure behavior, lifecycle).
 
 | Method   | Path                                             | Operation        | Description                              |
 | -------- | ------------------------------------------------ | ---------------- | ---------------------------------------- |
@@ -165,7 +165,7 @@ Credentials are individual secrets stored inside a vault.
 
 ## Memory Stores
 
-Workspace-scoped persistent memory that survives across sessions. Attach to a session via a `{"type": "memory_store", "memory_store_id": ...}` entry in `resources[]` (session-create time only). See `shared/managed-agents-memory.md` for the conceptual guide, the FUSE-mount agent interface, preconditions, and versioning.
+Workspace-scoped persistent memory that survives across sessions. Attach to a session via a `{"type": "memory_store", "memory_store_id": ...}` entry in `resources[]` (session-create time only). See `mini/38-managed-agents-memory.md` for the conceptual guide, the FUSE-mount agent interface, preconditions, and versioning.
 
 | Method   | Path                                             | Operation          | Description                              |
 | -------- | ------------------------------------------------ | ------------------ | ---------------------------------------- |
@@ -263,7 +263,7 @@ Immutable per-mutation snapshots (`memver_...`) — the audit and rollback surfa
 }
 ```
 
-> Limits: `tools` max 128, `skills` max 20, `mcp_servers` max 20 (unique names). `multiagent.agents` 1–20 entries (string ID | `{type:"agent",id,version?}` | `{type:"self"}`) — see `shared/managed-agents-multiagent.md`.
+> Limits: `tools` max 128, `skills` max 20, `mcp_servers` max 20 (unique names). `multiagent.agents` 1–20 entries (string ID | `{type:"agent",id,version?}` | `{type:"self"}`) — see `mini/36-managed-agents-multiagent.md`.
 
 ### CreateSession Request Body
 
@@ -327,7 +327,7 @@ Immutable per-mutation snapshots (`memver_...`) — the audit and rollback surfa
 }
 ```
 
-> Optional session config (`resources`, `vault_ids`, etc.) is supported the same way as on CreateSession. Response includes `status`, `paused_reason`, and `schedule.upcoming_runs_at` (next fire times). See `shared/managed-agents-scheduled-deployments.md`.
+> Optional session config (`resources`, `vault_ids`, etc.) is supported the same way as on CreateSession. Response includes `status`, `paused_reason`, and `schedule.upcoming_runs_at` (next fire times). See `mini/39-managed-agents-scheduled-deployments.md`.
 
 ### SendEvents Request Body
 
@@ -347,7 +347,7 @@ Immutable per-mutation snapshots (`memver_...`) — the audit and rollback surfa
 }
 ```
 
-> `system.message` events (update the system prompt between turns) use the same envelope with `type: "system.message"` — Claude Opus 4.8 only; see `shared/managed-agents-events.md` § Updating the system prompt mid-session.
+> `system.message` events (update the system prompt between turns) use the same envelope with `type: "system.message"` — Claude Opus 4.8 only; see `mini/34-managed-agents-events.md` § Updating the system prompt mid-session.
 
 ### Define Outcome Event
 
@@ -360,7 +360,7 @@ Immutable per-mutation snapshots (`memver_...`) — the audit and rollback surfa
 }
 ```
 
-> `rubric` is required: `{type: "text", content}` or `{type: "file", file_id}`. `max_iterations` default 3, max 20. Echoed back with `outcome_id` + `processed_at`. See `shared/managed-agents-outcomes.md`.
+> `rubric` is required: `{type: "text", content}` or `{type: "file", file_id}`. `max_iterations` default 3, max 20. Echoed back with `outcome_id` + `processed_at`. See `mini/35-managed-agents-outcomes.md`.
 
 ### Tool Result Event
 

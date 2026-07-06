@@ -29,7 +29,7 @@ client := anthropic.NewClient(
 
 ## Model Constants
 
-The Go SDK provides typed model constants: `anthropic.ModelClaudeFable5`, `anthropic.ModelClaudeOpus4_8`, `anthropic.ModelClaudeOpus4_7`, `anthropic.ModelClaudeSonnet4_6`, `anthropic.ModelClaudeHaiku4_5_20251001`. Use `ModelClaudeOpus4_8` unless the user specifies otherwise; if they ask for Fable or the most powerful model, use `anthropic.ModelClaudeFable5` (see `shared/models.md` for the full resolution table).
+The Go SDK provides typed model constants: `anthropic.ModelClaudeFable5`, `anthropic.ModelClaudeOpus4_8`, `anthropic.ModelClaudeOpus4_7`, `anthropic.ModelClaudeSonnet4_6`, `anthropic.ModelClaudeHaiku4_5_20251001`. Use `ModelClaudeOpus4_8` unless the user specifies otherwise; if they ask for Fable or the most powerful model, use `anthropic.ModelClaudeFable5` (see `mini/10-models.md` for the full resolution table).
 
 ---
 
@@ -102,7 +102,7 @@ To disable: `anthropic.ThinkingConfigParamUnion{OfDisabled: &anthropic.ThinkingC
 
 ## Prompt Caching
 
-`System` is `[]TextBlockParam`; set `CacheControl` on the last block to cache tools + system together. For placement patterns and the silent-invalidator audit checklist, see `shared/prompt-caching.md`.
+`System` is `[]TextBlockParam`; set `CacheControl` on the last block to cache tools + system together. For placement patterns and the silent-invalidator audit checklist, see `mini/15-prompt-caching.md`.
 
 ```go
 System: []anthropic.TextBlockParam{{
@@ -128,7 +128,7 @@ if resp.StopReason == anthropic.StopReasonRefusal {
 }
 ```
 
-**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. In `claude-fable-5` code, include `Fallbacks: []anthropic.BetaFallbackParam{{Model: "claude-opus-4-8"}}` plus the `anthropic.AnthropicBetaServerSideFallback2026_06_01` beta on `client.Beta.Messages.New` by default — a policy decline is re-served by the fallback model inside the same call. Not available on Amazon Bedrock, Vertex AI, or Microsoft Foundry — register the client-side middleware there: `option.WithMiddleware(betafallback.BetaRefusalFallbackMiddleware(...))` from `lib/betafallback`, with per-conversation state via `betafallback.WithBetaFallbackState(&betafallback.BetaFallbackState{})`. Full semantics (billing, sticky routing, streaming) and a runnable example: `shared/model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason, and the Go SDK repo's `examples/` (WebFetch via `shared/live-sources.md`).
+**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. In `claude-fable-5` code, include `Fallbacks: []anthropic.BetaFallbackParam{{Model: "claude-opus-4-8"}}` plus the `anthropic.AnthropicBetaServerSideFallback2026_06_01` beta on `client.Beta.Messages.New` by default — a policy decline is re-served by the fallback model inside the same call. Not available on Amazon Bedrock, Vertex AI, or Microsoft Foundry — register the client-side middleware there: `option.WithMiddleware(betafallback.BetaRefusalFallbackMiddleware(...))` from `lib/betafallback`, with per-conversation state via `betafallback.WithBetaFallbackState(&betafallback.BetaFallbackState{})`. Full semantics (billing, sticky routing, streaming) and a runnable example: `mini/20-model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason, and the Go SDK repo's `examples/` (WebFetch via `mini/13-live-sources.md`).
 
 ---
 

@@ -61,7 +61,7 @@ const response = await client.messages.create({
 
 ### Mid-conversation system messages (model-gated)
 
-For operator instructions that arrive mid-conversation (mode switches, injected state), append `{role: "system", ...}` to `messages` instead of editing top-level `system` — this preserves the cached prefix and carries operator authority. Must follow a user message (or an `assistant` message ending in server-tool use), and must be either the last entry in `messages` or be followed by an `assistant` turn; cannot be `messages[0]`. Unsupported models return a 400 (`role 'system' is not supported on this model`). See `shared/prompt-caching.md` for when to use this vs. top-level `system`.
+For operator instructions that arrive mid-conversation (mode switches, injected state), append `{role: "system", ...}` to `messages` instead of editing top-level `system` — this preserves the cached prefix and carries operator authority. Must follow a user message (or an `assistant` message ending in server-tool use), and must be either the last entry in `messages` or be followed by an `assistant` turn; cannot be `messages[0]`. Unsupported models return a 400 (`role 'system' is not supported on this model`). See `mini/15-prompt-caching.md` for when to use this vs. top-level `system`.
 
 ```typescript
 // No beta header needed — use regular client.messages.create.
@@ -133,7 +133,7 @@ const response = await client.messages.create({
 
 ## Prompt Caching
 
-**Caching is a prefix match** — any byte change anywhere in the prefix invalidates everything after it. For placement patterns, architectural guidance (frozen system prompt, deterministic tool order, where to put volatile content), and the silent-invalidator audit checklist, read `shared/prompt-caching.md`.
+**Caching is a prefix match** — any byte change anywhere in the prefix invalidates everything after it. For placement patterns, architectural guidance (frozen system prompt, deterministic tool order, where to put volatile content), and the silent-invalidator audit checklist, read `mini/15-prompt-caching.md`.
 
 ### Automatic Caching (Recommended)
 
@@ -190,7 +190,7 @@ console.log(response.usage.cache_read_input_tokens);     // tokens served from c
 console.log(response.usage.input_tokens);                // uncached tokens (full cost)
 ```
 
-If `cache_read_input_tokens` is zero across repeated identical-prefix requests, a silent invalidator is at work — `Date.now()` or a UUID in the system prompt, non-deterministic key ordering, or a varying tool set. See `shared/prompt-caching.md` for the full audit table.
+If `cache_read_input_tokens` is zero across repeated identical-prefix requests, a silent invalidator is at work — `Date.now()` or a UUID in the system prompt, non-deterministic key ordering, or a varying tool set. See `mini/15-prompt-caching.md` for the full audit table.
 
 ---
 
@@ -244,7 +244,7 @@ try {
 }
 ```
 
-All classes extend `Anthropic.APIError` with a typed `status` field. Check from most specific to least specific. See [shared/error-codes.md](../../shared/error-codes.md) for the full error code reference.
+All classes extend `Anthropic.APIError` with a typed `status` field. Check from most specific to least specific. See [mini/14-error-codes.md](mini/14-error-codes.md) for the full error code reference.
 
 ---
 
@@ -368,7 +368,7 @@ if (fallbackRan && response.stop_reason !== "refusal") {
 }
 ```
 
-A `stop_reason: "refusal"` on the final response means the whole chain refused. The header must be exactly `server-side-fallback-2026-06-01`; the parameter is rejected on the Batches API and unavailable on Amazon Bedrock, Vertex AI, and Microsoft Foundry — register the client-side `betaRefusalFallbackMiddleware` on the client there instead. Full semantics (sticky routing, billing, streaming, echoing fallback turns back): `shared/model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
+A `stop_reason: "refusal"` on the final response means the whole chain refused. The header must be exactly `server-side-fallback-2026-06-01`; the parameter is rejected on the Batches API and unavailable on Amazon Bedrock, Vertex AI, and Microsoft Foundry — register the client-side `betaRefusalFallbackMiddleware` on the client there instead. Full semantics (sticky routing, billing, streaming, echoing fallback turns back): `mini/20-model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
 
 ---
 

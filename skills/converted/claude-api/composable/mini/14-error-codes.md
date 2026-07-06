@@ -1,6 +1,6 @@
 # HTTP Error Codes Reference
 
-This file documents HTTP error codes returned by the Claude API, their common causes, and how to handle them. For language-specific error handling examples, see the `python/` or `typescript/` folders.
+This file documents HTTP error codes returned by the Claude API, their common causes, and how to handle them. For language-specific error handling examples, see your language's readme mini (00-core.md's Reading Guide table, e.g. `mini/50-python-readme.md` or `mini/55-typescript-readme.md`).
 
 ## Error Code Summary
 
@@ -109,7 +109,7 @@ Some 400 errors are specifically related to parameter validation:
 
 **Model-specific 400s on Fable 5 / Opus 4.8 / 4.7:**
 
-- `temperature`, `top_p`, `top_k` are removed — sending any of them returns 400. Delete the parameter; see `shared/model-migration.md` → Per-SDK Syntax Reference.
+- `temperature`, `top_p`, `top_k` are removed — sending any of them returns 400. Delete the parameter; see `mini/20-model-migration.md` → Per-SDK Syntax Reference.
 - `thinking: {type: "enabled", budget_tokens: N}` is removed — sending it returns 400. Use `thinking: {type: "adaptive"}` instead.
 - **Fable 5 only:** an explicit `thinking: {type: "disabled"}` returns 400 (it is accepted on Opus 4.8/4.7). Omit the `thinking` param entirely instead.
 - **Fable 5 only:** if the organization is set to zero data retention (ZDR) — or any retention below the required 30 days — then **all** Fable 5 requests return `400 invalid_request_error`, even with a perfectly valid payload. Check the org's retention configuration before debugging the request body.
@@ -170,7 +170,7 @@ thinking: budget_tokens=10000, max_tokens=16000
 
 | Mistake                         | Error            | Fix                                                     |
 | ------------------------------- | ---------------- | ------------------------------------------------------- |
-| `temperature`/`top_p`/`top_k` on Fable 5 / Opus 4.8 / 4.7 | 400 | Remove the parameter (see `shared/model-migration.md`)  |
+| `temperature`/`top_p`/`top_k` on Fable 5 / Opus 4.8 / 4.7 | 400 | Remove the parameter (see `mini/20-model-migration.md`)  |
 | `budget_tokens` on Fable 5 / Opus 4.8 / 4.7 | 400  | Use `thinking: {type: "adaptive"}`                      |
 | `thinking: {type: "disabled"}` on Fable 5 | 400    | Omit the `thinking` param entirely (accepted on Opus 4.8/4.7) |
 | Org set to ZDR / retention below 30 days (Fable 5) | 400 on every request | Fix the org's data-retention configuration — the payload isn't the problem |

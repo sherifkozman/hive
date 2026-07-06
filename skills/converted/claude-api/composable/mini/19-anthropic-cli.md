@@ -32,7 +32,7 @@ go install github.com/anthropics/anthropic-cli/cmd/ant@latest
 
 - **API key**: set `ANTHROPIC_API_KEY` in the environment.
 - **OAuth profile** (no static key to manage): `ant auth login` opens a browser, exchanges for a short-lived token, and stores a profile under `$ANTHROPIC_CONFIG_DIR` (default `~/.config/anthropic/` on Linux/macOS, `%APPDATA%\Anthropic` on Windows — `configs/<profile>.json` for settings, `credentials/<profile>.json` for tokens). Subsequent `ant` (and SDK) calls pick it up automatically — a bare `Anthropic()` client works after login, but scripts that read `ANTHROPIC_API_KEY` directly do not. Claude Code and the Claude Agent SDK honor the same profile resolution. `ant auth status` shows which credential source and profile won (it reports status only — don't script against its exit code as a health check); `ant auth logout` clears the active profile (`--all` for every profile). On a remote host without a browser, `ant auth login --no-browser` prints the authorize URL and accepts the code back in the terminal.
-- **Non-interactive workloads** (CI, servers, containers): interactive login is for development on your own machine — use Workload Identity Federation instead (see the authentication docs via `shared/live-sources.md`).
+- **Non-interactive workloads** (CI, servers, containers): interactive login is for development on your own machine — use Workload Identity Federation instead (see the authentication docs via `mini/13-live-sources.md`).
 
 > **The #1 auth trap:** profiles are only consulted when no API key is set. A stale exported `ANTHROPIC_API_KEY` silently overrides every profile — requests hit whatever org/workspace that key is scoped to. `ant auth status` shows which source won; unset the key (or per-command: `env -u ANTHROPIC_API_KEY ant …`) before relying on a profile. Truly **unset** it — an empty `ANTHROPIC_API_KEY=""` still wins its precedence slot and authenticates with an empty key. The same shadowing applies in reverse to Claude Code: after `ant auth login`, Claude Code may warn about an auth conflict between the profile and its own `/login` credential — keep one (use the profile and `/logout` in Claude Code, or `ant auth logout` to keep Claude Code's own login).
 
@@ -68,7 +68,7 @@ set -a; eval "$(ant auth print-credentials --env)"; set +a
 python my_script.py   # SDK picks up ANTHROPIC_AUTH_TOKEN
 ```
 
-OAuth tokens go on `Authorization: Bearer` (not `x-api-key:`) **plus the `anthropic-beta: oauth-2025-04-20` header** — converting a raw curl/httpx script from an API key is a header change, not a key swap. The beta header requirement is endpoint-dependent (some endpoints happen to work without it; `/v1/messages` does not) — always send it so requests don't break when you switch endpoints. The token is short-lived and not auto-refreshed when passed via env var, so re-run `print-credentials` before it expires for long-running scripts (`print-credentials` itself refreshes the token if needed). If both `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` are set, the SDKs send both and the API rejects the request — unset `ANTHROPIC_API_KEY` before `eval`ing the `--env` output.
+OAuth tokens go on `Authorization: Bearer` (not `x-api-key:`) **plus the `anthropic-beta: oauth-2025-04-20` header** — converting a raw curl or httpx script from an API key is a header change, not a key swap. The beta header requirement is endpoint-dependent (some endpoints happen to work without it; `/v1/messages` does not) — always send it so requests don't break when you switch endpoints. The token is short-lived and not auto-refreshed when passed via env var, so re-run `print-credentials` before it expires for long-running scripts (`print-credentials` itself refreshes the token if needed). If both `ANTHROPIC_API_KEY` and `ANTHROPIC_AUTH_TOKEN` are set, the SDKs send both and the API rejects the request — unset `ANTHROPIC_API_KEY` before `eval`ing the `--env` output.
 
 **Foot-gun:** `ant auth print-credentials` with **no flags** prints the entire credentials JSON, not the bare token — putting that in an `Authorization` header yields an empty response or HTTP/2 protocol error. Always use `--access-token` for headers (it always reads the named/active profile; a set `ANTHROPIC_API_KEY` doesn't override credential printing).
 
@@ -78,7 +78,7 @@ OAuth tokens go on `Authorization: Bearer` (not `x-api-key:`) **plus the `anthro
 ant <resource>[:<subresource>] <action> [flags]
 ```
 
-Beta resources (agents, sessions, environments, deployments, skills, vaults, memory stores) live under `beta:` — the CLI auto-sends the right `anthropic-beta` header, so don't pass it yourself unless overriding with `--beta <header>`. For self-hosted environments, `ant beta:worker poll/run` and `ant beta:environments:work stats/stop` drive and monitor the work queue — see `shared/managed-agents-self-hosted-sandboxes.md`.
+Beta resources (agents, sessions, environments, deployments, skills, vaults, memory stores) live under `beta:` — the CLI auto-sends the right `anthropic-beta` header, so don't pass it yourself unless overriding with `--beta <header>`. For self-hosted environments, `ant beta:worker poll/run` and `ant beta:environments:work stats/stop` drive and monitor the work queue — see `mini/43-managed-agents-self-hosted-sandboxes.md`.
 
 ```sh
 ant models list
@@ -158,7 +158,7 @@ Flags that natively take a file path (e.g. `--file` on `beta:files upload`) acce
 
 ## Version-controlled Managed Agents resources
 
-This is the recommended flow for defining agents and environments — check the YAML into your repo and sync via `create` (first time) / `update` (thereafter). See `shared/managed-agents-core.md` for the field reference.
+This is the recommended flow for defining agents and environments — check the YAML into your repo and sync via `create` (first time) / `update` (thereafter). See `mini/31-managed-agents-core.md` for the field reference.
 
 ```yaml
 # summarizer.agent.yaml
@@ -224,7 +224,7 @@ done
 exec {stream}<&-
 ```
 
-This works for interactive exploration and demos. For application code that needs to react to `agent.tool_use` / `agent.custom_tool_use` events, reconnect after drops, or dedup against `events.list`, use the SDK — see `shared/managed-agents-client-patterns.md`.
+This works for interactive exploration and demos. For application code that needs to react to `agent.tool_use` / `agent.custom_tool_use` events, reconnect after drops, or dedup against `events.list`, use the SDK — see `mini/40-managed-agents-client-patterns.md`.
 
 ## Scripting patterns
 
@@ -243,4 +243,4 @@ ant beta:agents retrieve --agent-id bogus --transform-error error.message --form
 
 Shell completion: `ant @completion {zsh|bash|fish|powershell}`.
 
-For the full, always-current reference (including per-endpoint flags), WebFetch the **Anthropic CLI** URL in `shared/live-sources.md`.
+For the full, always-current reference (including per-endpoint flags), WebFetch the **Anthropic CLI** URL in `mini/13-live-sources.md`.

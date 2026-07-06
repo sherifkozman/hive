@@ -14,7 +14,7 @@ Types are organized by package. If a class you need isn't shown in an example be
 | `com.anthropic.models.beta` | `AnthropicBeta` (beta-flag constants) |
 | `com.anthropic.models.beta.messages` | beta-endpoint types — `MessageCreateParams`, `BetaMessage`, `BetaStopReason`, `BetaContextManagementConfig`, `BetaMcpToolset`, `BetaRequestMcpServerUrlDefinition`, `BetaTool*` |
 | `com.anthropic.core` | `JsonValue`, `JsonField`, `JsonSchemaLocalValidation`, `com.anthropic.core.http.StreamResponse` |
-| `com.anthropic.errors` | typed exceptions — `AnthropicServiceException`, `RateLimitException`, `NotFoundException`, etc. (see `shared/error-codes.md`) |
+| `com.anthropic.errors` | typed exceptions — `AnthropicServiceException`, `RateLimitException`, `NotFoundException`, etc. (see `mini/14-error-codes.md`) |
 
 `client.messages()` uses `com.anthropic.models.messages.*`; `client.beta().messages()` uses `com.anthropic.models.beta.messages.*`. Both packages define a `MessageCreateParams` — import the one matching the client path you call.
 
@@ -143,7 +143,7 @@ Combine with `Thinking = ThinkingConfigAdaptive` for cost-quality control.
 
 ## Prompt Caching
 
-System message as a list of `TextBlockParam` with `CacheControlEphemeral`. Use `.systemOfTextBlockParams(...)` — the plain `.system(String)` overload can't carry cache control. For placement patterns and the silent-invalidator audit checklist, see `shared/prompt-caching.md`.
+System message as a list of `TextBlockParam` with `CacheControlEphemeral`. Use `.systemOfTextBlockParams(...)` — the plain `.system(String)` overload can't carry cache control. For placement patterns and the silent-invalidator audit checklist, see `mini/15-prompt-caching.md`.
 
 ```java
 import com.anthropic.models.messages.TextBlockParam;
@@ -216,7 +216,7 @@ response.stopDetails().ifPresent(details -> {
 });
 ```
 
-**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. New `claude-fable-5` code should include the server-side `fallbacks` parameter (beta header `server-side-fallback-2026-06-01`, fallback model `claude-opus-4-8`, on the beta messages call) by default. The exact Java builder methods (and the client-side middleware for providers without server-side support) are not documented here — WebFetch the Java SDK repo's `examples/` from `shared/live-sources.md`; full semantics in `shared/model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
+**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. New `claude-fable-5` code should include the server-side `fallbacks` parameter (beta header `server-side-fallback-2026-06-01`, fallback model `claude-opus-4-8`, on the beta messages call) by default. The exact Java builder methods (and the client-side middleware for providers without server-side support) are not documented here — WebFetch the Java SDK repo's `examples/` from `mini/13-live-sources.md`; full semantics in `mini/20-model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason.
 
 ---
 

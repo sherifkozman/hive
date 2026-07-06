@@ -1,8 +1,8 @@
 # Managed Agents — PHP
 
-> **Bindings not shown here:** This README covers the most common managed-agents flows for PHP. If you need a class, method, namespace, field, or behavior that isn't shown, WebFetch the PHP SDK repo **or the relevant docs page** from `shared/live-sources.md` rather than guess. Do not extrapolate from cURL shapes or another language's SDK.
+> **Bindings not shown here:** This README covers the most common managed-agents flows for PHP. If you need a class, method, namespace, field, or behavior that isn't shown, WebFetch the PHP SDK repo **or the relevant docs page** from `mini/13-live-sources.md` rather than guess. Do not extrapolate from cURL shapes or another language's SDK.
 
-> **Agents are persistent — create once, reference by ID.** Store the agent ID returned by `$client->beta->agents->create` and pass it to every subsequent `->sessions->create`; do not call `agents->create` in the request path. The Anthropic CLI is one convenient way to create agents and environments from version-controlled YAML — its URL is in `shared/live-sources.md`. The examples below show in-code creation for completeness; in production the create call belongs in setup, not in the request path.
+> **Agents are persistent — create once, reference by ID.** Store the agent ID returned by `$client->beta->agents->create` and pass it to every subsequent `->sessions->create`; do not call `agents->create` in the request path. The Anthropic CLI is one convenient way to create agents and environments from version-controlled YAML — its URL is in `mini/13-live-sources.md`. The examples below show in-code creation for completeness; in production the create call belongs in setup, not in the request path.
 
 ## Installation
 
@@ -105,7 +105,7 @@ $client->beta->sessions->events->send(
 );
 ```
 
-> 💡 **Stream-first:** Open the stream *before* (or concurrently with) sending the message. The stream only delivers events that occur after it opens — stream-after-send means early events arrive buffered in one batch. See [Steering Patterns](../../shared/managed-agents-events.md#steering-patterns).
+> 💡 **Stream-first:** Open the stream *before* (or concurrently with) sending the message. The stream only delivers events that occur after it opens — stream-after-send means early events arrive buffered in one batch. See [Steering Patterns](mini/34-managed-agents-events.md#steering-patterns).
 
 ---
 
@@ -188,7 +188,7 @@ $stream->close();
 
 ## Provide Custom Tool Result
 
-> ℹ️ The PHP managed-agents bindings for `user.custom_tool_result` are not yet documented in this skill or in the apps source examples. Refer to `shared/managed-agents-events.md` for the wire format and the `anthropic-ai/sdk` PHP repository for the corresponding params.
+> ℹ️ The PHP managed-agents bindings for `user.custom_tool_result` are not yet documented in this skill or in the apps source examples. Refer to `mini/34-managed-agents-events.md` for the wire format and the `anthropic-ai/sdk` PHP repository for the corresponding params.
 
 ---
 
@@ -336,7 +336,7 @@ $session = $client->beta->sessions->create(
 );
 ```
 
-See `shared/managed-agents-tools.md` §Vaults for creating vaults and adding credentials.
+See `mini/33-managed-agents-tools.md` §Vaults for creating vaults and adding credentials.
 
 ---
 

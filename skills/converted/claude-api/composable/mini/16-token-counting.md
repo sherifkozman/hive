@@ -23,7 +23,7 @@ print(resp.input_tokens)
 ```
 
 TypeScript: `await client.messages.countTokens({model, messages})` →
-`.input_tokens`. See `{lang}/claude-api/README.md` for other SDKs.
+`.input_tokens`. See your language's readme mini (00-core.md's Reading Guide table) for other SDKs.
 
 ## CLI
 
@@ -53,4 +53,4 @@ after = open("CLAUDE.md").read()
 print(count(after) - count(before))
 ```
 
-Full docs: see the Token Counting entry in `shared/live-sources.md`.
+Full docs: see the Token Counting entry in `mini/13-live-sources.md`.

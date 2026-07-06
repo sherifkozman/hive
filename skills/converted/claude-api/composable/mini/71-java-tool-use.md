@@ -1,6 +1,6 @@
 # Tool Use — Java
 
-For conceptual overview (tool definitions, tool choice, tips), see [shared/tool-use-concepts.md](../../shared/tool-use-concepts.md).
+For conceptual overview (tool definitions, tool choice, tips), see [mini/17-tool-use-concepts.md](mini/17-tool-use-concepts.md).
 
 ## Tool Use (Beta)
 
@@ -74,7 +74,7 @@ for (BetaMessage message : toolRunner) {
 }
 ```
 
-See the [shared memory tool concepts](../../shared/tool-use-concepts.md) for more details on the memory tool.
+See the [shared memory tool concepts](mini/17-tool-use-concepts.md) for more details on the memory tool.
 
 ### Non-Beta Tool Declaration (manual JSON schema)
 
@@ -103,7 +103,7 @@ MessageCreateParams params = MessageCreateParams.builder()
     .build();
 ```
 
-For manual tool loops, handle `tool_use` blocks in the response, send `tool_result` back, loop until `stop_reason` is `"end_turn"`. See [shared tool use concepts](../../shared/tool-use-concepts.md).
+For manual tool loops, handle `tool_use` blocks in the response, send `tool_result` back, loop until `stop_reason` is `"end_turn"`. See [shared tool use concepts](mini/17-tool-use-concepts.md).
 
 ### Building `MessageParam` with Content Blocks (Tool Result Round-Trip)
 
@@ -160,7 +160,7 @@ Supports Jackson annotations: `@JsonPropertyDescription`, `@JsonIgnore`, `@Array
 
 ## Anthropic-Defined Tools
 
-Version-suffixed types; `name`/`type` auto-set by builder. Direct `.addTool()` overloads exist for most tool types; where one is missing (newer or less-common tools — see the advisor note below), wrap via the union type's static factory: `.addTool(BetaToolUnion.of<ToolName>(builder…build()))`. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `shared/tool-use-concepts.md`).
+Version-suffixed types; `name`/`type` auto-set by builder. Direct `.addTool()` overloads exist for most tool types; where one is missing (newer or less-common tools — see the advisor note below), wrap via the union type's static factory: `.addTool(BetaToolUnion.of<ToolName>(builder…build()))`. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `mini/17-tool-use-concepts.md`).
 
 ```java
 import com.anthropic.models.messages.WebSearchTool20260209;

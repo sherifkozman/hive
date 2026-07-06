@@ -48,6 +48,26 @@ stability promises on either.
   into the installed skill dir's root (e.g. `<installed-skill>/scripts/`)
   alongside `composable/` and `SKILL.md`, and the tree-hash used for
   install-plan skip/upgrade decisions now accounts for them.
+- **Stale cross-references in `skills/converted/claude-api` (bumped
+  1.0.0 -> 1.0.1)**. The prior asset-discovery fix above still shipped
+  claude-api's 9 vendored per-language directories (`csharp`, `curl`, `go`,
+  `java`, `php`, `python`, `ruby`, `shared`, `typescript`) as assets, because
+  every one of them was still referenced by a `<dir>/` path somewhere in the
+  compiled minis — e.g. "read from `csharp/`", "see `shared/tool-use-concepts.md`",
+  `{lang}/claude-api/tool-use.md` — leftovers from the pre-conversion flat
+  source layout, even though that same content had already been losslessly
+  carried into sibling minis (e.g. `shared/tool-use-concepts.md` ->
+  `mini/17-tool-use-concepts.md`). In an installed skill those paths are
+  dead: there is no `shared/`/`csharp/`/etc. directory on disk. Every stale
+  reference now points at its sibling mini instead (verified by content,
+  not filename guessing); `00-core.md`'s language-routing table and Reading
+  Guide were rewritten to route to the `NN-<lang>-*.md` mini series rather
+  than deleted, since the routing behavior itself is still needed. Parity
+  vs `skills/sources/anthropic/claude-api` held at 100.4% (was 99.9%
+  pre-fix) with every source heading still fuzzy-matched. Net effect:
+  `scripts/bundle-assets.mjs` no longer bundles any of claude-api's 9
+  vendored per-language directories as assets (`assetDirs` shrinks to
+  none), since none of them are referenced by path anymore.
 
 ## [0.1.0] (2026-07-05)
 

@@ -8,7 +8,7 @@ Requires the `managed-agents-2026-04-01` beta header (the SDK sets it automatica
 
 A deployment bundles everything a session needs (agent, environment, optional files / GitHub / memory stores / vaults) plus a `schedule` and the `initial_events` that kick off each run:
 
-- `agent` and `environment_id` are required — same shapes as `sessions.create` (see `shared/managed-agents-core.md`).
+- `agent` and `environment_id` are required — same shapes as `sessions.create` (see `mini/31-managed-agents-core.md`).
 - `initial_events` must contain the starting `user.message`.
 - `schedule` takes a cron `expression` and an IANA `timezone`. Minute-level granularity is the maximum.
 
@@ -83,7 +83,7 @@ Deployments may apply up to **10 seconds of jitter** to distribute load. Maximum
 
 ## Deployment runs
 
-Every trigger attempt — successful or not — writes a **deployment run** record (`drun_` prefix), so you can audit failures independent of the session lifecycle. A successful run carries the created `session_id`; follow that session via the event stream (`shared/managed-agents-events.md`) or webhooks (`shared/managed-agents-webhooks.md`) as usual. A failed run carries an `error` whose `type` explains why session creation was rejected.
+Every trigger attempt — successful or not — writes a **deployment run** record (`drun_` prefix), so you can audit failures independent of the session lifecycle. A successful run carries the created `session_id`; follow that session via the event stream (`mini/34-managed-agents-events.md`) or webhooks (`mini/37-managed-agents-webhooks.md`) as usual. A failed run carries an `error` whose `type` explains why session creation was rejected.
 
 ```python
 # All runs for a deployment
@@ -123,7 +123,7 @@ A failed run looks like:
 
 Error types include `environment_archived`, `agent_archived`, `vault_not_found`, `session_rate_limited`, and `service_unavailable`.
 
-The outcome of each **scheduled** run (started/succeeded/failed) and each deployment lifecycle change (created/updated/paused/unpaused/archived/deleted) is also delivered as a webhook event — see `shared/managed-agents-webhooks.md` for the `deployment.*` and `deployment_run.*` event types — so you can react without polling. Manual runs do **not** emit `deployment_run.*` webhook events.
+The outcome of each **scheduled** run (started/succeeded/failed) and each deployment lifecycle change (created/updated/paused/unpaused/archived/deleted) is also delivered as a webhook event — see `mini/37-managed-agents-webhooks.md` for the `deployment.*` and `deployment_run.*` event types — so you can react without polling. Manual runs do **not** emit `deployment_run.*` webhook events.
 
 ## Lifecycle: pause / unpause / archive
 

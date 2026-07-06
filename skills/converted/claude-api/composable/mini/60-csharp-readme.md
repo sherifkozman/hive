@@ -15,7 +15,7 @@ Types are organized by namespace. If a type you need isn't shown in an example b
 | `Anthropic.Models.Beta.Files` | Files API types |
 | `Anthropic.Models.Messages.Batches` | Batch API types |
 | `Anthropic.Helpers.Beta` | `BetaToolRunner`, beta helper utilities |
-| `Anthropic.Exceptions` | `AnthropicApiException`, `AnthropicRateLimitException`, `Anthropic5xxException`, etc. — see `shared/error-codes.md` |
+| `Anthropic.Exceptions` | `AnthropicApiException`, `AnthropicRateLimitException`, `Anthropic5xxException`, etc. — see `mini/14-error-codes.md` |
 | `Anthropic.Bedrock` / `Anthropic.Vertex` / `Anthropic.Foundry` / `Anthropic.Aws` | platform clients (separate NuGet packages): `AnthropicBedrockMantleClient`, `AnthropicFoundryClient`, `AnthropicAwsClient` |
 
 `client.Messages.*` uses non-beta types; `client.Beta.Messages.*` uses the `Anthropic.Models.Beta.Messages` types. Both namespaces define a `MessageCreateParams` — pick the one matching the client path you call.
@@ -268,7 +268,7 @@ Values: `Effort.Low`, `Effort.Medium`, `Effort.High`, `Effort.Max`. Combine with
 
 ## Prompt Caching
 
-`System` takes `MessageCreateParamsSystem?` — a union of `string` or `List<TextBlockParam>`. There is no `SystemTextBlockParam`; use plain `TextBlockParam`. The implicit conversion needs the concrete `List<TextBlockParam>` type (array literals won't convert). For placement patterns and the silent-invalidator audit checklist, see `shared/prompt-caching.md`.
+`System` takes `MessageCreateParamsSystem?` — a union of `string` or `List<TextBlockParam>`. There is no `SystemTextBlockParam`; use plain `TextBlockParam`. The implicit conversion needs the concrete `List<TextBlockParam>` type (array literals won't convert). For placement patterns and the silent-invalidator audit checklist, see `mini/15-prompt-caching.md`.
 
 ```csharp
 System = new List<TextBlockParam> {
@@ -352,10 +352,10 @@ if (response.StopReason == "refusal" && response.StopDetails is { } details)
 }
 ```
 
-**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. In `claude-fable-5` code, include `Fallbacks = [new(Model.ClaudeOpus4_8)]` plus the `AnthropicBeta.ServerSideFallback2026_06_01` beta on the beta messages call by default — a policy decline is re-served by the fallback model inside the same call. Not available on Amazon Bedrock, Vertex AI, or Microsoft Foundry — use the client-side handler there: `new AnthropicClient { Handlers = [new BetaRefusalFallbackHandler { Fallbacks = [new(Model.ClaudeOpus4_8)] }] }` (namespace `Anthropic.Helpers`), with per-conversation state via `BetaFallbackState.Create()` scoped with `using (fallbackState.Use()) { ... }`. Full semantics (billing, sticky routing, streaming) and a runnable example: `shared/model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason, and the C# SDK repo's `examples/` (WebFetch via `shared/live-sources.md`).
+**Refusal fallbacks (Claude Fable 5) — opt in by default.** Fallbacks are opt-in: without them a refused request simply stops. In `claude-fable-5` code, include `Fallbacks = [new(Model.ClaudeOpus4_8)]` plus the `AnthropicBeta.ServerSideFallback2026_06_01` beta on the beta messages call by default — a policy decline is re-served by the fallback model inside the same call. Not available on Amazon Bedrock, Vertex AI, or Microsoft Foundry — use the client-side handler there: `new AnthropicClient { Handlers = [new BetaRefusalFallbackHandler { Fallbacks = [new(Model.ClaudeOpus4_8)] }] }` (namespace `Anthropic.Helpers`), with per-conversation state via `BetaFallbackState.Create()` scoped with `using (fallbackState.Use()) { ... }`. Full semantics (billing, sticky routing, streaming) and a runnable example: `mini/20-model-migration.md` → Migrating to Claude Fable 5 → `refusal` stop reason, and the C# SDK repo's `examples/` (WebFetch via `mini/13-live-sources.md`).
 
 ---
 
 ## Managed Agents (Beta)
 
-The C# SDK supports Managed Agents via `client.Beta.Agents`, `client.Beta.Sessions`, `client.Beta.Environments`, and related namespaces. See `shared/managed-agents-overview.md` for the architecture and `curl/managed-agents.md` for the wire-level reference.
+The C# SDK supports Managed Agents via `client.Beta.Agents`, `client.Beta.Sessions`, `client.Beta.Environments`, and related namespaces. See `mini/30-managed-agents-overview.md` for the architecture and `mini/86-curl-managed-agents.md` for the wire-level reference.

@@ -26,7 +26,7 @@ store = client.beta.memory_stores.create(
 print(store.id)  # memstore_01Hx...
 ```
 
-Other SDKs: TypeScript `client.beta.memoryStores.create({...})`; Go `client.Beta.MemoryStores.New(ctx, ...)`. See `shared/managed-agents-api-reference.md` → SDK Method Reference for the full per-language table.
+Other SDKs: TypeScript `client.beta.memoryStores.create({...})`; Go `client.Beta.MemoryStores.New(ctx, ...)`. See `mini/42-managed-agents-api-reference.md` → SDK Method Reference for the full per-language table.
 
 Stores support `retrieve` / `update` / `list` (with `include_archived`, `created_at_{gte,lte}` filters) / `delete` / **`archive`**. Archive makes the store read-only — existing session attachments continue, new sessions cannot reference it; no unarchive.
 
@@ -44,7 +44,7 @@ client.beta.memory_stores.memories.create(
 
 ## Attach to a session
 
-Memory stores go in the session's `resources[]` array alongside `file` and `github_repository` resources (see `shared/managed-agents-environments.md` → Resources). Memory stores attach at **session create time only** — `sessions.resources.add()` does not accept `memory_store`.
+Memory stores go in the session's `resources[]` array alongside `file` and `github_repository` resources (see `mini/32-managed-agents-environments.md` → Resources). Memory stores attach at **session create time only** — `sessions.resources.add()` does not accept `memory_store`.
 
 ```python
 session = client.beta.sessions.create(
@@ -183,7 +183,7 @@ client.beta.memory_stores.memory_versions.redact(version_id, memory_store_id=sto
 
 ## Endpoint reference
 
-See `shared/managed-agents-api-reference.md` → Memory Stores / Memories / Memory Versions for the full HTTP method/path tables. Raw HTTP base path:
+See `mini/42-managed-agents-api-reference.md` → Memory Stores / Memories / Memory Versions for the full HTTP method/path tables. Raw HTTP base path:
 
 ```
 POST   /v1/memory_stores
@@ -194,4 +194,4 @@ GET    /v1/memory_stores/{memory_store_id}/memory_versions
 POST   /v1/memory_stores/{memory_store_id}/memory_versions/{version_id}/redact
 ```
 
-For cURL examples and the CLI (`ant beta:memory-stores ...`), WebFetch the Memory URL in `shared/live-sources.md` → Managed Agents.
+For cURL examples and the CLI (`ant beta:memory-stores ...`), WebFetch the Memory URL in `mini/13-live-sources.md` → Managed Agents.

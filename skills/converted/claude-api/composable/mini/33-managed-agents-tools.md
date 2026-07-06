@@ -6,7 +6,7 @@
 
 | Type | Who runs it | How it works |
 |---|---|---|
-| **Prebuilt Claude Agent tools** (`agent_toolset_20260401`) | Anthropic, on the session's container (for `cloud` envs; for `self_hosted`, **your** worker supplies and runs them — see `shared/managed-agents-self-hosted-sandboxes.md`) | File ops, bash, web search, etc. Enable all at once or configure individually with `enabled: true/false`. |
+| **Prebuilt Claude Agent tools** (`agent_toolset_20260401`) | Anthropic, on the session's container (for `cloud` envs; for `self_hosted`, **your** worker supplies and runs them — see `mini/43-managed-agents-self-hosted-sandboxes.md`) | File ops, bash, web search, etc. Enable all at once or configure individually with `enabled: true/false`. |
 | **MCP tools** (`mcp_toolset`) | Anthropic's orchestration layer | Capabilities exposed by connected MCP servers. Grant access per-server via the toolset. |
 | **Custom tools** | **You** — your application handles the call and returns results | Agent emits a `agent.custom_tool_use` event, session goes `idle`, you send back a `user.custom_tool_result` event. |
 
@@ -182,7 +182,7 @@ This keeps secrets out of reusable agent definitions. Each vault credential is t
 
 > 💡 **Per-tool enablement (empirical):** `mcp_toolset` has been observed accepting `default_config: {enabled: false}` + `configs: [{name, enabled: true}]` for an allowlist pattern. The API ref shows only the minimal `{type, mcp_server_name}` form.
 
-> 💡 **Changing tools/MCP servers on a running session:** `sessions.update()` can replace `agent.tools`, `agent.mcp_servers`, and `vault_ids` while the session is `idle` — a session-local override that doesn't touch the agent object. See `shared/managed-agents-core.md` → Updating the agent configuration mid-session.
+> 💡 **Changing tools/MCP servers on a running session:** `sessions.update()` can replace `agent.tools`, `agent.mcp_servers`, and `vault_ids` while the session is `idle` — a session-local override that doesn't touch the agent object. See `mini/31-managed-agents-core.md` → Updating the agent configuration mid-session.
 
 **Large MCP tool outputs.** If an MCP tool returns more than **100K tokens**, the output is automatically offloaded to a file in the sandbox — the agent receives a truncated preview plus the file path and can `read` the full content. No configuration required.
 
@@ -207,7 +207,7 @@ Vaults store credentials; those credentials **never enter the sandbox**. This is
 - **Git operations on attached GitHub repositories** (`git pull`, `git push`, GitHub REST calls) are routed through a git proxy that injects the `github_repository` resource's `authorization_token` the same way.
 - **Environment-variable credentials** appear in the sandbox as an opaque placeholder; the real value replaces the placeholder at egress, on requests to the credential's allowed hosts only.
 
-**When vault credentials don't fit** (e.g. self-hosted sandboxes — `environment_variable` is not yet supported there), **register a custom tool:** the agent emits `agent.custom_tool_use`, your orchestrator (which already holds the credential) executes the call and returns `user.custom_tool_result` over the same authenticated event stream. No public endpoint is exposed; the sandbox never sees the secret. See `shared/managed-agents-client-patterns.md` → Pattern 9.
+**When vault credentials don't fit** (e.g. self-hosted sandboxes — `environment_variable` is not yet supported there), **register a custom tool:** the agent emits `agent.custom_tool_use`, your orchestrator (which already holds the credential) executes the call and returns `user.custom_tool_result` over the same authenticated event stream. No public endpoint is exposed; the sandbox never sees the secret. See `mini/40-managed-agents-client-patterns.md` → Pattern 9.
 
 **Do not put API keys in the system prompt or user messages as a workaround** — they persist in the session's event history.
 
@@ -280,13 +280,13 @@ Omit `refresh` entirely if you only have an access token with no refresh capabil
 
 A credential must have at least one location enabled; a create or update that would disable both returns 400, as does explicit `null` for the object or either field (omit instead). The response always returns both fields with their resolved values.
 
-> ⚠️ **Two networking layers, both required.** `networking.allowed_hosts` on the credential controls which requests *use the secret*, not which requests are *allowed*. The agent must also be able to reach the domain at the **environment level** (`unrestricted`, or the host listed in the environment's `allowed_hosts` — see `shared/managed-agents-environments.md`). A domain missing from either layer means the secret-substituted request fails.
+> ⚠️ **Two networking layers, both required.** `networking.allowed_hosts` on the credential controls which requests *use the secret*, not which requests are *allowed*. The agent must also be able to reach the domain at the **environment level** (`unrestricted`, or the host listed in the environment's `allowed_hosts` — see `mini/32-managed-agents-environments.md`). A domain missing from either layer means the secret-substituted request fails.
 
 > ⚠️ **Client-side validation caveat.** Substitution happens at egress, not inside the sandbox — clients that validate the credential *format* locally before making a network request (e.g. a CLI that checks the key starts with `sk-`) will see the opaque placeholder and may fail at startup. If a client rejects the credential before any network call, that's why.
 
 > 💡 **Scope the key minimally.** The agent can do anything the key allows; a key with broader permissions than the task needs increases the blast radius if the agent behaves unexpectedly.
 
-**Not supported with self-hosted sandboxes** — `environment_variable` credentials require Anthropic-managed egress. See `shared/managed-agents-self-hosted-sandboxes.md`.
+**Not supported with self-hosted sandboxes** — `environment_variable` credentials require Anthropic-managed egress. See `mini/43-managed-agents-self-hosted-sandboxes.md`.
 
 **Constraints (all credential types):**
 

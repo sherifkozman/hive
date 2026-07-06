@@ -1,6 +1,6 @@
 # Tool Use — PHP
 
-For conceptual overview (tool definitions, tool choice, tips), see [shared/tool-use-concepts.md](../../shared/tool-use-concepts.md).
+For conceptual overview (tool definitions, tool choice, tips), see [mini/17-tool-use-concepts.md](mini/17-tool-use-concepts.md).
 
 ## Tool Use
 
@@ -46,7 +46,7 @@ foreach ($runner as $message) {
 
 ### Manual Loop
 
-Tools are passed as arrays. **The SDK uses camelCase keys** (`inputSchema`, `toolUseID`, `stopReason`) and auto-maps to the API's snake_case on the wire — since v0.5.0. See [shared tool use concepts](../../shared/tool-use-concepts.md) for the loop pattern.
+Tools are passed as arrays. **The SDK uses camelCase keys** (`inputSchema`, `toolUseID`, `stopReason`) and auto-maps to the API's snake_case on the wire — since v0.5.0. See [shared tool use concepts](mini/17-tool-use-concepts.md) for the loop pattern.
 
 ```php
 use Anthropic\Messages\ToolUseBlock;
@@ -247,6 +247,6 @@ tools: [
 
 ### Memory tool (non-beta, client-executed)
 
-Declare `['type' => 'memory_20250818', 'name' => 'memory']`. Handle the `tool_use` by reading/writing files under a fixed `/memories` directory. **Validate every model-supplied path**: resolve to its canonical form and verify it remains within the memory directory; reject traversal (`..`, symlinks) — see `shared/tool-use-concepts.md` § Client-Side Tools.
+Declare `['type' => 'memory_20250818', 'name' => 'memory']`. Handle the `tool_use` by reading/writing files under a fixed `/memories` directory. **Validate every model-supplied path**: resolve to its canonical form and verify it remains within the memory directory; reject traversal (`..`, symlinks) — see `mini/17-tool-use-concepts.md` § Client-Side Tools.
 
 ---

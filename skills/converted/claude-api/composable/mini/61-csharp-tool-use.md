@@ -1,6 +1,6 @@
 # Tool Use — C#
 
-For conceptual overview (tool definitions, tool choice, tips), see [shared/tool-use-concepts.md](../../shared/tool-use-concepts.md).
+For conceptual overview (tool definitions, tool choice, tips), see [mini/17-tool-use-concepts.md](mini/17-tool-use-concepts.md).
 
 ## Tool Use
 
@@ -35,7 +35,7 @@ var parameters = new MessageCreateParams
 
 Derived from `anthropic-sdk-csharp/src/Anthropic/Models/Messages/Tool.cs` and `ToolUnion.cs:799` (implicit conversion).
 
-See [shared tool use concepts](../../shared/tool-use-concepts.md) for the loop pattern.
+See [shared tool use concepts](mini/17-tool-use-concepts.md) for the loop pattern.
 ### Converting response content to the follow-up assistant message
 
 When echoing Claude's response back in the assistant turn, **there is no `.ToParam()` helper** — manually reconstruct each `ContentBlock` variant as its `*Param` counterpart. Do NOT use `new ContentBlockParam(block.Json)`: it compiles and serializes, but `.Value` stays `null` so `TryPick*`/`Validate()` fail (degraded JSON pass-through, not the typed path).
@@ -122,7 +122,7 @@ OutputConfig = new OutputConfig {
 
 ## Anthropic-Defined Tools
 
-Web search, bash, text editor, and code execution are Anthropic-defined tools with built-in schemas. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `shared/tool-use-concepts.md`). Type names are version-suffixed; constructors auto-set `name`/`type`. **Wrap each in `new ToolUnion(...)` explicitly.**
+Web search, bash, text editor, and code execution are Anthropic-defined tools with built-in schemas. Web search and code execution are server-executed; bash and text editor are client-executed (you handle the `tool_use` locally — see `mini/17-tool-use-concepts.md`). Type names are version-suffixed; constructors auto-set `name`/`type`. **Wrap each in `new ToolUnion(...)` explicitly.**
 
 ```csharp
 Tools = [
