@@ -6,8 +6,9 @@ The pre-registered E2 rule fired (4 mechanical events ≥ 2), but the corrected 
 shows the events are NOT wrong navigation — INDEX routing was accurate wherever the
 agent engaged (broad-04: exactly the 4 expected minis, 3/3 repeats; narrow-01:
 exactly the expected mini). All 4 events are **skill-bypass**: the agent answered
-from its own knowledge + live web without opening any mini (narrow-02 ×3, harmless
-— ceiling case; broad-03 r2, harmful). Bypass equally afflicts C1/C3 (median
+from its own knowledge without opening any mini (narrow-02 ×3, harmless
+— ceiling case; broad-03 r2, harmful; corrected web audit, Exp 11 A3a:
+none of these cells made an actual web call). Bypass equally afflicts C1/C3 (median
 file-reads per rollout: C1 0.5, C3 0.0).
 
 **The structural finding that matters for the product:** Claude Code injects the
@@ -57,9 +58,13 @@ Secondary enhancement candidates, evidence-backed:
 ## Context that bounds the claims
 
 Single skill (pdf), 4 cases, n=3, one harness (Claude Code + sonnet-5), real-HOME
-environment (constant across conditions), every cell's agent used live web tools
-(12/12 per condition) — skills compete with search in production, compressing all
-skill lift vs sandbox numbers. broad-03 exceeded the 12-turn budget for ALL
+environment (constant across conditions), live web tools available in every cell
+— corrected audit (Exp 11 Amendment A3a: actual WebSearch/WebFetch tool_use
+counted, replacing a transcript string-search that matched the harness's tool
+listing): actual web calls occurred in 11/108 cells across both waves,
+concentrated in the no-skill baseline — skills compete with search and the
+model's own knowledge in production, compressing all skill lift vs sandbox
+numbers. broad-03 exceeded the 12-turn budget for ALL
 conditions in r3 and for C1 in 3/3 repeats (A3 failures; sensitivity: excluding
 broad-03 changes no outcome selection). Wave 2 (Codex, cross-family) not run —
 auth probing blocked; requires explicit approval to proceed.
