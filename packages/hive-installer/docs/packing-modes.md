@@ -16,14 +16,15 @@ size (and its INDEX routing is measured-accurate there).
   composable/ tree is NOT installed.
 - **`tree`** — v0.1.0 behavior (shim + composable tree). Retained for large
   skills and for reproduction/comparison studies.
-- **`preset-skills`** (experimental, opt-in) — installs each compiled preset as
-  its own sibling skill (e.g. `hive-mcp-builder-python`, `-node`), each
-  bundle-inline with a track-scoped description, plus the full-bundle fallback
-  skill. Rationale: Exp 10's winning "preset-policy" needs task context the
-  installer lacks at install time; delivering presets as separate skills lets
-  the CLIENT's native skill selection make that per-task choice. Flagged
-  experimental pending Exp 11 (this is mechanism-adjacent to cross-skill
-  stacking). Not the default anywhere in 0.2.0.
+- **`preset-skills`** (spec'd, unshipped; CLOSED with no driver after Exp 11)
+  would install each compiled preset as its own sibling skill (e.g.
+  `hive-mcp-builder-python`, `-node`), each bundle-inline with a track-scoped
+  description, plus the full-bundle fallback skill. The rationale was that
+  Exp 10's winning "preset-policy" needs task context the installer lacks at
+  install time. Exp 11 (docs/BENCHMARKS.md) then measured native selection
+  over installed shapes as sufficient and found that derived sibling
+  artifacts lose source-skill discoverability; no evidence currently
+  justifies shipping this mode.
 
 ## Default selection rule (per skill × client)
 
@@ -38,9 +39,9 @@ mode = bundle-inline   if bundleTokens <= 25_000
   tokens at parity). Above 25k is unmeasured for inline; claude-api (195k)
   cannot inline. Threshold is a constant, overridable per install
   (`--packing <mode>` forces; `--inline-threshold <tokens>` adjusts).
-- (DEFERRED with preset-skills, post-Exp-11) Registry `injectsSkillBody` field:
-  since v0.2.0 behavior never branches on it, recording it adds registry churn
-  without effect — it ships when a rule actually consumes it.
+- (CLOSED, no driver: Exp 11 found no packing rule needing it) Registry
+  `injectsSkillBody` field: v0.2.0 behavior never branches on it; it ships
+  if and when a rule actually consumes it.
 - Applies to native-skills AND payload clients (the payload tree becomes a
   payload single file; pointer blocks unchanged).
 
@@ -62,8 +63,10 @@ mode = bundle-inline   if bundleTokens <= 25_000
    measured PARITY with tree (3/4 both; ~2.65M ≈ 2.67M tokens) — no advantage.
    The inline default for 10–25k rests on (i) Codex's quality-side win for
    single-file deliveries (4/4 vs 3/4, deficit reproducible 3/3) and (ii) one
-   mode simplicity across clients. It is PROVISIONAL pending Exp 11; the
-   measured mid-size winner (preset-policy) returns via the Exp 11 track.
+   mode simplicity across clients. CONFIRMED by Experiment 11
+   (docs/BENCHMARKS.md): in two-skill stacks the inline default held quality
+   parity, and neither selective tree navigation nor a composed artifact
+   beat it by the pre-registered 15% token margin under any lens.
 2. **Description pipeline**: bundle-assets gains a `sourceDescription` manifest
    field = the UPSTREAM SKILL.md frontmatter description verbatim (fallback:
    current INDEX first-sentence, flagged in manifest). Inline SKILL.md
@@ -75,9 +78,12 @@ mode = bundle-inline   if bundleTokens <= 25_000
    wording becomes mode-generic ("read the skill's SKILL.md; larger skills
    carry a composable/INDEX.md menu"). Pointer wording change re-prompts via
    the existing consent gate on upgrade (expected, documented).
-4. **preset-skills mode: DESCOPED from 0.2.0** — the receipt/uninstall model
-   for N+1 sibling skills is unsettled, and Exp 11 Phase 1 (native-selection
-   probes) directly informs its design. Follow-up spec after Probe 1.
+4. **preset-skills mode: DESCOPED from 0.2.0, then CLOSED.** The
+   receipt/uninstall model for N+1 sibling skills was unsettled, and Exp 11's
+   native-selection probes were to inform its design. They did: native
+   selection over installed shapes measured sufficient, and derived sibling
+   artifacts lose source-skill discoverability (docs/BENCHMARKS.md, Exp 11).
+   No follow-up spec unless new evidence emerges.
 5. **Repro receipts**: `.hive-install.json` gains `packing`, `packingForced`
    (explicit --packing vs auto), `inlineThreshold`, `catalogHash`,
    `installerVersion` (already present) — doctor's differs-from-default hint

@@ -4,3 +4,4 @@ __pycache__/
 # Internal working files — never published to the public repo
 /tasks/
 /docs/superpowers/
+.claude/settings.local.json
