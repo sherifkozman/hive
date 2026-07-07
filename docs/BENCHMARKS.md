@@ -785,53 +785,57 @@ re-sends context. **Outcome (frozen rules): E3 — packing is per-client and
 per-size**; the v0.1 shape was never the best-measured condition; INDEX routing
 was accurate whenever engaged; skill *bypass* (agent answers from its own
 knowledge, occasionally live web) occurred in all conditions. A corrected
-audit (Experiment 11, Amendment A3a) found actual web calls in 11/108
-Claude Code cells, concentrated in the no-skill baseline — the earlier
-"every cell used web" phrasing came from a detection artifact (transcript
-string search matching the harness's tool listing) and is retracted.
+audit (Experiment 11, amendment A3a) found actual web calls in 11 of 108
+Claude Code cells, concentrated in the no-skill baseline. The earlier
+"every cell used web" phrasing came from a detection artifact (a transcript
+string search that matched the harness's tool listing) and is retracted.
 **Losses/limits.** Two skills, 4 cases each, one machine, real-HOME constant
 environmental context; the 10–25k inline default rests on Codex quality evidence
 (Claude Code measured parity there); Experiment 11 subsequently stress-tested
 that default in two-skill stacks and it held (below).
 Raw materials: `benchmarks/exp10-harness-econ/`.
 
-## Experiment 11 — cross-skill composition (stacked skills)
+## Experiment 11: cross-skill composition (stacked skills)
 
-**Question.** For a task needing knowledge from TWO installed skills, can an
-agent compose the needed minis across them without loading either whole — and
-does any composition aid (a taught behavior, or a one-time composed artifact)
-beat simply stacking the 0.2.0 default shapes?
+**Question.** For a task that needs knowledge from two installed skills, can
+an agent compose the needed minis across them without loading either skill
+whole? And does any composition aid (a taught behavior, or a one-time
+composed artifact) beat plain stacking of the 0.2.0 default shapes?
 **Setup.** Claude Code headless, sonnet-5 pinned, n=3, frozen protocol with
-pre-registered decision rules and pre-freeze systematic case sampling; two
-pairs (python-api+code-review ≈9.6k combined; financial-analysis+tech-writing
-≈15.6k); conditions: Write-only parametric floor / both-inline (0.2.0 default)
-/ both-tree; then a composer-builder probe (one-shot compose from a stateless
-composer skill, reuse measured against the default on fresh sibling cases).
-All amendments documented pre-scoring, including per-rollout isolation
-auditing after floor rollouts escaped their fixtures via disk-wide search.
-**Result.** Quality parity everywhere above a clean floor (mid pair floor
-0/3 — all lift is genuine). *Capability*: agents composed natively on the
-tree shape where the task actually required skill content — 5/6 rollouts,
-zero wrong minis, zero bundle fallbacks, zero over-composition on control
-cases; engagement followed need in every cell. *Economics*: selective
-navigation never met the pre-registered ≥15% savings bar under any token
-lens (cache-neutral +32% at mid size / billed −13% / cache-weighted −9% —
-metric direction disclosed per the committed sensitivity analysis); each
-selective read is a turn that re-sends context. The composer-builder failed
-both ways: one compose run over-selected 7/9 minis for a broad job
-description and exceeded the turn budget without producing an artifact; the
-other composed surgically and passed verbatim containment, but reuse ran at
-0.82–1.11× the default's cost (bar: ≤0.70×) — composed artifacts sever the
-source skills' names, so tasks phrased in source-skill terms (as users
-naturally phrase them) fail discovery and trigger environment hunting.
+pre-registered decision rules and systematic case sampling committed before
+any case existed. Two pairs: python-api plus code-review (about 9.6k tokens
+combined) and financial-analysis plus tech-writing (about 15.6k). Conditions:
+a Write-only parametric floor, both skills inline (the 0.2.0 default), and
+both skills as composable trees; then a composer probe, in which a stateless
+composer skill builds a task-shaped artifact once and reuse is measured
+against the default on fresh sibling cases. All amendments were documented
+before scoring, including per-rollout isolation audits added after floor
+rollouts escaped their fixtures through disk-wide search.
+**Result.** Quality parity everywhere above a clean floor (the mid pair's
+floor scored 0/3, so all lift there is real). Capability: agents composed
+natively on the tree shape whenever the task actually required skill content
+(5/6 rollouts, zero wrong minis, zero bundle fallbacks, zero over-composition
+on control cases), and engagement followed need in every cell. Economics:
+selective navigation never met the pre-registered savings bar of 15% under
+any token lens (mid pair: +32% cache-neutral, -13% billed, -9%
+cache-weighted; the metric dependence is disclosed in the committed
+sensitivity analysis). Each selective file read is a turn, and each turn
+re-sends context. The composer probe failed both ways: one compose run
+selected seven of nine minis for a broad job description and exceeded the
+turn budget without writing an artifact; the other selected precisely and
+passed verbatim containment, but reuse ran at 0.82 to 1.11 times the
+default's cost against a bar of 0.70. A composed artifact drops the source
+skills' names, so tasks phrased in source-skill terms (as users naturally
+phrase them) fail discovery and trigger hunting elsewhere.
 **Outcome (pre-committed mapping): native stacking over the 0.2.0 shapes is
-sufficient; no composer behavior or artifact is warranted.** The 10–25k
-inline default is confirmed for two-skill stacks; tree remains the shape
-above the inline threshold; the deferred preset-skills install mode and
+sufficient; no composer behavior or artifact is warranted.** The 10-25k
+inline default is confirmed for two-skill stacks; the tree remains the shape
+above the inline threshold; the deferred preset-skills install mode and the
 `injectsSkillBody` registry field close with no driver.
 **Losses/limits.** One harness family (Claude Code; Codex untested in
-stacks), two pairs, n=3, exact-answer tasks only; five reuse-probe
-rollouts invalidated for isolation breaches with all retries re-breaching
-(one cell unmeasurable — itself the discoverability evidence); floors n=1.
-Raw materials: research branch `exp/11-cross-skill-composition`
-(`benchmarks/exp11-stacking/`: frozen protocol, cases, per-rollout scores).
+stacks); two pairs; n=3; exact-answer tasks only. Five reuse-probe rollouts
+were invalidated for isolation breaches and every retry breached again,
+leaving one cell unmeasurable (that pattern is itself the discoverability
+evidence). Floors ran at n=1. Raw materials (frozen protocol, cases,
+per-rollout scores) are retained in the maintainer's research archive and
+available on request.
